@@ -1,0 +1,12 @@
+{
+  "app": "앱",
+  "job": "직업",
+  "user": "사용자",
+  "travel": "여행",
+  "invoice": "청구서",
+  "blog": {
+    "title": "블로그",
+    "caption": "사용자 정의 단축키"
+  },
+  "subheader": "부제목"
+} 

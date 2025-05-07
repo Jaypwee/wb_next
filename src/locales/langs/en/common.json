@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "signIn": {
+      "banner_title_1": "Come online for WAR",
+      "banner_title_2": "WB!! WB!!",
+      "banner_title_3": "Activity brings victory",
+      "email": "Email",
+      "password": "Password"
+    }
+  }
+} 

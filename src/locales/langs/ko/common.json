@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "signIn": {
+      "banner_title_1": "어서와, 오늘도 전쟁이야",
+      "banner_title_2": "WB!! WB!!",
+      "banner_title_3": "액티브는 곧 우승이다",
+      "email": "이메일",
+      "password": "비밀번호"
+    }
+  }
+} 
