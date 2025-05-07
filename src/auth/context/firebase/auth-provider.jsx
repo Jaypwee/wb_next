@@ -18,11 +18,7 @@ export function AuthProvider({ children }) {
   const checkUserSession = useCallback(async () => {
     try {
       onAuthStateChanged(AUTH, async (user) => {
-        if (user && user.emailVerified) {
-          /*
-           * (1) If skip emailVerified
-           * Remove the condition (if/else) : user.emailVerified
-           */
+        if (user) {
           const userProfile = doc(FIRESTORE, 'users', user.uid);
 
           const docSnap = await getDoc(userProfile);

@@ -1,11 +1,37 @@
 {
   "auth": {
+    "common": {
+      "email": "이메일",
+      "password": "비밀번호"
+    },
     "signIn": {
       "banner_title_1": "어서와, 오늘도 전쟁이야",
       "banner_title_2": "WB!! WB!!",
-      "banner_title_3": "액티브는 곧 우승이다",
-      "email": "이메일",
-      "password": "비밀번호"
+      "banner_title_3": "액티브는 곧 우승이다"
+    },
+    "signUp": {
+      "nickname": "인게임 이름",
+      "nicknamePlaceholder": "예) Elega",
+      "gameuid": "게임 UID",
+      "gameuidPlaceholder": "예) 11595837",
+      "nationality": "국적",
+      "mainTroops": "주력 부대",
+      "allRounder": "올라운더더",
+      "infantry": "보병",
+      "cavalry": "기병",
+      "archer": "궁병",
+      "mage": "법사",
+      "title": "WB 회원 가입",
+      "alreadyHaveAccount": "이미 계정이 있으신가요?",
+      "signIn": "로그인하기",
+      "createAccount": "회원가입",
+      "errors": {
+        "nicknameRequired": "인게임 이름을 입력해주세요",
+        "gameuidRequired": "게임 UID를 입력해주세요",
+        "gameuidInvalid": "게임 UID는 8자리 숫자여야 합니다",
+        "nationalityRequired": "국적을 선택해주세요",
+        "mainTroopsRequired": "주력 부대를 선택해주세요"
+      }
     }
   }
 } 

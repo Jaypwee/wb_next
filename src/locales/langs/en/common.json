@@ -1,11 +1,37 @@
 {
   "auth": {
+    "common": {
+      "email": "Email",
+      "password": "Password"
+    },
     "signIn": {
       "banner_title_1": "Come online for WAR",
       "banner_title_2": "WB!! WB!!",
-      "banner_title_3": "Activity brings victory",
-      "email": "Email",
-      "password": "Password"
+      "banner_title_3": "Activity brings victory"
+    },
+    "signUp": {
+      "nickname": "In-game Name",
+      "nicknamePlaceholder": "e.g) Elega",
+      "gameuid": "Game UID",
+      "gameuidPlaceholder": "e.g) 11595837",
+      "nationality": "Nationality",
+      "mainTroops": "Main Troop Type",
+      "allRounder": "All Rounder",
+      "infantry": "Infantry",
+      "cavalry": "Cavalry",
+      "archer": "Archer",
+      "mage": "Mage",
+      "title": "WB Alliance Registration",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "createAccount": "Create account",
+      "errors": {
+        "nicknameRequired": "In-game name is required",
+        "gameuidRequired": "Game UID is required",
+        "gameuidInvalid": "Game UID must be exactly 8 numbers",
+        "nationalityRequired": "Nationality is required",
+        "mainTroopsRequired": "Main troop type is required"
+      }
     }
   }
 } 

@@ -24,13 +24,6 @@ import { AUTH, FIRESTORE } from 'src/lib/firebase';
 export const signInWithPassword = async ({ email, password }) => {
   try {
     await _signInWithEmailAndPassword(AUTH, email, password);
-
-    const user = AUTH.currentUser;
-    console.log(user);
-
-    if (!user?.emailVerified) {
-      throw new Error('Email not verified!');
-    }
   } catch (error) {
     console.error('Error during sign in with password:', error);
     throw error;
@@ -64,22 +57,19 @@ export const signInWithTwitter = async () => {
 
 // ----------------------------------------------------------------------
 
-export const signUp = async ({ email, password, firstName, lastName }) => {
+export const signUp = async ({ email, password, nickname, gameuid, nationality, mainTroops }) => {
   try {
     const newUser = await _createUserWithEmailAndPassword(AUTH, email, password);
-
-    /*
-     * (1) If skip emailVerified
-     * Remove : await _sendEmailVerification(newUser.user);
-     */
-    await _sendEmailVerification(newUser.user);
 
     const userProfile = doc(collection(FIRESTORE, 'users'), newUser.user?.uid);
 
     await setDoc(userProfile, {
       uid: newUser.user?.uid,
       email,
-      displayName: `${firstName} ${lastName}`,
+      nickname,
+      gameuid,
+      nationality,
+      mainTroops,
     });
   } catch (error) {
     console.error('Error during sign up:', error);
