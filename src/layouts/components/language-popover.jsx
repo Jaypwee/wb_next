@@ -9,12 +9,13 @@ import IconButton from '@mui/material/IconButton';
 import { FlagIcon } from 'src/components/flag-icon';
 import { CustomPopover } from 'src/components/custom-popover';
 import { varTap, varHover, transitionTap } from 'src/components/animate';
+import { useTranslate } from 'src/locales';
 
 // ----------------------------------------------------------------------
 
 export function LanguagePopover({ data = [], sx, ...other }) {
   const { open, anchorEl, onClose, onOpen } = usePopover();
-
+  const { onChangeLang } = useTranslate();
   const [locale, setLocale] = useState(data[0].value);
 
   const currentLang = data.find((lang) => lang.value === locale);
@@ -22,6 +23,7 @@ export function LanguagePopover({ data = [], sx, ...other }) {
   const handleChangeLang = useCallback(
     (newLang) => {
       setLocale(newLang);
+      onChangeLang(newLang);
       onClose();
     },
     [onClose]

@@ -1,6 +1,6 @@
-import { varAlpha } from 'minimal-shared/utils';
+'use client';
+
 import { m } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 
 import Box from '@mui/material/Box';
@@ -8,13 +8,14 @@ import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 
 import { CONFIG } from 'src/global-config';
-
+import { useTranslate } from 'src/locales';
 // ----------------------------------------------------------------------
 
 const BANNER_TITLES = [
   'auth.signIn.banner_title_1',
   'auth.signIn.banner_title_2',
   'auth.signIn.banner_title_3',
+  'auth.signIn.banner_title_4',
 ];
 
 // ----------------------------------------------------------------------
@@ -25,11 +26,11 @@ export function AuthSplitSection({
   subtitle = 'More effectively with optimized workflows.',
   ...other
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   const randomTitle = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * BANNER_TITLES.length);
-    return t(BANNER_TITLES[randomIndex]);
+    return BANNER_TITLES[randomIndex];
   }, []); 
 
   return (
@@ -116,7 +117,7 @@ export function AuthSplitSection({
             mb: 2,
           }}
         >
-          {randomTitle}
+          {t(randomTitle)}
         </Typography>
 
         {subtitle && (

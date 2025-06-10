@@ -2,12 +2,23 @@
   "auth": {
     "common": {
       "email": "이메일",
-      "password": "비밀번호"
+      "password": "비밀번호",
+      "emailRequired": "이메일을 입력해주세요",
+      "invalidEmail": "유효한 이메일 주소를 입력해주세요",
+      "passwordRequired": "비밀번호를 입력해주세요",
+      "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다"
     },
     "signIn": {
       "banner_title_1": "어서와, 오늘도 전쟁이야",
       "banner_title_2": "WB!! WB!!",
-      "banner_title_3": "액티브는 곧 우승이다"
+      "banner_title_3": "액티브는 곧 우승이다",
+      "banner_title_4": "큼쪽이가 되지 말자",
+      "title": "계정에 로그인",
+      "description": "계정이 없으신가요?",
+      "getStarted": "시작하기",
+      "forgotPassword": "비밀번호를 잊으셨나요?",
+      "signInButton": "로그인",
+      "loading": "로그인 중..."
     },
     "signUp": {
       "nickname": "인게임 이름",
@@ -33,5 +44,22 @@
         "mainTroopsRequired": "주력 부대를 선택해주세요"
       }
     }
+  },
+  "nav": {
+    "dashboard": {
+      "title": "종합 통계",
+      "merits": "전공",
+      "kills": "킬",
+      "deaths": "데스",
+      "heals": "힐",
+      "Bastion": "보루전"
+    },
+    "hallOfFame": {
+      "title": "활동 명예의 전당",
+      "kills": "킬",
+      "deaths": "데스",
+      "heals": "힐",
+      "Bastion": "보루전전"
+    }
   }
-} 
+}

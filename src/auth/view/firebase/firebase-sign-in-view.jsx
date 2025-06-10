@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useBoolean } from 'minimal-shared/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -34,27 +35,25 @@ import {
 
 // ----------------------------------------------------------------------
 
-export const SignInSchema = zod.object({
-  email: zod
-    .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
-  password: zod
-    .string()
-    .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
-});
-
-// ----------------------------------------------------------------------
-
 export function FirebaseSignInView() {
   const router = useRouter();
-
+  const { t } = useTranslation();
   const showPassword = useBoolean();
 
   const { checkUserSession } = useAuthContext();
 
   const [errorMessage, setErrorMessage] = useState('');
+
+  const SignInSchema = zod.object({
+    email: zod
+      .string()
+      .min(1, { message: t('auth.common.emailRequired') })
+      .email({ message: t('auth.common.invalidEmail') }),
+    password: zod
+      .string()
+      .min(1, { message: t('auth.common.passwordRequired') })
+      .min(6, { message: t('auth.common.passwordMinLength') }),
+  });
 
   const defaultValues = {
     email: '',
@@ -87,7 +86,11 @@ export function FirebaseSignInView() {
 
   const renderForm = () => (
     <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
-      <Field.Text name="email" label="Email address" slotProps={{ inputLabel: { shrink: true } }} />
+      <Field.Text 
+        name="email" 
+        label={t('auth.common.email')} 
+        slotProps={{ inputLabel: { shrink: true } }} 
+      />
 
       <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column' }}>
         <Link
@@ -97,12 +100,12 @@ export function FirebaseSignInView() {
           color="inherit"
           sx={{ alignSelf: 'flex-end' }}
         >
-          Forgot password?
+          {t('auth.signIn.forgotPassword')}
         </Link>
 
         <Field.Text
           name="password"
-          label="Password"
+          label={t('auth.common.password')}
           placeholder="6+ characters"
           type={showPassword.value ? 'text' : 'password'}
           slotProps={{
@@ -129,9 +132,9 @@ export function FirebaseSignInView() {
         type="submit"
         variant="contained"
         loading={isSubmitting}
-        loadingIndicator="Sign in..."
+        loadingIndicator={t('auth.signIn.loading')}
       >
-        Sign in
+        {t('auth.signIn.signInButton')}
       </Button>   
     </Box>
   );
@@ -139,12 +142,12 @@ export function FirebaseSignInView() {
   return (
     <>
       <FormHead
-        title="Sign in to your account"
+        title={t('auth.signIn.title')}
         description={
           <>
-            {`Don’t have an account? `}
+            {t('auth.signIn.description')}{' '}
             <Link component={RouterLink} href={paths.auth.firebase.signUp} variant="subtitle2">
-              Get started
+              {t('auth.signIn.getStarted')}
             </Link>
           </>
         }

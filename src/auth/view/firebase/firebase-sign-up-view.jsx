@@ -94,31 +94,21 @@ export function FirebaseSignUpView() {
     formState: { isSubmitting },
   } = methods;
 
-  const createRedirectPath = (query) => {
-    const queryString = new URLSearchParams({ email: query }).toString();
-    return `${paths.auth.firebase.verify}?${queryString}`;
-  };
-
   const onSubmit = handleSubmit(async (data) => {
     try {
       await signUp({
         email: data.email,
         password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
         nickname: data.nickname,
         gameuid: data.gameuid,
         nationality: data.nationality,
         mainTroops: data.mainTroops,
       });
 
-      const redirectPath = createRedirectPath(data.email);
-
-      router.push(redirectPath);
+      router.push(paths.auth.firebase.signIn);
     } catch (error) {
       console.error(error);
-      const feedbackMessage = getErrorMessage(error);
-      setErrorMessage(feedbackMessage);
+      setErrorMessage(error.message);
     }
   });
 

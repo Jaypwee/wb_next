@@ -10,6 +10,7 @@ import { usePathname } from 'src/routes/hooks';
 import { NavItem } from './nav-item';
 import { navSectionClasses } from '../styles';
 import { NavUl, NavLi, NavDropdown, NavDropdownPaper } from '../components';
+import { useTranslate } from 'src/locales';
 
 // ----------------------------------------------------------------------
 
@@ -23,6 +24,8 @@ export function NavList({
   enabledRootRedirect,
 }) {
   const theme = useTheme();
+
+  const { t } = useTranslate();
 
   const pathname = usePathname();
 
@@ -52,7 +55,7 @@ export function NavList({
       ref={navItemRef}
       aria-describedby={id}
       // slots
-      title={data.title}
+      title={t(data.title)}
       path={data.path}
       icon={data.icon}
       info={data.info}

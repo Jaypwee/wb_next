@@ -45,7 +45,7 @@ export const navData = [
    * Overview
    */
   {
-    subheader: 'Overview',
+    subheader: 'Test',
     items: [
       {
         title: 'One',
@@ -61,16 +61,16 @@ export const navData = [
    * Management
    */
   {
-    subheader: 'Management',
+    subheader: 'Metrics',
     items: [
       {
         title: 'Group',
         path: paths.dashboard.group.root,
         icon: ICONS.user,
         children: [
-          { title: 'Four', path: paths.dashboard.group.root },
-          { title: 'Five', path: paths.dashboard.group.five },
-          { title: 'Six', path: paths.dashboard.group.six },
+          { title: '전공', path: paths.dashboard.group.root },
+          { title: '부대 처치', path: paths.dashboard.group.five },
+          { title: '치유량', path: paths.dashboard.group.six },
         ],
       },
     ],

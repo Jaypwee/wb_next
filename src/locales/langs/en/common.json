@@ -2,15 +2,26 @@
   "auth": {
     "common": {
       "email": "Email",
-      "password": "Password"
+      "password": "Password",
+      "emailRequired": "Email is required!",
+      "invalidEmail": "Email must be a valid email address!",
+      "passwordRequired": "Password is required!",
+      "passwordMinLength": "Password must be at least 6 characters!"
     },
     "signIn": {
-      "banner_title_1": "Come online for WAR",
+      "banner_title_1": "Welcome, it's war again today",
       "banner_title_2": "WB!! WB!!",
-      "banner_title_3": "Activity brings victory"
+      "banner_title_3": "Activity is Victory",
+      "banner_title_4": "Let's not be KM",
+      "title": "Sign in to your account",
+      "description": "Don't have an account?",
+      "getStarted": "Get started",
+      "forgotPassword": "Forgot password?",
+      "signInButton": "Sign in",
+      "loading": "Signing in..."
     },
     "signUp": {
-      "nickname": "In-game Name",
+      "nickname": "In-game name",
       "nicknamePlaceholder": "e.g) Elega",
       "gameuid": "Game UID",
       "gameuidPlaceholder": "e.g) 11595837",
@@ -21,7 +32,7 @@
       "cavalry": "Cavalry",
       "archer": "Archer",
       "mage": "Mage",
-      "title": "WB Alliance Registration",
+      "title": "WB Sign Up",
       "alreadyHaveAccount": "Already have an account?",
       "signIn": "Sign in",
       "createAccount": "Create account",
@@ -33,5 +44,25 @@
         "mainTroopsRequired": "Main troop type is required"
       }
     }
+  },
+  "nav": {
+    "dashboard": {
+      "title": "Metrics",
+      "merits": "Merits",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "heals": "Heals",
+      "Bastion": "Bastion"
+    },
+    "hallOfFame": {
+      "title": "Hall of Fame",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "heals": "Heals",
+      "Bastion": "Bastion"
+    }
+
+    
+    
   }
 } 
