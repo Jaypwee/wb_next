@@ -8,10 +8,10 @@ import { primary } from 'src/theme/core/palette';
 import { themeConfig, ThemeProvider } from 'src/theme';
 import { I18nProvider, LocalizationProvider } from 'src/locales';
 
-
 import { ProgressBar } from 'src/components/progress-bar';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import { detectSettings } from 'src/components/settings/server';
+import { QueryProvider } from 'src/components/providers/query-provider';
 import { SettingsDrawer, defaultSettings, SettingsProvider } from 'src/components/settings';
 
 import { AuthProvider } from 'src/auth/context/firebase';
@@ -61,7 +61,7 @@ export default async function RootLayout({ children }) {
           modeStorageKey={themeConfig.modeStorageKey}
           attribute={themeConfig.cssVariables.colorSchemeSelector}
           defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
-      />
+        />
         <I18nProvider lang={appConfig.i18nLang}>
           <AuthProvider>
             <SettingsProvider
@@ -74,11 +74,13 @@ export default async function RootLayout({ children }) {
                     modeStorageKey={themeConfig.modeStorageKey}
                     defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
                   >
-                    <MotionLazy>
-                      <ProgressBar />
-                      <SettingsDrawer defaultSettings={defaultSettings} />
-                      {children}
-                    </MotionLazy>
+                    <QueryProvider>
+                      <MotionLazy>
+                        <ProgressBar />
+                        <SettingsDrawer defaultSettings={defaultSettings} />
+                        {children}
+                      </MotionLazy>
+                    </QueryProvider>
                   </ThemeProvider>
                 </AppRouterCacheProvider>
               </LocalizationProvider>

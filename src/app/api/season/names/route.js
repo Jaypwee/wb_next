@@ -18,7 +18,7 @@ export async function GET() {
         const seasonEnd = new Date(data.season_end);
         if (!latestDate || seasonEnd > latestDate) {
           latestDate = seasonEnd;
-          currentSeason = data.season_name;
+          currentSeason = doc.id;
         }
       }
     });
@@ -26,7 +26,7 @@ export async function GET() {
     const sheetIds = querySnapshot.docs.map(doc => doc.id);
 
     return new Response(JSON.stringify({
-      sheetIds,
+      total_seasons: sheetIds,
       current_season: currentSeason
     }), {
       status: 200,

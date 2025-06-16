@@ -14,26 +14,29 @@ export async function GET(request) {
       });
     }
 
-    // Query Firestore for the sheet with matching season_name
-    const sheetsRef = adminDb.collection('sheets');
-    const querySnapshot = await sheetsRef.where('season_name', '==', seasonName).get();
+    // Get the document directly by ID
+    const sheetDoc = await adminDb.collection('sheets').doc(seasonName).get();
 
-    if (querySnapshot.empty) {
+    if (!sheetDoc.exists) {
       return new Response(JSON.stringify({ error: 'No sheet found with the provided season name' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Get the first matching document
-    const sheetDoc = querySnapshot.docs[0];
     const sheetData = sheetDoc.data();
 
     // Filter keys that match the date format (YYYY-MM-DD)
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     const dateKeys = Object.keys(sheetData).filter(key => dateRegex.test(key));
 
-    return new Response(JSON.stringify(dateKeys), {
+    // Create an object with week labels
+    const datesWithWeeks = dateKeys.reduce((acc, date, index) => {
+      acc[date] = `Week ${index + 1}`;
+      return acc;
+    }, {});
+
+    return new Response(JSON.stringify(datesWithWeeks), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

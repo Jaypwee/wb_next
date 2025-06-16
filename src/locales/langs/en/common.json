@@ -45,6 +45,14 @@
       }
     }
   },
+  "dashboard": {
+    "admin": {
+      "title": "Admin",
+      "upload": "Upload",
+      "individualReportUpload": "Individual Report Upload",
+      "kvkReportUpload": "KvK Season Total Server Statistics Upload (WIP)"
+    }
+  },
   "nav": {
     "dashboard": {
       "title": "Metrics",

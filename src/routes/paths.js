@@ -33,6 +33,7 @@ export const paths = {
     root: ROOTS.DASHBOARD,
     two: `${ROOTS.DASHBOARD}/two`,
     three: `${ROOTS.DASHBOARD}/three`,
+    admin: `${ROOTS.DASHBOARD}/admin`,
     group: {
       root: `${ROOTS.DASHBOARD}/metrics`,
       five: `${ROOTS.DASHBOARD}/group/five`,

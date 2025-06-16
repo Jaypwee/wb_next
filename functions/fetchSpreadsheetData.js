@@ -37,162 +37,47 @@ exports.daily_update = onRequest(
       const range = req.query.range || 'db_current_metrics!B3:J';
       logger.info(`Working with data from spreadsheet ID: ${SHEET_ID}, range: ${range}`, { structuredData: true });
 
-      // If season_name is in the 'season_start_metrics' collection, we do not need to update.
-      const season_start_sheet_ref = db.collection('season_start_metrics').doc(season_name);
-      const season_start_doc = await season_start_sheet_ref.get();
-      let season_start_obj = {};
-
-      if (!season_start_doc.exists) {  
-        const season_start_metrics = await sheets.spreadsheets.values.get({
-          spreadsheetId: SHEET_ID,
-          range: 'db_season_start!C6:J',
-        });
-
-        const season_start_rows = season_start_metrics.data.values;
-
-        for (const row of season_start_rows) {
-          const gameuid = row[0];
-          const season_highest_power = row[2];
-          const season_deaths = row[5]
-          const season_kills = row[6]
-          const season_heals = row[7]
-
-          season_start_obj[gameuid] = {
-            season_highest_power,
-            season_deaths,
-            season_kills,
-            season_heals
-          }
-        }
-
-        batch.set(season_start_sheet_ref, season_start_obj);
-    } else {
-      season_start_obj = season_start_doc.data();
-      logger.info('Retrieved season start data from Firestore:', {
-        season_name,
-        season_start_obj,
-        timestamp: new Date().toISOString()
-      }, { structuredData: true });
-    }
-
-      const current_metrics = await sheets.spreadsheets.values.get({
+      const sheet_actives = await sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID,
-        range: range,
+        range: 'S5 조사 대상 선정!B6:D',
       });
 
-      const sheet_dates = await sheets.spreadsheets.values.get({
-        spreadsheetId: SHEET_ID,
-        range: 'db_current_metrics!R3:R4',
-      });
+      const actives = sheet_actives.data.values;
 
-      const [[start], [end]] = sheet_dates.data.values;
-      
-      // Format the date string using Date object
-      const [year, month, day] = end.split('.').map(part => part.trim());
-      const key = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      
-      const rows = current_metrics.data.values;
-      const obj = {};
-
-      const sheetRef = db.collection('sheets').doc(season_name);
-
-      // Process rows sequentially to handle async operations
-      for (const row of rows) {
-        const gameuid = row[0];
-        if (inactives.has(gameuid)) {
+      // Process actives data and write to user database
+      for (const row of actives) {
+        // Skip if row is empty or user is inactive
+        if (!row || row.length < 3 || row[2] === '비활동') {
           continue;
         }
 
-        const highest_power = row[1];
-        const current_power = row[2];
-        const merits = row[3];
-        const total_deaths = row[4];
-        const total_kills = row[5];
-        const total_heals = row[6];
-        const nickname = row[8];
+        const nickname = row[0];
+        const gameuid = row[1];
 
-
-        const season_kills = parseInt((total_kills || '0').replace(/,/g, '')) - parseInt((season_start_obj[gameuid]?.season_kills || '0').replace(/,/g, ''));
-        const season_deaths = parseInt((total_deaths || '0').replace(/,/g, '')) - parseInt((season_start_obj[gameuid]?.season_deaths || '0').replace(/,/g, ''));
-        const season_heals = parseInt((total_heals || '0').replace(/,/g, '')) - parseInt((season_start_obj[gameuid]?.season_heals || '0').replace(/,/g, ''));
-
-        // Add to sheets collection object
-        obj[gameuid] = {
-          highest_power,
-          current_power,
-          merits,
-          total_deaths,
-          total_kills,
-          total_heals,
-          season_kills,
-          season_deaths,
-          season_heals,
-          nickname
-        };
-
-        // Find the user document where uid matches
-        const usersSnapshot = await db.collection('users')
-          .where('gameuid', '==', gameuid)
-          .limit(1)
-          .get();
-
-        if (!usersSnapshot.empty) {
-          const userDoc = usersSnapshot.docs[0];
-          batch.update(userDoc.ref, {
-            highest_power,
-            current_power,
-            merits,
-            total_deaths,
-            total_kills,
-            total_heals,
-            last_updated: new Date()
-          });
-
-          const user_snapshot_data = userDoc.data();
-          const user_troop_type = user_snapshot_data.mainTroops;
-
-          obj[gameuid].user_troop_type = user_troop_type;
-        }
-      }
-
-      if (rows && rows.length) {
+        // Create or update user document
+        const userRef = db.collection('users').doc(gameuid);
+        
         try {
-          // First check if document exists
-          const doc = await sheetRef.get();
- 
-          if (!doc.exists) {
-            // If document doesn't exist, create it with initial data
-            batch.set(sheetRef, {
-              season_start,
-              season_end,
-              [key]: obj
-            });
-          } else {
-            // If document exists, update it with new key-value pair
-            batch.update(sheetRef, {
-              [key]: obj
-            });
-          }
-
-          // Commit the batch
-          await batch.commit();
+          await userRef.set({
+            nickname,
+            gameuid,
+            last_updated: new Date()
+          }, { merge: true });
           
-          res.status(200).json({
-            message: `Successfully retrieved and stored data for season: ${season_name}`,
-            rowCount: rows.length,
-            data: obj,
-          });
-        } catch (firestoreError) {
-          logger.error('Error updating Firestore:', firestoreError);
-          throw firestoreError;
+          logger.info(`Successfully processed user: ${nickname} (${gameuid})`, { structuredData: true });
+        } catch (error) {
+          logger.error(`Error processing user ${gameuid}:`, error, { structuredData: true });
         }
-      } else {
-        logger.info('No data found for the specified range.', { structuredData: true });
-        res.status(200).json({
-          message: 'No data found for the specified range.',
-          data: {},
-        });
       }
+
+      // Commit the batch
+      await batch.commit();
+      
+      res.status(200).json({
+        message: `Successfully retrieved and stored data for season: ${season_name}`,
+        rowCount: actives.length
+      });
+
     } catch (error) {
       logger.error('Error:', error.message, error.stack, { structuredData: true });
       const detailedError = error.response && error.response.data ? error.response.data.error : error.message;

@@ -1,11 +1,8 @@
-'use client';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
-import { Chart, useChart } from 'src/components/chart';
+import { ChartClient } from './chart-client';
 
 // ----------------------------------------------------------------------
 
@@ -33,32 +30,6 @@ const CHART_DATA = {
 };
 
 export function MetricsBarChart() {
-  const theme = useTheme();
-
-  const chartColors = [hexAlpha(theme.palette.primary.dark, 0.8)];
-
-  const chartOptions = useChart({
-    colors: chartColors,
-    stroke: { width: 0 },
-    xaxis: { 
-      categories: CHART_DATA.categories,
-      range: 8
-    },
-    tooltip: {
-      y: { 
-        formatter: (value) => `${value} units`,
-        title: { formatter: () => '' }
-      },
-    },
-    plotOptions: { 
-      bar: { 
-        horizontal: true,
-        barHeight: '70%',
-        borderRadius: 2,
-      } 
-    },
-  });
-
   return (
     <Card sx={{ height: '100%' }}>
       <CardHeader 
@@ -67,20 +38,20 @@ export function MetricsBarChart() {
       />
 
       <Box sx={{ 
-        height: '400px', // Subtract header height
-        overflow: 'hidden', // Hide overflow
+        height: '400px',
+        overflow: 'hidden',
       }}>
         <Box sx={{ 
           height: '100%',
-          overflowY: 'auto', // Enable vertical scrolling
+          overflowY: 'auto',
           '& .apexcharts-canvas': {
             minWidth: '100%',
           },
         }}>
-          <Chart
+          <ChartClient
             type="bar"
             series={CHART_DATA.series}
-            options={chartOptions}
+            categories={CHART_DATA.categories}
             sx={{ 
               p: 3,
               minWidth: '100%',

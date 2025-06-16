@@ -9,7 +9,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 // ----------------------------------------------------------------------
 
-export function BlankView({ title = 'Blank', sx }) {
+export function BarChartView({ title = 'Metric', sx }) {
   const renderContent = () => (
     <Box
       sx={[

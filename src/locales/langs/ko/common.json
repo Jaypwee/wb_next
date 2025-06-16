@@ -45,6 +45,14 @@
       }
     }
   },
+  "dashboard": {
+    "admin": {
+      "title": "관리자 페이지",
+      "upload": "업로드",
+      "individualReportUpload": "주간 전공 보고 업로드",
+      "kvkReportUpload": "KvK 시즌 전체 서버 통계 업로드 (개발중)"
+    }
+  },
   "nav": {
     "dashboard": {
       "title": "종합 통계",

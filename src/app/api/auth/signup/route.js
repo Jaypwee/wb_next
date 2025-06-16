@@ -17,6 +17,16 @@ export async function POST(request) {
       );
     }
 
+    // Check if user exists in users collection
+    const userDoc = await usersRef.doc(gameuid).get();
+    
+    if (!userDoc.exists) {
+      return NextResponse.json(
+        { error: 'This user is not permitted to sign up' },
+        { status: 403 }
+      );
+    }
+
     // Create user in Firebase Auth
     const userRecord = await adminAuth.createUser({
       email,
@@ -24,7 +34,7 @@ export async function POST(request) {
     });
 
     // Create user profile in Firestore
-    await usersRef.doc(userRecord.uid).set({
+    await usersRef.doc(gameuid).set({
       uid: userRecord.uid,
       email,
       nickname,
