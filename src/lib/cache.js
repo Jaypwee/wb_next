@@ -44,85 +44,155 @@ const CACHE_CONFIG = {
 // Redis client instance
 let redisClient = null;
 let redisAvailable = false;
+let connectionPromise = null; // Track connection promise to avoid multiple simultaneous connections
 
 /**
- * Initialize Redis connection
+ * Initialize Redis connection (lazy initialization)
  */
 async function initRedis() {
-  if ((!CACHE_CONFIG.redis.url && !CACHE_CONFIG.redis.host) || redisClient) {
-    return;
+  // Return existing connection if available
+  if (redisClient && redisAvailable) {
+    return redisClient;
   }
 
-  try {
-    let redisConfig;
-    
-    // Use URL if provided, otherwise use individual parameters
-    if (CACHE_CONFIG.redis.url) {
-      redisConfig = {
-        ...CACHE_CONFIG.redis,
-        // URL takes precedence, but individual params can override
-        ...(CACHE_CONFIG.redis.password && { password: CACHE_CONFIG.redis.password }),
-        ...(CACHE_CONFIG.redis.username && { username: CACHE_CONFIG.redis.username }),
-      };
-    } else {
-      redisConfig = {
-        host: CACHE_CONFIG.redis.host,
-        port: CACHE_CONFIG.redis.port,
-        password: CACHE_CONFIG.redis.password,
-        username: CACHE_CONFIG.redis.username,
-        db: CACHE_CONFIG.redis.db,
-        retryDelayOnFailover: CACHE_CONFIG.redis.retryDelayOnFailover,
-        maxRetriesPerRequest: CACHE_CONFIG.redis.maxRetriesPerRequest,
-        lazyConnect: CACHE_CONFIG.redis.lazyConnect,
-        connectTimeout: CACHE_CONFIG.redis.connectTimeout,
-        commandTimeout: CACHE_CONFIG.redis.commandTimeout,
-        retryDelayOnClusterDown: CACHE_CONFIG.redis.retryDelayOnClusterDown,
-        enableOfflineQueue: CACHE_CONFIG.redis.enableOfflineQueue,
-        retryStrategy: CACHE_CONFIG.redis.retryStrategy,
-      };
+  // Return existing connection promise to avoid multiple simultaneous connections
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  // Skip if no Redis configuration
+  if (!CACHE_CONFIG.redis.url && !CACHE_CONFIG.redis.host) {
+    return null;
+  }
+
+  connectionPromise = (async () => {
+    try {
+      let redisConfig;
+      
+      // Use URL if provided, otherwise use individual parameters
+      if (CACHE_CONFIG.redis.url) {
+        redisConfig = {
+          ...CACHE_CONFIG.redis,
+          // URL takes precedence, but individual params can override
+          ...(CACHE_CONFIG.redis.password && { password: CACHE_CONFIG.redis.password }),
+          ...(CACHE_CONFIG.redis.username && { username: CACHE_CONFIG.redis.username }),
+        };
+      } else {
+        redisConfig = {
+          host: CACHE_CONFIG.redis.host,
+          port: CACHE_CONFIG.redis.port,
+          password: CACHE_CONFIG.redis.password,
+          username: CACHE_CONFIG.redis.username,
+          db: CACHE_CONFIG.redis.db,
+          retryDelayOnFailover: CACHE_CONFIG.redis.retryDelayOnFailover,
+          maxRetriesPerRequest: CACHE_CONFIG.redis.maxRetriesPerRequest,
+          lazyConnect: true, // Changed to true for lazy connection
+          connectTimeout: CACHE_CONFIG.redis.connectTimeout,
+          commandTimeout: CACHE_CONFIG.redis.commandTimeout,
+          retryDelayOnClusterDown: CACHE_CONFIG.redis.retryDelayOnClusterDown,
+          enableOfflineQueue: CACHE_CONFIG.redis.enableOfflineQueue,
+          retryStrategy: CACHE_CONFIG.redis.retryStrategy,
+        };
+      }
+      
+      redisClient = new Redis(redisConfig);
+
+      redisClient.on('connect', () => {
+        console.log('Redis connected successfully');
+        redisAvailable = true;
+      });
+
+      redisClient.on('ready', () => {
+        console.log('Redis ready for commands');
+        redisAvailable = true;
+      });
+
+      redisClient.on('error', (error) => {
+        console.error('Redis connection error:', error.message);
+        redisAvailable = false;
+      });
+
+      redisClient.on('close', () => {
+        console.log('Redis connection closed');
+        redisAvailable = false;
+      });
+
+      redisClient.on('reconnecting', (delay) => {
+        console.log(`Redis reconnecting in ${delay}ms...`);
+        redisAvailable = false;
+      });
+
+      redisClient.on('end', () => {
+        console.log('Redis connection ended');
+        redisAvailable = false;
+        redisClient = null;
+        connectionPromise = null;
+      });
+
+      // Test the connection
+      await redisClient.ping();
+      
+      return redisClient;
+    } catch (error) {
+      console.error('Failed to initialize Redis:', error.message);
+      redisAvailable = false;
+      redisClient = null;
+      connectionPromise = null;
+      throw error;
     }
-    
-    redisClient = new Redis(redisConfig);
+  })();
 
-    redisClient.on('connect', () => {
-      console.log('Redis connected successfully');
-      redisAvailable = true;
-    });
-
-    redisClient.on('ready', () => {
-      console.log('Redis ready for commands');
-      redisAvailable = true;
-    });
-
-    redisClient.on('error', (error) => {
-      console.error('Redis connection error:', error.message);
-      redisAvailable = false;
-    });
-
-    redisClient.on('close', () => {
-      console.log('Redis connection closed');
-      redisAvailable = false;
-    });
-
-    redisClient.on('reconnecting', (delay) => {
-      console.log(`Redis reconnecting in ${delay}ms...`);
-      redisAvailable = false;
-    });
-
-    redisClient.on('end', () => {
-      console.log('Redis connection ended');
-      redisAvailable = false;
-    });
-
+  try {
+    return await connectionPromise;
   } catch (error) {
-    console.error('Failed to initialize Redis:', error.message);
-    redisAvailable = false;
-    redisClient = null;
+    connectionPromise = null;
+    return null;
   }
 }
 
-// Initialize Redis on module load
-initRedis()
+/**
+ * Get Redis client with lazy initialization
+ */
+async function getRedisClient() {
+  if (redisClient && redisAvailable) {
+    return redisClient;
+  }
+  
+  return await initRedis();
+}
+
+/**
+ * Gracefully close Redis connection
+ */
+export async function closeRedis() {
+  if (redisClient) {
+    try {
+      await redisClient.quit();
+      console.log('Redis connection closed gracefully');
+    } catch (error) {
+      console.error('Error closing Redis connection:', error.message);
+    } finally {
+      redisClient = null;
+      redisAvailable = false;
+      connectionPromise = null;
+    }
+  }
+}
+
+// Cleanup on process termination (for development)
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', async () => {
+    console.log('Received SIGINT, closing Redis connection...');
+    await closeRedis();
+    process.exit(0);
+  });
+  
+  process.on('SIGTERM', async () => {
+    console.log('Received SIGTERM, closing Redis connection...');
+    await closeRedis();
+    process.exit(0);
+  });
+}
 
 /**
  * Generate cache key from parameters
@@ -191,10 +261,11 @@ const memoryCacheAdapter = {
 const redisCacheAdapter = {
   async get(key) {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
-      const value = await redisClient.get(key);
+      const value = await client.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
       console.error('Redis get error:', error.message);
@@ -204,11 +275,12 @@ const redisCacheAdapter = {
 
   async set(key, value) {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
       
-      await redisClient.set(key, JSON.stringify(value));
+      await client.set(key, JSON.stringify(value));
       return true;
     } catch (error) {
       console.error('Redis set error:', error.message);
@@ -218,11 +290,12 @@ const redisCacheAdapter = {
 
   async del(key) {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
       
-      await redisClient.del(key);
+      await client.del(key);
       return true;
     } catch (error) {
       console.error('Redis del error:', error.message);
@@ -232,11 +305,12 @@ const redisCacheAdapter = {
 
   async clear() {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
       
-      await redisClient.flushdb();
+      await client.flushdb();
       return true;
     } catch (error) {
       console.error('Redis clear error:', error.message);
@@ -246,11 +320,12 @@ const redisCacheAdapter = {
 
   async size() {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
       
-      return await redisClient.dbsize();
+      return await client.dbsize();
     } catch (error) {
       console.error('Redis size error:', error.message);
       throw error;
@@ -259,11 +334,12 @@ const redisCacheAdapter = {
 
   async keys() {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
       
-      return await redisClient.keys('*');
+      return await client.keys('*');
     } catch (error) {
       console.error('Redis keys error:', error.message);
       throw error;
@@ -272,12 +348,13 @@ const redisCacheAdapter = {
 
   async scanKeys(pattern = '*', count = 100) {
     try {
-      if (!redisAvailable || !redisClient) {
+      const client = await getRedisClient();
+      if (!client) {
         throw new Error('Redis not available');
       }
       
       const keys = [];
-      const stream = redisClient.scanStream({
+      const stream = client.scanStream({
         match: pattern,
         count
       });
@@ -303,15 +380,21 @@ const redisCacheAdapter = {
 /**
  * Get the appropriate cache adapter with fallback
  */
-function getCacheAdapter() {
-  // Use Redis if available and configured, otherwise fall back to memory cache
-  if (redisAvailable && redisClient) {
-    return {
-      adapter: redisCacheAdapter,
-      type: 'redis'
-    };
+async function getCacheAdapter() {
+  // Try to get Redis client
+  try {
+    const client = await getRedisClient();
+    if (client && redisAvailable) {
+      return {
+        adapter: redisCacheAdapter,
+        type: 'redis'
+      };
+    }
+  } catch (error) {
+    console.error('Redis adapter check failed:', error.message);
   }
   
+  // Fall back to memory cache
   return {
     adapter: memoryCacheAdapter,
     type: 'memory'
@@ -330,7 +413,7 @@ export const cache = {
   async get(key) {
     if (!CACHE_CONFIG.enabled) return null;
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       return await adapter.get(key);
@@ -359,7 +442,7 @@ export const cache = {
   async set(key, value) {
     if (!CACHE_CONFIG.enabled) return false;
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       const result = await adapter.set(key, value);
@@ -398,7 +481,7 @@ export const cache = {
   async del(key) {
     if (!CACHE_CONFIG.enabled) return false;
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       const result = await adapter.del(key);
@@ -436,7 +519,7 @@ export const cache = {
   async clear() {
     if (!CACHE_CONFIG.enabled) return false;
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       const result = await adapter.clear();
@@ -472,7 +555,7 @@ export const cache = {
   async size() {
     if (!CACHE_CONFIG.enabled) return 0;
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       return await adapter.size();
@@ -499,7 +582,7 @@ export const cache = {
   async keys() {
     if (!CACHE_CONFIG.enabled) return [];
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       return await adapter.keys();
@@ -528,7 +611,7 @@ export const cache = {
   async scanKeys(pattern = '*', count = 100) {
     if (!CACHE_CONFIG.enabled) return [];
     
-    const { adapter, type } = getCacheAdapter();
+    const { adapter, type } = await getCacheAdapter();
     
     try {
       if (type === 'redis' && adapter.scanKeys) {
@@ -575,11 +658,10 @@ export const cache = {
    * @returns {Object}
    */
   getStatus() {
-    const { type } = getCacheAdapter();
     return {
-      type,
+      type: redisAvailable && redisClient ? 'redis' : 'memory',
       redisAvailable,
-      redisConfigured: !!CACHE_CONFIG.redis.url,
+      redisConfigured: !!(CACHE_CONFIG.redis.url || CACHE_CONFIG.redis.host),
       enabled: CACHE_CONFIG.enabled
     };
   }
@@ -615,7 +697,7 @@ export function withCache(handler, options = {}) {
     // Try to get from cache
     const cached = await cache.get(cacheKey);
     if (cached) {
-      const { type } = getCacheAdapter();
+      const { type } = await getCacheAdapter();
       
       // Return cached response with cache headers
       return new Response(JSON.stringify(cached.data), {
@@ -646,7 +728,7 @@ export function withCache(handler, options = {}) {
         // Cache the response indefinitely
         await cache.set(cacheKey, cacheEntry);
         
-        const { type } = getCacheAdapter();
+        const { type } = await getCacheAdapter();
         
         // Return response with cache headers
         return new Response(JSON.stringify(data), {
