@@ -27,11 +27,11 @@ const CACHE_CONFIG = {
     db: process.env.REDIS_DB ? parseInt(process.env.REDIS_DB) : 0, // Redis database number
     retryDelayOnFailover: 100,
     maxRetriesPerRequest: 3, // Max retry attempts per command
-    lazyConnect: false, // Connect immediately to trigger events
+    lazyConnect: true, // Connect when first command is issued
     connectTimeout: 10000, // 10 second connection timeout
     commandTimeout: 5000, // 5 second command timeout
     retryDelayOnClusterDown: 300, // Delay between retries when cluster is down
-    enableOfflineQueue: false, // Don't queue commands when disconnected
+    enableOfflineQueue: true, // Queue commands when disconnected (changed from false)
     retryStrategy: (times) => {
       // Custom retry strategy with exponential backoff
       const delay = Math.min(times * 500, 2000); // Exponential backoff, max 2 seconds
@@ -62,6 +62,7 @@ async function initRedis() {
 
   // Skip if no Redis configuration
   if (!CACHE_CONFIG.redis.url && !CACHE_CONFIG.redis.host) {
+    console.log('No Redis configuration found, using memory cache');
     return null;
   }
 
@@ -86,7 +87,7 @@ async function initRedis() {
           db: CACHE_CONFIG.redis.db,
           retryDelayOnFailover: CACHE_CONFIG.redis.retryDelayOnFailover,
           maxRetriesPerRequest: CACHE_CONFIG.redis.maxRetriesPerRequest,
-          lazyConnect: true, // Changed to true for lazy connection
+          lazyConnect: CACHE_CONFIG.redis.lazyConnect,
           connectTimeout: CACHE_CONFIG.redis.connectTimeout,
           commandTimeout: CACHE_CONFIG.redis.commandTimeout,
           retryDelayOnClusterDown: CACHE_CONFIG.redis.retryDelayOnClusterDown,
@@ -95,6 +96,7 @@ async function initRedis() {
         };
       }
       
+      console.log('Initializing Redis connection...');
       redisClient = new Redis(redisConfig);
 
       redisClient.on('connect', () => {
@@ -129,8 +131,12 @@ async function initRedis() {
         connectionPromise = null;
       });
 
-      // Test the connection
+      // Wait for connection to be ready before proceeding
+      await redisClient.connect();
+      
+      // Test the connection with a simple ping
       await redisClient.ping();
+      console.log('Redis connection test successful');
       
       return redisClient;
     } catch (error) {
@@ -145,6 +151,7 @@ async function initRedis() {
   try {
     return await connectionPromise;
   } catch (error) {
+    console.error('Redis initialization failed, falling back to memory cache:', error.message);
     connectionPromise = null;
     return null;
   }
@@ -155,6 +162,7 @@ async function initRedis() {
  */
 async function getRedisClient() {
   if (redisClient && redisAvailable) {
+    console.log('Redis client already exists and is available');
     return redisClient;
   }
   
@@ -382,10 +390,15 @@ const redisCacheAdapter = {
  * Get the appropriate cache adapter with fallback
  */
 async function getCacheAdapter() {
+  console.error('=== getCacheAdapter called ===');
+  console.error('Redis available:', redisAvailable);
+  console.error('Redis client exists:', !!redisClient);
+  
   // Try to get Redis client
   try {
     const client = await getRedisClient();
     if (client && redisAvailable) {
+      console.error('Using Redis cache adapter');
       return {
         adapter: redisCacheAdapter,
         type: 'redis'
@@ -396,6 +409,7 @@ async function getCacheAdapter() {
   }
   
   // Fall back to memory cache
+  console.error('Using memory cache adapter');
   return {
     adapter: memoryCacheAdapter,
     type: 'memory'
@@ -675,6 +689,8 @@ export const cache = {
  * @returns {Function} Cached API route handler
  */
 export function withCache(handler, options = {}) {
+
+  
   const {
     keyGenerator = (request) => {
       const url = new URL(request.url);
@@ -687,17 +703,22 @@ export function withCache(handler, options = {}) {
   } = options;
 
   return async function cachedHandler(request, context) {
+    console.error('=== Cache handler executing ===');
+    
     // Skip cache if specified
     if (skipCache(request)) {
+      console.error('Cache skipped by skipCache function');
       return handler(request, context);
     }
 
     // Generate cache key
     const cacheKey = keyGenerator(request);
+    console.error('Cache key:', cacheKey);
 
     // Try to get from cache
     const cached = await cache.get(cacheKey);
     if (cached) {
+      console.error('Cache HIT for key:', cacheKey);
       const { type } = await getCacheAdapter();
       
       // Return cached response with cache headers
@@ -712,6 +733,8 @@ export function withCache(handler, options = {}) {
         }
       });
     }
+
+    console.error('Cache MISS for key:', cacheKey);
 
     // Cache miss - execute handler
     const response = await handler(request, context);
@@ -728,6 +751,7 @@ export function withCache(handler, options = {}) {
         
         // Cache the response indefinitely
         await cache.set(cacheKey, cacheEntry);
+        console.error('Response cached for key:', cacheKey);
         
         const { type } = await getCacheAdapter();
         
@@ -748,6 +772,7 @@ export function withCache(handler, options = {}) {
       }
     }
 
+    console.error('Response not cached (not OK status):', response.status);
     return response;
   };
 } 

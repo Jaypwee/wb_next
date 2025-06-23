@@ -101,7 +101,7 @@ export function MetricsView({ type = 'MERITS' }) {
                 p: { xs: 2, sm: 3, md: 4 },
                 mx: { xs: 1, sm: 2 },
                 width: { xs: '100%', sm: 'auto' },
-                maxWidth: { xs: '100%', sm: '500px' },
+                maxWidth: { xs: '100%', sm: '800px' },
                 border: '1px solid',
                 borderColor: 'divider',
                 borderRadius: 2,
