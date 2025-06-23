@@ -265,6 +265,7 @@ const redisCacheAdapter = {
       if (!client) {
         throw new Error('Redis not available');
       }
+      console.log('Redis get', key);
       const value = await client.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {

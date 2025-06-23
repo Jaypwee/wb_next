@@ -137,7 +137,6 @@ export function HomeHero({ sx, ...other }) {
             startIcon={<Iconify width={24} icon="custom:flash-outline" />}
           >
             <span>
-              Live preview
               <Box
                 component="small"
                 sx={[
@@ -150,22 +149,21 @@ export function HomeHero({ sx, ...other }) {
                   }),
                 ]}
               >
-                v{CONFIG.appVersion}
+                Already in WB?
               </Box>
+              Sign Up
             </span>
           </Button>
 
           <Link
             color="inherit"
             variant="body2"
-            target="_blank"
-            rel="noopener"
-            href={paths.freeUI}
+            href='#'
             underline="always"
             sx={{ gap: 0.75, alignItems: 'center', display: 'inline-flex' }}
           >
             <Iconify width={16} icon="eva:external-link-fill" />
-            Get free version
+            Check out our FAQ
           </Link>
         </Stack>
       </m.div>
@@ -178,10 +176,10 @@ export function HomeHero({ sx, ...other }) {
           target="_blank"
           rel="noopener"
           href={paths.figmaUrl}
-          startIcon={<Iconify width={24} icon="solar:figma-outline" />}
+          startIcon={<Iconify width={24} icon="game-icons:crossed-swords" />}
           sx={{ borderColor: 'text.primary' }}
         >
-          Figma preview
+          Apply Now
         </Button>
       </m.div>
     </Box>
@@ -201,9 +199,22 @@ export function HomeHero({ sx, ...other }) {
           pointerEvents: 'none',
         }),
       ]}
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 0.8, x: 0 }}
-      transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
+      initial={{ opacity: 0, x: 100, y: -50 }}
+      animate={{ 
+        opacity: 0.8, 
+        x: 0,
+        y: [0, 20, 0, 15, 0, 10, 0, 5, 0]
+      }}
+      transition={{ 
+        opacity: { duration: 1, ease: 'easeOut', delay: 0.5 },
+        x: { duration: 1, ease: 'easeOut', delay: 0.5 },
+        y: { 
+          duration: 1, 
+          ease: 'easeOut',
+          delay: 0.5,
+          times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.85, 0.95, 1]
+        }
+      }}
     >
       <Box
         component="img"

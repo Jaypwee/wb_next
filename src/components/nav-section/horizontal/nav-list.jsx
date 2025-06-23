@@ -32,8 +32,6 @@ export function NavList({
 
   const isActive = isActiveLink(pathname, data.path, !!data.children);
 
-  console.log(isActive);
-
   const { open, onOpen, onClose, anchorEl, elementRef: navItemRef } = usePopoverHover();
 
   const isRtl = theme.direction === 'rtl';

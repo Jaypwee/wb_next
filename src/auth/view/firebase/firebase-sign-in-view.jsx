@@ -72,7 +72,6 @@ export function FirebaseSignInView() {
       await checkUserSession?.();
 
       router.refresh();
-      console.log('sign in success');
     } catch (error) {
       console.error(error);
       const feedbackMessage = getErrorMessage(error);  

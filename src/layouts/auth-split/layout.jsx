@@ -33,7 +33,7 @@ export function AuthSplitLayout({ sx, cssVars, children, slotProps, layoutQuery 
       leftArea: (
         <>
           {/** @slot Logo */}
-          <Logo sx={{ paddingTop: 2}} />
+          <Logo sx={{ paddingTop: 1, paddingBottom: 1 }} />
         </>
       ),
       rightArea: (

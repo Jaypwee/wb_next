@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useBoolean } from 'minimal-shared/hooks';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import Popover from '@mui/material/Popover';
+import Typography from '@mui/material/Typography';
 
-import { paths } from 'src/routes/paths';
 import { usePathname } from 'src/routes/hooks';
 
 import { Logo } from 'src/components/logo';
@@ -34,6 +36,8 @@ export function MainLayout({ sx, cssVars, children, slotProps, layoutQuery = 'md
   const { authenticated } = useAuthContext();
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
+  const { value: popoverOpen, onFalse: onPopoverClose, onTrue: onPopoverOpen } = useBoolean();
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const isHomePage = pathname === '/';
 
@@ -60,7 +64,7 @@ export function MainLayout({ sx, cssVars, children, slotProps, layoutQuery = 'md
           <NavMobile data={navData} open={open} onClose={onClose} />
 
           {/** @slot Logo */}
-          <Logo sx={{ paddingTop: '16px' }} />
+          <Logo sx={{ paddingTop: 1, paddingBottom: 1 }} />
         </>
       ),
       rightArea: (
@@ -102,15 +106,16 @@ export function MainLayout({ sx, cssVars, children, slotProps, layoutQuery = 'md
             {/** @slot Purchase button */}
             <Button
               variant="contained"
-              rel="noopener"
-              target="_blank"
-              href={paths.minimalStore}
+              onClick={(event) => {
+                setAnchorEl(event.currentTarget);
+                onPopoverOpen();
+              }}
               sx={(theme) => ({
                 display: 'none',
                 [theme.breakpoints.up(layoutQuery)]: { display: 'inline-flex' },
               })}
             >
-              Purchase
+              Apply
             </Button>
           </Box>
         </>
@@ -154,6 +159,32 @@ export function MainLayout({ sx, cssVars, children, slotProps, layoutQuery = 'md
       sx={sx}
     >
       {renderMain()}
+
+      <Popover
+        open={popoverOpen}
+        anchorEl={anchorEl}
+        onClose={() => {
+          onPopoverClose();
+          setAnchorEl(null);
+        }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <Box sx={{ p: 2, maxWidth: 300 }}>
+          <Typography variant="h6" component="h3" gutterBottom>
+            Apply feature coming soon!
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Application feature is curringly work in progress. Stay tuned!
+          </Typography>
+        </Box>
+      </Popover>
     </LayoutSection>
   );
 }

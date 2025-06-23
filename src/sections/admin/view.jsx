@@ -120,7 +120,6 @@ export function AdminView() {
   const { users, loadUsers, isLoading: usersLoading, error: usersError } = useUserContext();
   
   const { total_seasons } = use(seasonInfoPromise) ?? [];
-  console.log(total_seasons);
 
   const {
     singleFile,

@@ -51,7 +51,6 @@ export function MetricsDropdown({
     startDatesTransition(async () => {
       try {
         const dates = await makeAuthenticatedRequest(() => fetchSeasonDates(selectedSeason));
-        console.log(dates);
         setSeasonDates(dates || []);
       } catch (error) {
         console.error('Error loading season dates:', error);

@@ -24,7 +24,7 @@ export const signInWithPassword = async ({ email, password }) => {
   }
 };
 
-/** **************************************
+/** **************************************`
  * Sign up
  *************************************** */
 
@@ -44,7 +44,7 @@ export const signUp = async ({ email, password, nickname, gameuid, nationality, 
     await _signInWithEmailAndPassword(AUTH, email, password);
   } catch (error) {
     console.error('Error during sign up:', error);
-    const errorMessage = error.response?.data?.error || 'Failed to sign up';
+    const errorMessage = error?.error || 'Failed to sign up';
     throw new Error(errorMessage);
   }
 };

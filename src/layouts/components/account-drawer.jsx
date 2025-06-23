@@ -31,7 +31,6 @@ export function AccountDrawer({ data = [], sx, ...other }) {
   const pathname = usePathname();
 
   const { user } = useAuthContext();
-  console.log(user);
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
