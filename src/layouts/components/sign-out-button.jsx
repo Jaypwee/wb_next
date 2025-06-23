@@ -9,7 +9,7 @@ import { signOut } from 'src/auth/context/firebase/action';
 
 // ----------------------------------------------------------------------
 
-export function SignOutButton({ onClose, sx, ...other }) {
+export function SignOutButton({ onClose, sx, fullWidth = true, ...other }) {
   const router = useRouter();
 
   const { checkUserSession } = useAuthContext();
@@ -33,6 +33,7 @@ export function SignOutButton({ onClose, sx, ...other }) {
       onClick={handleLogout}
       sx={sx}
       {...other}
+      fullWidth={fullWidth}
     >
       Sign Out
     </Button>

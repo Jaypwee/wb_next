@@ -1,6 +1,8 @@
 import { adminDb } from '../../../../lib/firebase-admin';
+import { withAuth } from '../../../../lib/auth-middleware';
+import { withCache, generateCacheKey } from '../../../../lib/cache';
 
-export async function GET(request) {
+async function getHandler(request) {
   try {
     // Get the search params from the URL
     const { searchParams } = new URL(request.url);
@@ -98,3 +100,26 @@ export async function GET(request) {
     });
   }
 }
+
+// Apply authentication and caching
+export const GET = withAuth(
+  withCache(getHandler, {
+    // Custom cache key generator for metrics
+    keyGenerator: (request) => {
+      const { searchParams } = new URL(request.url);
+      return generateCacheKey('metrics-individual', {
+        seasonName: searchParams.get('season_name'),
+        startDate: searchParams.get('start_date'),
+        endDate: searchParams.get('end_date') || 'single'
+      });
+    },
+    // Skip cache for requests with invalid parameters
+    skipCache: (request) => {
+      const { searchParams } = new URL(request.url);
+      const seasonName = searchParams.get('season_name');
+      const startDate = searchParams.get('start_date');
+      
+      return !seasonName || !startDate;
+    }
+  })
+);

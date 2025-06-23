@@ -66,7 +66,6 @@ export function FirebaseSignUpView() {
   };
 
   const mainTroopsOptions = [
-    { label: t('auth.signUp.allRounder'), value: 'allRounder' },
     { label: t('auth.signUp.infantry'), value: 'infantry' },
     { label: t('auth.signUp.cavalry'), value: 'cavalry' },
     { label: t('auth.signUp.archer'), value: 'archer' },

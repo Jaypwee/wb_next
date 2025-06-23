@@ -88,6 +88,7 @@ export function MainLayout({ sx, cssVars, children, slotProps, layoutQuery = 'md
             {authenticated && (
               <SignOutButton
                 variant="contained"
+                fullWidth={false}
                 sx={(theme) => ({
                   display: 'none',
                   [theme.breakpoints.up(layoutQuery)]: { display: 'inline-flex' },

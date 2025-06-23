@@ -20,6 +20,7 @@ import {
 import { METRIC_SERIES, formatDataGridData } from 'src/services/metrics';
 
 import { Iconify } from 'src/components/iconify';
+import { BadgeCell } from 'src/components/badge-cell';
 import { EmptyContent } from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
@@ -109,8 +110,7 @@ function getTroopConfig(troopType) {
     infantry: { icon: 'mdi:shield', color: '#1976d2', label: 'Infantry Main' },
     archer: { icon: 'mdi:bow-arrow', color: '#388e3c', label: 'Archer Main' },
     mage: { icon: 'mdi:magic-staff', color: '#7b1fa2', label: 'Mage Main' },
-    cavalry: { icon: 'mdi:horse-variant', color: '#f57c00', label: 'Cavalry Main' },
-    allRounder: { icon: 'mdi:star', color: '#FFD700', label: 'All Rounder' },
+    cavalry: { icon: 'mdi:horse-variant', color: '#f57c00', label: 'Cavalry Main' }
   };
 
   return troopConfig[troop] || null;
@@ -149,17 +149,6 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
   // Define columns
   const columns = useMemo(() => [
     { 
-      field: 'icon', 
-      headerName: '', 
-      width: 60,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: () => (
-        <Box sx={{ width: 40, height: 40, bgcolor: 'grey.200', borderRadius: 1 }} />
-      ),
-    },
-    { 
       field: 'nationality', 
       headerName: '', 
       width: 60,
@@ -170,7 +159,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
         const userId = params.row.id;
         const userNationality = users?.[userId]?.nationality;
         return (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <NationalityFlag nationality={userNationality} />
           </Box>
         );
@@ -192,12 +181,30 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
       headerName: 'Name', 
       minWidth: 300,
       flex: 1,
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
-          <MedalIcon rank={params.row.rank} />
-          {params.value}
-        </Box>
-      ),
+      renderCell: (params) => {
+        const userId = params.row.id;
+        const userData = users?.[userId];
+        
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <MedalIcon rank={params.row.rank} />
+            <Box sx={{ fontWeight: 'medium', mr: 1 }}>
+              {params.value}
+            </Box>
+            {userData && (
+              <BadgeCell 
+                user={{
+                  uid: userId,
+                  id: userId,
+                  isInfantryGroup: userData.isInfantryGroup,
+                  labels: userData.labels
+                }}
+                showNickname={false}
+              />
+            )}
+          </Box>
+        );
+      },
     },
     { 
       field: 'mainTroops', 

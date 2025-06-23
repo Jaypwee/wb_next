@@ -8,6 +8,7 @@ import Container from '@mui/material/Container';
 
 import { useUserContext } from 'src/context/user';
 import { useMetricsContext } from 'src/context/metrics';
+import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 import { formatChartData, fetchMetricsData } from 'src/services/metrics';
 
 import { useSettingsContext } from 'src/components/settings';
@@ -59,11 +60,11 @@ export function MetricsView({ type = 'MERITS' }) {
       setError(null);
 
       startTransition(async () => {
-        const chartData = await fetchMetricsData({
+        const chartData = await makeAuthenticatedRequest(async () => fetchMetricsData({
           seasonName: selectedSeason,
           startDate,
           endDate,
-        });
+        }));
 
         setSelectedMetrics(chartData);
 

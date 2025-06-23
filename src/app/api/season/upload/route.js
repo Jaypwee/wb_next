@@ -2,6 +2,8 @@ import * as XLSX from 'xlsx';
 import { NextResponse } from 'next/server';
 
 import { adminDb } from 'src/lib/firebase-admin';
+import { withAuthAndRole } from 'src/lib/auth-middleware';
+import { invalidateAllSeasonIndividualMetrics } from 'src/lib/cache-invalidation';
 
 const REQUIRED_COLUMNS = {
   0: 'Lord ID',
@@ -17,7 +19,7 @@ const REQUIRED_COLUMNS = {
   34: 'Gems Spent'
 };
 
-export async function POST(request) {
+async function postHandler(request) {
   try {
     // Get the file and metadata from the request
     const formData = await request.formData();
@@ -192,6 +194,15 @@ export async function POST(request) {
       });
     }
 
+    // Invalidate cache for this season after successful upload
+    try {
+      await invalidateAllSeasonIndividualMetrics(seasonName);
+      console.log('Cache invalidated successfully for season:', seasonName);
+    } catch (cacheError) {
+      // Log cache error but don't fail the upload
+      console.error('Cache invalidation failed:', cacheError);
+    }
+
     return NextResponse.json({ 
       processedSheets: targetSheets,
       seasonName,
@@ -207,3 +218,5 @@ export async function POST(request) {
     );
   }
 }
+
+export const POST = withAuthAndRole(postHandler, 'admin');

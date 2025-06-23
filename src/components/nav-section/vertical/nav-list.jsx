@@ -16,8 +16,6 @@ export function NavList({ data, depth, render, slotProps, checkPermissions, enab
 
   const isActive = isActiveLink(pathname, data.path, !!data.children);
 
-  console.log(isActive);
-
   const { value: open, onFalse: onClose, onToggle } = useBoolean(isActive);
 
   useEffect(() => {

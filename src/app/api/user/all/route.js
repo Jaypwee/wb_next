@@ -29,6 +29,7 @@ async function getAllUsersHandler(request) {
         unitsDead: data.unitsDead || null,
         manaSpent: data.manaSpent || null,
         isInfantryGroup: data.isInfantryGroup || false,
+        labels: data.labels || [],
       };
     });
 

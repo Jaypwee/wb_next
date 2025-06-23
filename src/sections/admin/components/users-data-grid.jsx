@@ -5,6 +5,7 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
+import LabelIcon from '@mui/icons-material/Label';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -19,9 +20,11 @@ import {
   GridToolbarDensitySelector,
 } from '@mui/x-data-grid';
 
+import { BadgeCell } from 'src/components/badge-cell';
 import { EmptyContent } from 'src/components/empty-content';
 
 import AddUsersDialog from './add-users-dialog';
+import AddLabelDialog from './add-label-dialog';
 import DeleteConfirmationDialog from './delete-confirmation-dialog';
 
 // ----------------------------------------------------------------------
@@ -48,6 +51,7 @@ const UsersDataGrid = React.memo(({
 }) => {
   const [filterButtonEl, setFilterButtonEl] = useState(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addLabelDialogOpen, setAddLabelDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Memoize rows conversion to prevent recreation on every render
@@ -57,6 +61,8 @@ const UsersDataGrid = React.memo(({
       id: uid,
       uid,
       nickname: userData.nickname || 'N/A',
+      labels: userData.labels || [],
+      isInfantryGroup: userData.isInfantryGroup || false,
       highestPower: userData.highestPower || 0,
       unitsKilled: userData.unitsKilled || 0,
       unitsDead: userData.unitsDead || 0,
@@ -80,13 +86,19 @@ const UsersDataGrid = React.memo(({
     {
       field: 'nickname',
       headerName: 'Nickname',
-      minWidth: 200,
+      minWidth: 300,
       flex: 1,
       sortable: true,
       renderCell: (params) => (
-        <Box sx={{ fontWeight: 'medium' }}>
-          {params.value}
-        </Box>
+        <BadgeCell 
+          user={{
+            uid: params.row.uid,
+            nickname: params.value,
+            isInfantryGroup: params.row.isInfantryGroup,
+            labels: params.row.labels
+          }}
+          showNickname
+        />
       ),
     },
     {
@@ -163,6 +175,10 @@ const UsersDataGrid = React.memo(({
     [`& .${gridClasses.cell}`]: {
       alignItems: 'center',
       display: 'inline-flex',
+      // Force override any height styles on direct children
+      '& > * > .MuiLabel-root': {
+        height: '24px !important',
+      }
     },
     [`& .${gridClasses.row}`]: {
       '&:hover': {
@@ -186,8 +202,20 @@ const UsersDataGrid = React.memo(({
     }
   };
 
+  const handleLabelsAdded = (userIds, labelType) => {
+    console.log('Added labels:', { userIds, labelType });
+    // Optionally refresh users data or handle success
+  };
+
   const handleAddClick = () => {
     setAddDialogOpen(true);
+  };
+
+  const handleAddLabelClick = () => {
+    if (selectedUsers.length === 0) {
+      return;
+    }
+    setAddLabelDialogOpen(true);
   };
 
   const handleDeleteClick = () => {
@@ -229,6 +257,15 @@ const UsersDataGrid = React.memo(({
           subheader={`총 인원: ${rows.length}`}
           action={
             <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                startIcon={<LabelIcon />}
+                onClick={handleAddLabelClick}
+                disabled={selectedUsers.length === 0}
+                size="small"
+              >
+                라벨 추가 ({selectedUsers.length})
+              </Button>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
@@ -293,6 +330,15 @@ const UsersDataGrid = React.memo(({
         open={addDialogOpen}
         onClose={() => setAddDialogOpen(false)}
         onSubmit={handleAddUsers}
+      />
+
+      {/* Add Label Dialog */}
+      <AddLabelDialog
+        open={addLabelDialogOpen}
+        onClose={() => setAddLabelDialogOpen(false)}
+        selectedUsers={selectedUsers}
+        users={users}
+        onLabelsAdded={handleLabelsAdded}
       />
 
       {/* Delete Confirmation Dialog */}
