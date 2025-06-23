@@ -44,6 +44,7 @@ export const navData = [
    * Overview
    */
   {
+    title: 'Home',
     subheader: 'General',
     items: [
       {
@@ -62,6 +63,7 @@ export const navData = [
    * Management
    */
   {
+    title: 'Metrics',
     subheader: 'Metrics',
     items: [
       {

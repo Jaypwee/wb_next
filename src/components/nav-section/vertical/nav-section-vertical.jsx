@@ -32,11 +32,11 @@ export function NavSectionVertical({
       {...other}
     >
       <NavUl sx={{ flex: '1 1 auto', gap: 'var(--nav-item-gap)' }}>
-        {data.map((group) => (
+        {(data || []).map((group) => (
           <Group
-            key={group.subheader ?? group.items[0].title}
+            key={group.subheader ?? group.items?.[0]?.title}
             subheader={group.subheader}
-            items={group.items}
+            items={group.items || []}
             render={render}
             slotProps={slotProps}
             checkPermissions={checkPermissions}
@@ -55,7 +55,7 @@ function Group({ items, render, subheader, slotProps, checkPermissions, enabledR
 
   const renderContent = () => (
     <NavUl sx={{ gap: 'var(--nav-item-gap)' }}>
-      {items.map((list) => (
+      {(items || []).map((list) => (
         <NavList
           key={list.title}
           data={list}

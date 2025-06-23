@@ -1,16 +1,19 @@
 'use client';
 
 import { merge } from 'es-toolkit';
+import { useBoolean } from 'minimal-shared/hooks';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 import { iconButtonClasses } from '@mui/material/IconButton';
 
+import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
 
 import { useMockedUser } from 'src/auth/hooks';
 
+import { NavMobile } from './nav-mobile';
 import { HomeFooter } from '../main/footer';
 import { NavVertical } from './nav-vertical';
 import { layoutClasses } from '../core/classes';
@@ -20,12 +23,12 @@ import { MainSection } from '../core/main-section';
 import { Searchbar } from '../components/searchbar';
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
+import { MenuButton } from '../components/menu-button';
 import { AccountDrawer } from '../components/account-drawer';
 import { SettingsButton } from '../components/settings-button';
 import { LanguagePopover } from '../components/language-popover';
 import { navData as dashboardNavData } from '../nav-config-dashboard';
 import { dashboardLayoutVars, dashboardNavColorVars } from './css-vars';
-
 // ----------------------------------------------------------------------
 
 export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery = 'lg' }) {
@@ -34,10 +37,11 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
   const { user } = useMockedUser();
 
   const settings = useSettingsContext();
+  const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
   const navVars = dashboardNavColorVars(theme, settings.state.navColor, settings.state.navLayout);
 
-  const navData = slotProps?.nav?.data ?? dashboardNavData;
+  const navData = dashboardNavData;
 
   const isNavMini = settings.state.navLayout === 'mini';
   const isNavHorizontal = settings.state.navLayout === 'horizontal';
@@ -65,6 +69,20 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
         <Alert severity="info" sx={{ display: 'none', borderRadius: 0 }}>
           This is an info Alert.
         </Alert>
+      ),
+      leftArea: (
+        <Box 
+          sx={() => ({
+            mr: 1,
+            ml: -1,
+            [theme.breakpoints.up(layoutQuery)]: { display: 'none' },
+          })}>
+          <MenuButton
+            onClick={onOpen}
+          />
+          <NavMobile data={navData} open={open} onClose={onClose} checkPermissions={canDisplayItemByRole} />
+          <Logo sx={{ paddingTop: 2, paddingBottom: 2 }} />
+        </Box>
       ),
       bottomArea: isNavHorizontal ? (
         <NavHorizontal

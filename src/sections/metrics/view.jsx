@@ -92,12 +92,16 @@ export function MetricsView({ type = 'MERITS' }) {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              minHeight: '60vh',
+              minHeight: { xs: '50vh', md: '60vh' },
+              px: { xs: 2, sm: 3 },
             }}
           >
             <Box
               sx={{
-                p: 4,
+                p: { xs: 2, sm: 3, md: 4 },
+                mx: { xs: 1, sm: 2 },
+                width: { xs: '100%', sm: 'auto' },
+                maxWidth: { xs: '100%', sm: '500px' },
                 border: '1px solid',
                 borderColor: 'divider',
                 borderRadius: 2,
