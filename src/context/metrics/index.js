@@ -4,7 +4,6 @@ export {
   setError,
   setLoading,
   setSeasonDates,
-  setSelectedDate,
   setSelectedSeason,
   setSelectedMetrics,
 } from './actions'; 
