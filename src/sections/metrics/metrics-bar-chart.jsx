@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -6,35 +8,12 @@ import { ChartClient } from './chart-client';
 
 // ----------------------------------------------------------------------
 
-const CHART_DATA = {
-  categories: [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ],
-  series: [
-    {
-      name: 'Performance',
-      data: [400, 430, 448, 470, 540, 580, 690, 1100, 1200, 1380, 1500, 1600],
-    },
-  ],
-};
-
-export function MetricsBarChart() {
+export function MetricsBarChart({ title, subheader, series, categories }) {
   return (
     <Card sx={{ height: '100%' }}>
       <CardHeader 
-        title="Performance Metrics" 
-        subheader="Monthly performance data visualization"
+        title={title} 
+        subheader={subheader}
       />
 
       <Box sx={{ 
@@ -50,8 +29,8 @@ export function MetricsBarChart() {
         }}>
           <ChartClient
             type="bar"
-            series={CHART_DATA.series}
-            categories={CHART_DATA.categories}
+            series={series}
+            categories={categories}
             sx={{ 
               p: 3,
               minWidth: '100%',
@@ -62,3 +41,15 @@ export function MetricsBarChart() {
     </Card>
   );
 }
+
+MetricsBarChart.propTypes = {
+  title: PropTypes.string,
+  subheader: PropTypes.string,
+  series: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string,
+      data: PropTypes.arrayOf(PropTypes.number),
+    })
+  ),
+  categories: PropTypes.arrayOf(PropTypes.string),
+};

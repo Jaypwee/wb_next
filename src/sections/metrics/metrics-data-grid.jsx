@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Tooltip from '@mui/material/Tooltip';
 import CardHeader from '@mui/material/CardHeader';
 import {
   DataGrid,
@@ -16,79 +17,12 @@ import {
   GridToolbarDensitySelector,
 } from '@mui/x-data-grid';
 
+import { METRIC_SERIES, formatDataGridData } from 'src/services/metrics';
+
+import { Iconify } from 'src/components/iconify';
 import { EmptyContent } from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
-
-const MOCK_DATA = Array.from({ length: 20 }, (_, index) => ({
-  id: index + 1,
-  metric: `Metric ${index + 1}`,
-  value: Math.floor(Math.random() * 1000),
-  status: ['active', 'inactive', 'pending'][Math.floor(Math.random() * 3)],
-  lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
-  trend: Math.floor(Math.random() * 100) - 50,
-}));
-
-const COLUMNS = [
-  { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'metric', headerName: 'Metric Name', flex: 1, minWidth: 200 },
-  { 
-    field: 'value', 
-    headerName: 'Value', 
-    width: 130,
-    type: 'number',
-  },
-  { 
-    field: 'status', 
-    headerName: 'Status', 
-    width: 130,
-    renderCell: (params) => (
-      <Box
-        sx={{
-          px: 1,
-          py: 0.5,
-          borderRadius: 1,
-          fontSize: '0.75rem',
-          fontWeight: 'bold',
-          bgcolor: (theme) => {
-            const color = {
-              active: theme.palette.success.main,
-              inactive: theme.palette.error.main,
-              pending: theme.palette.warning.main,
-            }[params.value];
-            return color;
-          },
-          color: 'white',
-        }}
-      >
-        {params.value}
-      </Box>
-    ),
-  },
-  { 
-    field: 'lastUpdated', 
-    headerName: 'Last Updated', 
-    width: 180,
-    type: 'dateTime',
-    valueGetter: (params) => new Date(params.value),
-  },
-  { 
-    field: 'trend', 
-    headerName: 'Trend', 
-    width: 130,
-    type: 'number',
-    renderCell: (params) => (
-      <Box
-        sx={{
-          color: params.value >= 0 ? 'success.main' : 'error.main',
-          fontWeight: 'bold',
-        }}
-      >
-        {params.value >= 0 ? '+' : ''}{params.value}%
-      </Box>
-    ),
-  },
-];
 
 function CustomToolbar({ setFilterButtonEl }) {
   return (
@@ -98,31 +32,269 @@ function CustomToolbar({ setFilterButtonEl }) {
       <GridToolbarColumnsButton />
       <GridToolbarFilterButton ref={setFilterButtonEl} />
       <GridToolbarDensitySelector />
-      <GridToolbarExport />
+      <GridToolbarExport 
+        csvOptions={{ 
+          delimiter: ',',
+          utf8WithBom: true,
+          includeHeaders: true, 
+        }}
+        printOptions={{ disableToolbarButton: true }}
+      />
     </GridToolbarContainer>
   );
 }
 
-export function MetricsDataGrid({ selectedMetrics, onSelectionChange }) {
+// Medal component for top 3 ranks
+function MedalIcon({ rank }) {
+  const medalConfig = {
+    1: { icon: 'mdi:medal', color: '#FFD700' }, // Gold
+    2: { icon: 'mdi:medal', color: '#C0C0C0' }, // Silver
+    3: { icon: 'mdi:medal', color: '#CD7F32' }, // Bronze
+  };
+
+  const config = medalConfig[rank];
+  if (!config) return null;
+
+  return (
+    <Iconify
+      icon={config.icon}
+      sx={{
+        color: config.color,
+        width: 20,
+        height: 20,
+        mr: 1,
+      }}
+    />
+  );
+}
+
+// Nationality flag component
+function NationalityFlag({ nationality }) {
+  if (!nationality) return null;
+  
+  if (nationality === 'korean') {
+    return (
+      <Iconify
+        icon="twemoji:flag-south-korea"
+        sx={{
+          width: 28,
+          height: 28,
+        }}
+      />
+    );
+  }
+  
+  if (nationality === 'international') {
+    return (
+      <Iconify
+        icon="mdi:earth"
+        sx={{
+          width: 28,
+          height: 28,
+          color: 'primary.main',
+        }}
+      />
+    );
+  }
+  
+  return null;
+}
+
+// Troop type icon component
+function getTroopConfig(troopType) {
+  // Default to infantry if undefined
+  const troop = troopType || '';
+  
+  const troopConfig = {
+    infantry: { icon: 'mdi:shield', color: '#1976d2', label: 'Infantry Main' },
+    archer: { icon: 'mdi:bow-arrow', color: '#388e3c', label: 'Archer Main' },
+    mage: { icon: 'mdi:magic-staff', color: '#7b1fa2', label: 'Mage Main' },
+    cavalry: { icon: 'mdi:horse-variant', color: '#f57c00', label: 'Cavalry Main' },
+    allRounder: { icon: 'mdi:star', color: '#FFD700', label: 'All Rounder' },
+  };
+
+  return troopConfig[troop] || null;
+}
+
+function TroopIcon({ troopType }) {
+  const config = getTroopConfig(troopType);
+  if (!config) return null;
+
+  return (
+    <Tooltip title={config.label}>
+      <Iconify
+        icon={config.icon}
+        sx={{
+          width: 28,
+          height: 28,
+          color: config.color,
+        }}
+      />
+    </Tooltip>
+  );
+}
+
+export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
   const [filterButtonEl, setFilterButtonEl] = useState(null);
 
-  const columns = useMemo(() => COLUMNS, []);
+  // Format data for DataGrid
+  const gridData = useMemo(() => {
+    if (!selectedMetrics?.data) return [];
+    return formatDataGridData({ data: selectedMetrics.data, type });
+  }, [selectedMetrics, type]);
+
+  // Get metric name for display
+  const metricName = METRIC_SERIES[type]?.name || 'Metrics';
+
+  // Define columns
+  const columns = useMemo(() => [
+    { 
+      field: 'icon', 
+      headerName: '', 
+      width: 60,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: () => (
+        <Box sx={{ width: 40, height: 40, bgcolor: 'grey.200', borderRadius: 1 }} />
+      ),
+    },
+    { 
+      field: 'nationality', 
+      headerName: '', 
+      width: 60,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => {
+        const userId = params.row.id;
+        const userNationality = users?.[userId]?.nationality;
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <NationalityFlag nationality={userNationality} />
+          </Box>
+        );
+      },
+    },
+    { 
+      field: 'rank', 
+      headerName: 'Rank', 
+      width: 60,
+      type: 'number',
+      renderCell: (params) => (
+        <Box sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+          #{params.value}
+        </Box>
+      ),
+    },
+    { 
+      field: 'name', 
+      headerName: 'Name', 
+      minWidth: 300,
+      flex: 1,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', fontWeight: 'medium' }}>
+          <MedalIcon rank={params.row.rank} />
+          {params.value}
+        </Box>
+      ),
+    },
+    { 
+      field: 'mainTroops', 
+      headerName: '', 
+      width: 60,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => {
+        const userId = params.row.id;
+        const userMainTroops = users?.[userId]?.mainTroops;
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <TroopIcon troopType={userMainTroops} />
+          </Box>
+        );
+      },
+    },
+    { 
+      field: 'value', 
+      headerName: metricName, 
+      width: 250,
+      renderCell: (params) => (
+        <Box sx={{ fontWeight: 'bold', color: 'success.main' }}>
+          {params.value}
+        </Box>
+      ),
+    },
+    { 
+      field: 'highestPower', 
+      headerName: 'Highest Power', 
+      width: 150,
+      renderCell: (params) => (
+        <Box sx={{ color: 'text.secondary' }}>
+          {params.value}
+        </Box>
+      ),
+    },
+    { 
+      field: 'currentPower', 
+      headerName: 'Current Power', 
+      width: 300,
+      renderCell: (params) => {
+        // Calculate the difference between highest and current power
+        const highestPower = parseInt(params.row.highestPower.replace(/,/g, ''), 10) || 0;
+        const currentPower = parseInt(params.value.replace(/,/g, ''), 10) || 0;
+        const difference = currentPower - highestPower;
+        
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ color: 'text.secondary' }}>
+              {params.value}
+            </Box>
+            {difference !== 0 && (
+              <Box 
+                sx={{ 
+                  color: difference === 0 ? 'text.disabled' : 'rgba(211, 47, 47, 0.7)',
+                  fontSize: '0.875rem',
+                  fontWeight: 'medium',
+                }}
+              >
+                ({difference > 0 ? '+' : ''}{difference.toLocaleString()})
+              </Box>
+            )}
+            {difference === 0 && (
+              <Box 
+                sx={{ 
+                  color: 'text.disabled',
+                  fontSize: '0.875rem',
+                  fontWeight: 'medium',
+                }}
+              >
+                (0)
+              </Box>
+            )}
+          </Box>
+        );
+      },
+    },
+  ], [metricName, users]);
 
   return (
     <Card sx={{ height: '100%' }}>
-      <CardHeader title="Metrics Data" subheader="Detailed metrics information" />
+      <CardHeader 
+        title={`${metricName} Leaderboard`} 
+        subheader={`Top performers ranked by ${metricName.toLowerCase()}`} 
+      />
 
       <DataGrid
-        rows={MOCK_DATA}
+        rows={gridData}
         columns={columns}
-        checkboxSelection
         disableRowSelectionOnClick
-        onRowSelectionModelChange={onSelectionChange}
         initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
         pageSizeOptions={[5, 10, 20, 50, { value: -1, label: 'All' }]}
         slots={{
           toolbar: CustomToolbar,
-          noRowsOverlay: () => <EmptyContent />,
+          noRowsOverlay: () => <EmptyContent title="No data available" />,
           noResultsOverlay: () => <EmptyContent title="No results found" />,
         }}
         slotProps={{
@@ -134,6 +306,11 @@ export function MetricsDataGrid({ selectedMetrics, onSelectionChange }) {
           [`& .${gridClasses.cell}`]: {
             alignItems: 'center',
             display: 'inline-flex',
+          },
+          [`& .${gridClasses.row}`]: {
+            '&:hover': {
+              bgcolor: 'action.hover',
+            },
           },
         }}
       />

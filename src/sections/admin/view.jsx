@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -20,11 +20,14 @@ import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
 import { useTranslate } from 'src/locales';
 import { fetchSeasonInfo } from 'src/services/season';
+import { useUserContext } from 'src/context/user/context';
 
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
 
+import UsersDataGrid from './components/users-data-grid';
 import { useFileUpload, useReportUpload } from '../hooks/admin';
+import { InfantryGroupManager } from './components/infantry-group-manager';
 
 // Create the Promise outside the component
 const seasonInfoPromise = fetchSeasonInfo();
@@ -42,7 +45,7 @@ const SeasonNameInput = ({ value, onChange }) => (
         onClick={onChange}
         disabled={!value}
       >
-        Submit
+        적용하기
       </Button>
     </Box>
     <TextField
@@ -110,7 +113,11 @@ const ReportControls = ({
 
 export function AdminView() {
   const [seasonName, setSeasonName] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const { t } = useTranslate();
+  
+  // User context integration
+  const { users, loadUsers, isLoading: usersLoading, error: usersError } = useUserContext();
   
   const { total_seasons } = use(seasonInfoPromise) ?? [];
   console.log(total_seasons);
@@ -141,6 +148,16 @@ export function AdminView() {
     handleUpload,
     uploadMutation,
   } = useReportUpload();
+
+  // Load users when component mounts
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  // Handle selection change from DataGrid
+  const handleSelectionChange = (newSelection) => {
+    setSelectedUsers(newSelection);
+  };
 
   return (
     <Container maxWidth="xl">
@@ -196,7 +213,7 @@ export function AdminView() {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Typography variant="h6">
-                Multiple Files Upload
+                KvK 분쟁 시즌 데이터 업로드
               </Typography>
               <ReportControls
                 seasonName={kvkReportSeasonName}
@@ -232,6 +249,24 @@ export function AdminView() {
             disabled={uploadMutation.isPending}
           />
         </Box>
+
+        {/* User Management DataGrid */}
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            연맹원 목록
+          </Typography>
+          
+          <UsersDataGrid
+            users={users}
+            isLoading={usersLoading}
+            error={usersError}
+            selectedUsers={selectedUsers}
+            onSelectionChange={handleSelectionChange}
+          />
+        </Box>
+
+        {/* Infantry Group Management */}
+        <InfantryGroupManager users={users} />
       </Stack>
     </Container>
   );

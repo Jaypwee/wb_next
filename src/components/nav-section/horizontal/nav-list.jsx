@@ -7,10 +7,11 @@ import { popoverClasses } from '@mui/material/Popover';
 
 import { usePathname } from 'src/routes/hooks';
 
+import { useTranslate } from 'src/locales';
+
 import { NavItem } from './nav-item';
 import { navSectionClasses } from '../styles';
 import { NavUl, NavLi, NavDropdown, NavDropdownPaper } from '../components';
-import { useTranslate } from 'src/locales';
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +31,8 @@ export function NavList({
   const pathname = usePathname();
 
   const isActive = isActiveLink(pathname, data.path, !!data.children);
+
+  console.log(isActive);
 
   const { open, onOpen, onClose, anchorEl, elementRef: navItemRef } = usePopoverHover();
 

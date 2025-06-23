@@ -11,6 +11,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { Logo } from 'src/components/logo';
 
+import { HomeFooter } from '../main/footer';
 import { SimpleCompactContent } from './content';
 import { MainSection } from '../core/main-section';
 import { LayoutSection } from '../core/layout-section';
@@ -59,7 +60,7 @@ export function SimpleLayout({ sx, cssVars, children, slotProps, layoutQuery = '
     );
   };
 
-  const renderFooter = () => null;
+  const renderFooter = () => <HomeFooter layoutQuery={layoutQuery} />;
 
   const renderMain = () => {
     const { compact, ...restContentProps } = slotProps?.content ?? {};

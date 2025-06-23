@@ -11,6 +11,7 @@ import { useSettingsContext } from 'src/components/settings';
 
 import { useMockedUser } from 'src/auth/hooks';
 
+import { HomeFooter } from '../main/footer';
 import { NavVertical } from './nav-vertical';
 import { layoutClasses } from '../core/classes';
 import { NavHorizontal } from './nav-horizontal';
@@ -129,7 +130,7 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
     />
   );
 
-  const renderFooter = () => null;
+  const renderFooter = () => <HomeFooter layoutQuery={layoutQuery} />;
 
   const renderMain = () => <MainSection {...slotProps?.main}>{children}</MainSection>;
 

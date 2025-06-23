@@ -8,14 +8,7 @@ export async function POST(request) {
 
     // Check if gameuid already exists
     const usersRef = adminDb.collection('users');
-    const querySnapshot = await usersRef.where('gameuid', '==', gameuid).get();
-    
-    if (!querySnapshot.empty) {
-      return NextResponse.json(
-        { error: 'Game UID already exists' },
-        { status: 400 }
-      );
-    }
+
 
     // Check if user exists in users collection
     const userDoc = await usersRef.doc(gameuid).get();
@@ -24,6 +17,13 @@ export async function POST(request) {
       return NextResponse.json(
         { error: 'This user is not permitted to sign up' },
         { status: 403 }
+      );
+    }
+
+    if (userDoc.data().uid) {
+      return NextResponse.json(
+        { error: 'User has already signed up' },
+        { status: 409 }
       );
     }
 
@@ -37,8 +37,6 @@ export async function POST(request) {
     await usersRef.doc(gameuid).set({
       uid: userRecord.uid,
       email,
-      nickname,
-      gameuid,
       nationality,
       mainTroops,
       createdAt: new Date().toISOString(),

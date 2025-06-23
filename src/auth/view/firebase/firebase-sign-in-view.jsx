@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useBoolean } from 'minimal-shared/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -18,18 +17,15 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { useTranslate } from 'src/locales/use-locales';
+
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
 import { useAuthContext } from '../../hooks';
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
-import { FormDivider } from '../../components/form-divider';
-import { FormSocials } from '../../components/form-socials';
 import {
-  signInWithGoogle,
-  signInWithGithub,
-  signInWithTwitter,
   signInWithPassword,
 } from '../../context/firebase';
 
@@ -37,7 +33,7 @@ import {
 
 export function FirebaseSignInView() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const showPassword = useBoolean();
 
   const { checkUserSession } = useAuthContext();

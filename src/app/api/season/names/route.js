@@ -8,16 +8,16 @@ export async function GET() {
     // Get all documents from the collection
     const querySnapshot = await sheetsRef.get();
     
-    // Extract document IDs and find current season
+    // Extract document IDs and find current season based on lastUpdatedAt
     let currentSeason = null;
-    let latestDate = null;
+    let latestUpdate = null;
     
     querySnapshot.docs.forEach(doc => {
       const data = doc.data();
-      if (data.season_end) {
-        const seasonEnd = new Date(data.season_end);
-        if (!latestDate || seasonEnd > latestDate) {
-          latestDate = seasonEnd;
+      if (data.lastUpdatedAt) {
+        const updateTime = new Date(data.lastUpdatedAt);
+        if (!latestUpdate || updateTime > latestUpdate) {
+          latestUpdate = updateTime;
           currentSeason = doc.id;
         }
       }

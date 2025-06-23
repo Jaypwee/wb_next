@@ -12,18 +12,46 @@ export function ChartClient({ type, series, categories, sx }) {
     colors: chartColors,
     stroke: { width: 0 },
     xaxis: { 
+      show: false,
       categories,
-      range: 8
+      range: 8,
+      labels: {
+        fontSize: 16,
+      }
+    },
+    yaxis: {
+      labels: {
+        style: {
+          fontSize: 13,
+        },
+        minWidth: 120,
+      }
     },
     dataLabels: {
       enabled: true,
-      textAnchor: 'end',
+      textAnchor: 'start',
+      formatter: (value) => value.toLocaleString(),
+
     },
     tooltip: {
       y: { 
-        formatter: (value) => `${value} units`,
+        formatter: (value) => value.toLocaleString(),
         title: { formatter: () => '' }
       },
+    },
+    chart: {
+      toolbar: {
+        show: false,
+      },
+      animations: {
+        enabled: true,
+        speed: 800,
+        delay: 1000,
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      }
     },
     plotOptions: { 
       bar: { 

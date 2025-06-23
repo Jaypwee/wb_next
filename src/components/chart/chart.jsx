@@ -18,6 +18,10 @@ export function Chart({ type, series, options, slotProps, className, sx, ...othe
 
   const renderFallback = () => <ChartLoading type={type} sx={slotProps?.loading} />;
 
+  // Calculate height based on data length
+  const dataLength = series?.[0]?.data?.length || 0;
+  const chartHeight = `${dataLength * 40}px`;
+
   return (
     <ChartRoot
       dir="ltr"
@@ -27,7 +31,13 @@ export function Chart({ type, series, options, slotProps, className, sx, ...othe
     >
       {isClient ? (
         <Suspense fallback={renderFallback()}>
-          <LazyChart type={type} series={series} options={options} width="100%" />
+          <LazyChart 
+            type={type} 
+            series={series} 
+            options={options} 
+            width="100%" 
+            height={chartHeight} 
+          />
         </Suspense>
       ) : (
         renderFallback()

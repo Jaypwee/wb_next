@@ -1,14 +1,16 @@
+import axios from 'src/lib/axios';
+
 /**
  * Fetches season information including total seasons and current season
  * @returns {Promise<{total_seasons: string[], current_season: string}>}
  */
 export async function fetchSeasonInfo() {
-  const response = await fetch('/api/season/names');
-  if (!response.ok) {
+  try {
+    const response = await axios.get('/api/season/names');
+    return response.data;
+  } catch (error) {
     throw new Error('Failed to fetch season info');
   }
-
-  return response.json();
 }
 
 /**
@@ -17,24 +19,10 @@ export async function fetchSeasonInfo() {
  * @returns {Promise<string[]>} Array of formatted strings like "Week x (YYYY-MM-DD)"
  */
 export async function fetchSeasonDates(seasonName) {
-  const response = await fetch(`/api/season/dates?season_name=${seasonName}`);
-  if (!response.ok) {
+  try {
+    const response = await axios.get(`/api/season/dates?season_name=${seasonName}`);
+    return response.data;
+  } catch (error) {
     throw new Error('Failed to fetch season dates');
   }
-  
-  const data = await response.json();
-  
-  // Transform the object into an array of formatted strings
-  const formattedDates = Object.entries(data)
-    .map(([date, week]) => ({
-      date,
-      week,
-      timestamp: new Date(date).getTime()
-    }))
-    .sort((a, b) => b.timestamp - a.timestamp) // Sort in descending order
-    .map(({ date, week }) => `${week} (${date})`);
-
-    console.log(formattedDates);
-
-  return formattedDates;
 } 

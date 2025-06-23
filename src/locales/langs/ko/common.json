@@ -18,7 +18,8 @@
       "getStarted": "시작하기",
       "forgotPassword": "비밀번호를 잊으셨나요?",
       "signInButton": "로그인",
-      "loading": "로그인 중..."
+      "loading": "로그인 중...",
+      "subtitle": "멤버 전용 대시보드에 접근하려면 로그인하세요"
     },
     "signUp": {
       "nickname": "인게임 이름",

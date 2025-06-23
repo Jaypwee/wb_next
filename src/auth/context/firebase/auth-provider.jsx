@@ -1,9 +1,9 @@
 'use client';
 
-import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useSetState } from 'minimal-shared/hooks';
 import { useMemo, useEffect, useCallback } from 'react';
+import {  query, where, getDocs, collection } from 'firebase/firestore';
 
 import axios from 'src/lib/axios';
 import { AUTH, FIRESTORE } from 'src/lib/firebase';
@@ -19,16 +19,25 @@ export function AuthProvider({ children }) {
     try {
       onAuthStateChanged(AUTH, async (user) => {
         if (user) {
-          const userProfile = doc(FIRESTORE, 'users', user.uid);
+          // Query users collection by uid field instead of using uid as document ID
+          const usersRef = collection(FIRESTORE, 'users');
+          const userQuery = query(usersRef, where('uid', '==', user.uid));
+          const querySnapshot = await getDocs(userQuery);
 
-          const docSnap = await getDoc(userProfile);
+          let profileData = null;
+          if (!querySnapshot.empty) {
+            // User found by uid field
+            const userDoc = querySnapshot.docs[0];
+            profileData = userDoc.data();
+          }
 
-          const profileData = docSnap.data();
+          // Get the ID token for API authentication (not access token)
+          const idToken = await user.getIdToken();
 
-          const { accessToken } = user;
-
-          setState({ user: { ...user, ...profileData }, loading: false });
-          axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+          setState({ user: { ...user, ...profileData, idToken }, loading: false });
+          
+          // Set the ID token in axios default headers for API calls
+          axios.defaults.headers.common.Authorization = `Bearer ${idToken}`;
         } else {
           setState({ user: null, loading: false });
           delete axios.defaults.headers.common.Authorization;
@@ -57,10 +66,10 @@ export function AuthProvider({ children }) {
         ? {
             ...state.user,
             id: state.user?.uid,
-            accessToken: state.user?.accessToken,
+            idToken: state.user?.idToken,
             displayName: state.user?.displayName,
             photoURL: state.user?.photoURL,
-            role: state.user?.role ?? 'admin',
+            role: state.user?.role || null,
           }
         : null,
       checkUserSession,

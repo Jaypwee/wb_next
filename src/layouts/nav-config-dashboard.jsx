@@ -2,7 +2,6 @@ import { paths } from 'src/routes/paths';
 
 import { CONFIG } from 'src/global-config';
 
-import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
 
 // ----------------------------------------------------------------------
@@ -50,12 +49,13 @@ export const navData = [
       {
         title: 'Home',
         path: paths.dashboard.root,
-        icon: ICONS.lock,
-        info: <Label>v{CONFIG.appVersion}</Label>,
+        icon: ICONS.lock
       },
-      { title: 'Two', path: paths.dashboard.two, icon: ICONS.ecommerce },
-      { title: 'Three', path: paths.dashboard.three, icon: ICONS.analytics },
-      { title: 'Admin', path: paths.dashboard.admin, icon: ICONS.analytics },
+      { title: 'Admin', 
+        path: paths.dashboard.admin, 
+        icon: ICONS.dashboard, 
+        allowedRoles: ['admin'],
+       },
     ],
   },
   /**
@@ -66,24 +66,23 @@ export const navData = [
     items: [
       {
         title: 'Individual',
-        path: paths.dashboard.group.root,
+        path: paths.dashboard.metrics.root,
         icon: ICONS.analytics,
         children: [
-          { title: '전공', path: paths.dashboard.group.root },
-          { title: '부대 처치', path: paths.dashboard.group.five },
-          { title: '치유량', path: paths.dashboard.group.six },
+          { title: '전공', path: paths.dashboard.metrics.merits },
+          { title: '부대 처치', path: paths.dashboard.metrics.kills },
+          { title: '치유량', path: paths.dashboard.metrics.deads },
+          { title: '마나 소모량', path: paths.dashboard.metrics.mana },
         ],
       },
-      {
-        title: 'KvK',
-        path: paths.dashboard.group.root,
-        icon: ICONS.analytics,
-        children: [
-          { title: '전공', path: paths.dashboard.group.root },
-          { title: '부대 처치', path: paths.dashboard.group.five },
-          { title: '치유량', path: paths.dashboard.group.six },
-        ],
-      },
+      // {
+      //   title: 'KvK',
+      //   path: paths.dashboard.group.root,
+      //   icon: ICONS.analytics,
+      //   children: [
+          
+      //   ],
+      // },
     ],
   },
 ];

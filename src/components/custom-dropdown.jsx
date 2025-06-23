@@ -46,11 +46,23 @@ export function CustomDropdown({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
+        PaperProps={{
+          sx: {
+            width: '200px',
+            maxHeight: 300
+          }
+        }}
       >
         {options.map((option) => (
           <MenuItem 
             key={option} 
             onClick={() => handleSelect(option)}
+            sx={{
+              width: '100%',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
           >
             {option}
           </MenuItem>

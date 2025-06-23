@@ -18,7 +18,8 @@
       "getStarted": "Get started",
       "forgotPassword": "Forgot password?",
       "signInButton": "Sign in",
-      "loading": "Signing in..."
+      "loading": "Signing in...",
+      "subtitle": "Sign In to access member exclusive dashboard"
     },
     "signUp": {
       "nickname": "In-game name",
@@ -37,7 +38,6 @@
       "signIn": "Sign in",
       "createAccount": "Create account",
       "errors": {
-        "nicknameRequired": "In-game name is required",
         "gameuidRequired": "Game UID is required",
         "gameuidInvalid": "Game UID must be exactly 8 numbers",
         "nationalityRequired": "Nationality is required",
@@ -51,6 +51,24 @@
       "upload": "Upload",
       "individualReportUpload": "Individual Report Upload",
       "kvkReportUpload": "KvK Season Total Server Statistics Upload (WIP)"
+    }
+  },
+  "home": {
+    "hero": {
+      "title_1": "Are you a war machine?",
+      "title_2": "Join the",
+      "subtitle": "We fight with manners. We fight with coordination. We fight as one.\n And mostly, we do not run away from war. We are the War Beast."
+    },
+    "minimal": {
+      "caption": "Achieving Victory",
+      "title_1": "War Lead",
+      "title_2": "and Coordinate",
+      "infantry_title": "Infantry Groups",
+      "infantry_description": "Dedicated infantry users orchestrate advantageous battles through close coordination.",
+      "leadership_title": "Leadership",
+      "leadership_description": "Alliance leaderds spend day and night to devise strategic plans for victory and coordinate events for the alliance.",
+      "multinational_title": "Multi-National Alliance",
+      "multinational_description": "Our fighters are stationed in countries such as Korea, Vietnam, Russia, Europe, and the U.S. We are capable of fighting 24/7."
     }
   },
   "nav": {

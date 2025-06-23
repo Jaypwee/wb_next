@@ -34,10 +34,12 @@ export const paths = {
     two: `${ROOTS.DASHBOARD}/two`,
     three: `${ROOTS.DASHBOARD}/three`,
     admin: `${ROOTS.DASHBOARD}/admin`,
-    group: {
+    metrics: {
       root: `${ROOTS.DASHBOARD}/metrics`,
-      five: `${ROOTS.DASHBOARD}/group/five`,
-      six: `${ROOTS.DASHBOARD}/group/six`,
+      merits: `${ROOTS.DASHBOARD}/metrics/merits`,
+      kills: `${ROOTS.DASHBOARD}/metrics/kills`,
+      deads: `${ROOTS.DASHBOARD}/metrics/deads`,
+      mana: `${ROOTS.DASHBOARD}/metrics/mana-spent`,
     },
   },
 };

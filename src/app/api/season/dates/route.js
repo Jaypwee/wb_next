@@ -28,15 +28,11 @@ export async function GET(request) {
 
     // Filter keys that match the date format (YYYY-MM-DD)
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const dateKeys = Object.keys(sheetData).filter(key => dateRegex.test(key));
+    const dates = Object.keys(sheetData.individual)
+      .filter(key => dateRegex.test(key))
+      .sort(); // Sort dates in ascending order
 
-    // Create an object with week labels
-    const datesWithWeeks = dateKeys.reduce((acc, date, index) => {
-      acc[date] = `Week ${index + 1}`;
-      return acc;
-    }, {});
-
-    return new Response(JSON.stringify(datesWithWeeks), {
+    return new Response(JSON.stringify(dates), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

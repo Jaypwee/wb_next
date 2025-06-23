@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
+import axios from 'src/lib/axios';
+
 const uploadFile = async ({ type, file, files, seasonName, title, date }) => {
   const formData = new FormData();
   
@@ -17,17 +19,17 @@ const uploadFile = async ({ type, file, files, seasonName, title, date }) => {
     });
   }
 
-  const response = await fetch('/api/season/upload', {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || `Failed to upload ${type === 'single' ? 'file' : 'files'}`);
+  try {
+    const response = await axios.post('/api/season/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    const errorMessage = error.response?.data?.error || `Failed to upload ${type === 'single' ? 'file' : 'files'}`;
+    throw new Error(errorMessage);
   }
-
-  return response.json();
 };
 
 export const useFileUpload = () => {
@@ -79,6 +81,7 @@ export const useReportUpload = () => {
   const [kvkReportTitle, setKvkReportTitle] = useState('');
   const [individualReportDate, setIndividualReportDate] = useState(null);
   const [kvkReportDate, setKvkReportDate] = useState(null);
+  const { setSingleFile, setMultipleFiles } = useFileUpload();
 
   const uploadMutation = useMutation({
     mutationFn: uploadFile,
@@ -88,10 +91,12 @@ export const useReportUpload = () => {
         setIndividualReportSeasonName('');
         setIndividualReportTitle('');
         setIndividualReportDate(null);
+        setSingleFile(null);
       } else {
         setKvkReportSeasonName('');
         setKvkReportTitle('');
         setKvkReportDate(null);
+        setMultipleFiles([]);
       }
     },
   });

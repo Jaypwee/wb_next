@@ -28,15 +28,13 @@ export function SignOutButton({ onClose, sx, ...other }) {
 
   return (
     <Button
-      fullWidth
       variant="soft"
-      size="large"
       color="error"
       onClick={handleLogout}
       sx={sx}
       {...other}
     >
-      Logout
+      Sign Out
     </Button>
   );
 }

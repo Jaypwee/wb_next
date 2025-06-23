@@ -1,97 +1,156 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
-import CircularProgress from '@mui/material/CircularProgress';
 
-import { fetchSeasonInfo, fetchSeasonDates } from 'src/services/season';
+import { useUserContext } from 'src/context/user';
+import { useMetricsContext } from 'src/context/metrics';
+import { formatChartData, fetchMetricsData } from 'src/services/metrics';
 
 import { useSettingsContext } from 'src/components/settings';
-import { LoadingScreen } from 'src/components/loading-screen';
-import { CustomDropdown } from 'src/components/custom-dropdown';
+import { MetricsDropdown } from 'src/components/metrics-dropdown';
 
 import { MetricsBarChart } from './metrics-bar-chart';
 import { MetricsDataGrid } from './metrics-data-grid';
-
 // ----------------------------------------------------------------------
 
-export function MetricsView() {
+export function MetricsView({ type = 'MERITS' }) {
   const settings = useSettingsContext();
-  const [selectedMetrics, setSelectedMetrics] = useState([]);
-  const [selectedSeason, setSelectedSeason] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const [formattedChartData, setFormattedChartData] = useState(null);
+  const {
+    selectedSeason,
+    startDate,
+    endDate,
+    selectedMetrics,
+    setSelectedSeason,
+    setStartDate,
+    setEndDate,
+    setSelectedMetrics,
+    setError,
+  } = useMetricsContext();
 
-  // Fetch season info
-  const { data: seasonInfo, isLoading: isLoadingSeasons } = useQuery({
-    queryKey: ['seasonInfo'],
-    queryFn: fetchSeasonInfo,
-  });
+  // Use user context
+  const { users, loadUsers } = useUserContext();
 
-  // Fetch dates for selected season
-  const { data: seasonDates, isLoading: isLoadingDates } = useQuery({
-    queryKey: ['seasonDates', selectedSeason],
-    queryFn: () => fetchSeasonDates(selectedSeason),
-    enabled: !!selectedSeason,
-  });
-
-  // Set initial season when data is loaded
+  // Load users on component mount
   useEffect(() => {
-    if (seasonInfo?.current_season && !selectedSeason) {
-      setSelectedSeason(seasonInfo.current_season);
+    loadUsers();
+  }, [loadUsers]);
+
+  useEffect(() => {
+    if (selectedMetrics && startDate && endDate && type) {
+      const formattedData = formatChartData({
+        data: selectedMetrics.data,
+        startDate,
+        endDate,
+        type
+      });
+
+      setFormattedChartData(formattedData);
     }
-  }, [seasonInfo, selectedSeason, isLoadingSeasons]);
+  }, [selectedMetrics, startDate, endDate, type]);
 
-  console.log(seasonInfo, selectedSeason, seasonDates);
+  const handleApply = async () => {
+    try {
+      setError(null);
 
-  if (!selectedSeason) {
-    return <LoadingScreen />;
-  }
+      startTransition(async () => {
+        const chartData = await fetchMetricsData({
+          seasonName: selectedSeason,
+          startDate,
+          endDate,
+        });
+
+        setSelectedMetrics(chartData);
+
+        const formattedData = formatChartData({
+          data: chartData.data,
+          startDate,
+          endDate,
+          type
+        });
+
+        setFormattedChartData(formattedData);
+      });
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+      setError(error.message);
+    }
+  };
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>
-        <Stack direction="row" spacing={2}>
-          <CustomDropdown
-            options={seasonInfo?.total_seasons || []}
-            initialValue={selectedSeason}
-            onChange={(value) => setSelectedSeason(value)}
-          />
-          
-          {isLoadingDates ? (
-            <Box sx={{ width: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <CircularProgress size={24} />
+        {!selectedMetrics ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '60vh',
+            }}
+          >
+            <Box
+              sx={{
+                p: 4,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+                boxShadow: 1,
+              }}
+            >
+              <MetricsDropdown
+                selectedSeason={selectedSeason}
+                startDate={startDate}
+                endDate={endDate}
+                onSeasonChange={setSelectedSeason}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+                onApply={handleApply}
+                isPending={isPending}
+              />
             </Box>
-          ) : (
-            <CustomDropdown 
-              options={seasonDates || []}
-              initialValue="Select a date"
-              onChange={() => {}}
-            />
-          )}
-        </Stack>
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-            minHeight: '45vh',
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
-            <MetricsBarChart />
           </Box>
-
-          <Box sx={{ flex: 1, minHeight: '45vh' }}>
-            <MetricsDataGrid 
-              selectedMetrics={selectedMetrics}
-              onSelectionChange={setSelectedMetrics}
+        ) : (
+          <>
+            <MetricsDropdown
+              selectedSeason={selectedSeason}
+              startDate={startDate}
+              endDate={endDate}
+              onSeasonChange={setSelectedSeason}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onApply={handleApply}
+              isPending={isPending}
             />
-          </Box>
-        </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3,
+                minHeight: '45vh',
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <MetricsBarChart {...formattedChartData} />
+              </Box>
+
+              <Box sx={{ flex: 1, minHeight: '45vh' }}>
+                <MetricsDataGrid 
+                  selectedMetrics={selectedMetrics}
+                  type={type}
+                  users={users}
+                />
+              </Box>
+            </Box>
+          </>
+        )}
       </Stack>
     </Container>
   );

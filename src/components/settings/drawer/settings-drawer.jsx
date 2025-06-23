@@ -12,19 +12,12 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useColorScheme } from '@mui/material/styles';
 
-import { themeConfig } from 'src/theme/theme-config';
-import { primaryColorPresets } from 'src/theme/with-settings';
-
 import { settingIcons } from './icons';
 import { Iconify } from '../../iconify';
 import { BaseOption } from './base-option';
 import { Scrollbar } from '../../scrollbar';
-import { SmallBlock, LargeBlock } from './styles';
-import { PresetsOptions } from './presets-options';
 import { FullScreenButton } from './fullscreen-button';
-import { FontSizeOptions, FontFamilyOptions } from './font-options';
 import { useSettingsContext } from '../context/use-settings-context';
-import { NavColorOptions, NavLayoutOptions } from './nav-layout-option';
 
 // ----------------------------------------------------------------------
 
@@ -41,16 +34,7 @@ export function SettingsDrawer({ sx, defaultSettings }) {
   }, [mode, systemMode]);
 
   // Visible options by default settings
-  const isFontFamilyVisible = hasKeys(defaultSettings, ['fontFamily']);
-  const isCompactLayoutVisible = hasKeys(defaultSettings, ['compactLayout']);
-  const isDirectionVisible = hasKeys(defaultSettings, ['direction']);
   const isColorSchemeVisible = hasKeys(defaultSettings, ['colorScheme']);
-  const isContrastVisible = hasKeys(defaultSettings, ['contrast']);
-  const isNavColorVisible = hasKeys(defaultSettings, ['navColor']);
-  const isNavLayoutVisible = hasKeys(defaultSettings, ['navLayout']);
-  const isPrimaryColorVisible = hasKeys(defaultSettings, ['primaryColor']);
-  const isFontSizeVisible = hasKeys(defaultSettings, ['fontSize']);
-
   const handleReset = useCallback(() => {
     settings.onReset();
     setMode(defaultSettings.colorScheme);
@@ -100,157 +84,6 @@ export function SettingsDrawer({ sx, defaultSettings }) {
     />
   );
 
-  const renderContrast = () => (
-    <BaseOption
-      label="Contrast"
-      selected={settings.state.contrast === 'hight'}
-      icon={<SvgIcon>{settingIcons.contrast}</SvgIcon>}
-      onChangeOption={() =>
-        settings.setState({
-          contrast: settings.state.contrast === 'default' ? 'hight' : 'default',
-        })
-      }
-    />
-  );
-
-  const renderRtl = () => (
-    <BaseOption
-      label="Right to left"
-      selected={settings.state.direction === 'rtl'}
-      icon={<SvgIcon>{settingIcons.alignRight}</SvgIcon>}
-      onChangeOption={() =>
-        settings.setState({
-          direction: settings.state.direction === 'ltr' ? 'rtl' : 'ltr',
-        })
-      }
-    />
-  );
-
-  const renderCompact = () => (
-    <BaseOption
-      tooltip="Dashboard only and available at large resolutions > 1600px (xl)"
-      label="Compact"
-      selected={!!settings.state.compactLayout}
-      icon={<SvgIcon>{settingIcons.autofitWidth}</SvgIcon>}
-      onChangeOption={() => settings.setState({ compactLayout: !settings.state.compactLayout })}
-    />
-  );
-
-  const renderPresets = () => (
-    <LargeBlock
-      title="Presets"
-      canReset={settings.state.primaryColor !== defaultSettings.primaryColor}
-      onReset={() => settings.setState({ primaryColor: defaultSettings.primaryColor })}
-    >
-      <PresetsOptions
-        icon={<SvgIcon sx={{ width: 28, height: 28 }}>{settingIcons.siderbarDuotone}</SvgIcon>}
-        options={Object.keys(primaryColorPresets).map((key) => ({
-          name: key,
-          value: primaryColorPresets[key].main,
-        }))}
-        value={settings.state.primaryColor}
-        onChangeOption={(newOption) => settings.setState({ primaryColor: newOption })}
-      />
-    </LargeBlock>
-  );
-
-  const renderNav = () => (
-    <LargeBlock title="Nav" tooltip="Dashboard only" sx={{ gap: 2.5 }}>
-      {isNavLayoutVisible && (
-        <SmallBlock
-          label="Layout"
-          canReset={settings.state.navLayout !== defaultSettings.navLayout}
-          onReset={() => settings.setState({ navLayout: defaultSettings.navLayout })}
-        >
-          <NavLayoutOptions
-            value={settings.state.navLayout}
-            onChangeOption={(newOption) => settings.setState({ navLayout: newOption })}
-            options={[
-              {
-                value: 'vertical',
-                icon: (
-                  <SvgIcon sx={{ width: 1, height: 'auto' }}>{settingIcons.navVertical}</SvgIcon>
-                ),
-              },
-              {
-                value: 'horizontal',
-                icon: (
-                  <SvgIcon sx={{ width: 1, height: 'auto' }}>{settingIcons.navHorizontal}</SvgIcon>
-                ),
-              },
-              {
-                value: 'mini',
-                icon: <SvgIcon sx={{ width: 1, height: 'auto' }}>{settingIcons.navMini}</SvgIcon>,
-              },
-            ]}
-          />
-        </SmallBlock>
-      )}
-      {isNavColorVisible && (
-        <SmallBlock
-          label="Color"
-          canReset={settings.state.navColor !== defaultSettings.navColor}
-          onReset={() => settings.setState({ navColor: defaultSettings.navColor })}
-        >
-          <NavColorOptions
-            value={settings.state.navColor}
-            onChangeOption={(newOption) => settings.setState({ navColor: newOption })}
-            options={[
-              {
-                label: 'Integrate',
-                value: 'integrate',
-                icon: <SvgIcon>{settingIcons.sidebarOutline}</SvgIcon>,
-              },
-              {
-                label: 'Apparent',
-                value: 'apparent',
-                icon: <SvgIcon>{settingIcons.sidebarFill}</SvgIcon>,
-              },
-            ]}
-          />
-        </SmallBlock>
-      )}
-    </LargeBlock>
-  );
-
-  const renderFont = () => (
-    <LargeBlock title="Font" sx={{ gap: 2.5 }}>
-      {isFontFamilyVisible && (
-        <SmallBlock
-          label="Family"
-          canReset={settings.state.fontFamily !== defaultSettings.fontFamily}
-          onReset={() => settings.setState({ fontFamily: defaultSettings.fontFamily })}
-        >
-          <FontFamilyOptions
-            value={settings.state.fontFamily}
-            onChangeOption={(newOption) => settings.setState({ fontFamily: newOption })}
-            options={[
-              themeConfig.fontFamily.primary,
-              'Inter Variable',
-              'DM Sans Variable',
-              'Nunito Sans Variable',
-            ]}
-            icon={<SvgIcon sx={{ width: 28, height: 28 }}>{settingIcons.font}</SvgIcon>}
-          />
-        </SmallBlock>
-      )}
-      {isFontSizeVisible && (
-        <SmallBlock
-          label="Size"
-          canReset={settings.state.fontSize !== defaultSettings.fontSize}
-          onReset={() => settings.setState({ fontSize: defaultSettings.fontSize })}
-          sx={{ gap: 5 }}
-        >
-          <FontSizeOptions
-            options={[12, 20]}
-            value={settings.state.fontSize}
-            onChangeOption={(newOption) => settings.setState({ fontSize: newOption })}
-          />
-        </SmallBlock>
-      )}
-    </LargeBlock>
-  );
-
   return (
     <Drawer
       anchor="right"
@@ -291,14 +124,7 @@ export function SettingsDrawer({ sx, defaultSettings }) {
             }}
           >
             {isColorSchemeVisible && renderMode()}
-            {isContrastVisible && renderContrast()}
-            {isDirectionVisible && renderRtl()}
-            {isCompactLayoutVisible && renderCompact()}
           </Box>
-
-          {(isNavColorVisible || isNavLayoutVisible) && renderNav()}
-          {isPrimaryColorVisible && renderPresets()}
-          {(isFontFamilyVisible || isFontSizeVisible) && renderFont()}
         </Box>
       </Scrollbar>
     </Drawer>

@@ -4,7 +4,9 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
 import { CONFIG } from 'src/global-config';
+import { UserProvider } from 'src/context/user';
 import { primary } from 'src/theme/core/palette';
+import { MetricsProvider } from 'src/context/metrics';
 import { themeConfig, ThemeProvider } from 'src/theme';
 import { I18nProvider, LocalizationProvider } from 'src/locales';
 
@@ -62,31 +64,35 @@ export default async function RootLayout({ children }) {
           attribute={themeConfig.cssVariables.colorSchemeSelector}
           defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
         />
-        <I18nProvider lang={appConfig.i18nLang}>
-          <AuthProvider>
-            <SettingsProvider
-              cookieSettings={appConfig.cookieSettings}
-              defaultSettings={defaultSettings}
-            >
-              <LocalizationProvider>
-                <AppRouterCacheProvider options={{ key: 'css' }}>
-                  <ThemeProvider
-                    modeStorageKey={themeConfig.modeStorageKey}
-                    defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
-                  >
-                    <QueryProvider>
-                      <MotionLazy>
-                        <ProgressBar />
-                        <SettingsDrawer defaultSettings={defaultSettings} />
-                        {children}
-                      </MotionLazy>
-                    </QueryProvider>
-                  </ThemeProvider>
-                </AppRouterCacheProvider>
-              </LocalizationProvider>
-            </SettingsProvider>
-          </AuthProvider>
-        </I18nProvider>
+        <UserProvider>
+          <MetricsProvider>
+            <I18nProvider lang={appConfig.i18nLang}>
+              <AuthProvider>
+                <SettingsProvider
+                  cookieSettings={appConfig.cookieSettings}
+                  defaultSettings={defaultSettings}
+                >
+                  <LocalizationProvider>
+                    <AppRouterCacheProvider options={{ key: 'css' }}>
+                      <ThemeProvider
+                        modeStorageKey={themeConfig.modeStorageKey}
+                        defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
+                      >
+                        <QueryProvider>
+                          <MotionLazy>
+                            <ProgressBar />
+                            <SettingsDrawer defaultSettings={defaultSettings} />
+                            {children}
+                          </MotionLazy>
+                        </QueryProvider>
+                      </ThemeProvider>
+                    </AppRouterCacheProvider>
+                  </LocalizationProvider>
+                </SettingsProvider>
+              </AuthProvider>
+            </I18nProvider>
+          </MetricsProvider>
+        </UserProvider>
       </body>
     </html>
   );

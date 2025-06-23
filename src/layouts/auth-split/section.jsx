@@ -1,11 +1,11 @@
 'use client';
 
-import { m } from 'framer-motion';
 import { useMemo } from 'react';
+import { m } from 'framer-motion';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
@@ -23,7 +23,7 @@ const BANNER_TITLES = [
 export function AuthSplitSection({
   sx,
   layoutQuery = 'md',
-  subtitle = 'More effectively with optimized workflows.',
+  subtitle = 'auth.signIn.subtitle',
   ...other
 }) {
   const { t } = useTranslate();
@@ -131,7 +131,7 @@ export function AuthSplitSection({
               lineHeight: 1.6,
             }}
           >
-            {subtitle}
+            {t(subtitle)}
           </Typography>
         )}
       </Box>

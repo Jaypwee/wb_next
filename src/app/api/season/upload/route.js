@@ -65,8 +65,15 @@ export async function POST(request) {
     const usersSnapshot = await adminDb.collection('users').get();
     const validUserIds = new Set(usersSnapshot.docs.map(doc => doc.id));
     
+    // Create a map of user documents for easy lookup and updates
+    const userDocsMap = new Map();
+    usersSnapshot.docs.forEach(doc => {
+      userDocsMap.set(doc.id, { ref: doc.ref, data: doc.data() });
+    });
+    
     // Parse data into the required format
     const parsedData = {};
+    const userUpdates = new Map(); // Track updates for user documents
     
     // Process each target sheet
     for (const sheetName of targetSheets) {
@@ -98,7 +105,7 @@ export async function POST(request) {
           parsedData[lordId] = {
             name: row[1],
             currentPower: Number(row[5]),
-            power: Number(row[6]),
+            highestPower: Number(row[6]),
             merits: Number(row[7]),
             unitsKilled: Number(row[8]),
             unitsDead: Number(row[9]),
@@ -107,11 +114,62 @@ export async function POST(request) {
             manaSpent: Number(row[32]),
             gemsSpent: Number(row[34])
           };
+
+          // Prepare user document updates - only update if new value is higher
+          const userDoc = userDocsMap.get(lordId);
+          if (userDoc) {
+            const currentData = userDoc.data;
+            const updates = {};
+            
+            // Always update nickname if it exists
+            if (row[1]) {
+              updates.nickname = row[1];
+            }
+            
+            // Only update if new value is higher than existing
+            const newHighestPower = Number(row[6]);
+            if (!currentData.highestPower || newHighestPower > currentData.highestPower) {
+              updates.highestPower = newHighestPower;
+            }
+            
+            const newUnitsKilled = Number(row[8]);
+            if (!currentData.unitsKilled || newUnitsKilled > currentData.unitsKilled) {
+              updates.unitsKilled = newUnitsKilled;
+            }
+            
+            const newUnitsDead = Number(row[9]);
+            if (!currentData.unitsDead || newUnitsDead > currentData.unitsDead) {
+              updates.unitsDead = newUnitsDead;
+            }
+            
+            const newManaSpent = Number(row[32]);
+            if (!currentData.manaSpent || newManaSpent > currentData.manaSpent) {
+              updates.manaSpent = newManaSpent;
+            }
+            
+            // Only add to updates if there are fields to update
+            if (Object.keys(updates).length > 0) {  
+              userUpdates.set(lordId, { ref: userDoc.ref, updates });
+            }
+          }
         }
       }
     }
 
     console.log('Number of records parsed:', Object.keys(parsedData).length);
+    console.log('Number of user documents to update:', userUpdates.size);
+
+    // Batch update user documents
+    if (userUpdates.size > 0) {
+      const batch = adminDb.batch();
+      
+      userUpdates.forEach(({ ref, updates }) => {
+        batch.update(ref, updates);
+      });
+      
+      await batch.commit();
+      console.log('User documents updated successfully');
+    }
 
     // Write to Firestore
     const sheetsRef = adminDb.collection('sheets').doc(seasonName);
@@ -123,12 +181,14 @@ export async function POST(request) {
         individual: {
           [title]: parsedData
         },
-        kvk: {}
+        kvk: {},
+        lastUpdatedAt: new Date().toISOString()
       });
     } else {
       // Update existing document
       await sheetsRef.update({
-        [`individual.${title}`]: parsedData
+        [`individual.${title}`]: parsedData,
+        lastUpdatedAt: new Date().toISOString()
       });
     }
 
