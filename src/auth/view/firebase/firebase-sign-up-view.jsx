@@ -117,10 +117,22 @@ export function FirebaseSignUpView() {
       >
         <Field.Select name="nationality" label={t('auth.signUp.nationality')}>
           <MenuItem key='korean' value="korean">
-            한국
+            🇰🇷 한국
+          </MenuItem>
+          <MenuItem key='vietnam' value="vietnam">
+            🇻🇳 Vietnam
+          </MenuItem>
+          <MenuItem key='russia' value="russia">
+            🇷🇺 Russia
+          </MenuItem>
+          <MenuItem key='usa' value="usa">
+            🇺🇸 U.S.
+          </MenuItem>
+          <MenuItem key='china' value="china">
+            🇨🇳 China
           </MenuItem>
           <MenuItem key='international' value="international">
-            International
+            🌍 International
           </MenuItem>
         </Field.Select>
 

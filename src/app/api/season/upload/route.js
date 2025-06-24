@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { adminDb } from 'src/lib/firebase-admin';
 import { withAuthAndRole } from 'src/lib/auth-middleware';
+import { createLoggedFirestore } from 'src/lib/firestore-logger';
 import { invalidateAllSeasonIndividualMetrics } from 'src/lib/cache-invalidation';
 
 const REQUIRED_COLUMNS_FORMAT_1 = {
@@ -91,6 +92,10 @@ async function postHandler(request) {
     const seasonName = formData.get('seasonName');
     const title = formData.get('title');
 
+    // Get authenticated user for logging context
+    const authenticatedUser = request.user;
+    const loggedDb = createLoggedFirestore(authenticatedUser);
+
     if (!file) {
       return NextResponse.json(
         { error: 'No file provided' },
@@ -100,7 +105,7 @@ async function postHandler(request) {
 
     if (!seasonName || !title) {
       return NextResponse.json(
-        { error: 'Missing required metadata (seasonName or title)' },
+        { error: 'Season name and title are required' },
         { status: 400 }
       );
     }
@@ -249,23 +254,23 @@ async function postHandler(request) {
 
     // Batch update user documents
     if (userUpdates.size > 0) {
-      const batch = adminDb.batch();
+      const loggedBatch = loggedDb.batch();
       
       userUpdates.forEach(({ ref, updates }) => {
-        batch.update(ref, updates);
+        loggedBatch.update(ref, updates);
       });
       
-      await batch.commit();
+      await loggedBatch.commit();
       console.log('User documents updated successfully');
     }
 
-    // Write to Firestore
+    // Write to Firestore using logged operations
     const sheetsRef = adminDb.collection('sheets').doc(seasonName);
     const sheetDoc = await sheetsRef.get();
 
     if (!sheetDoc.exists) {
       // Create new document if it doesn't exist
-      await sheetsRef.set({
+      await loggedDb.collection('sheets').doc(seasonName).set({
         individual: {
           [title]: parsedData
         },
@@ -274,7 +279,7 @@ async function postHandler(request) {
       });
     } else {
       // Update existing document
-      await sheetsRef.update({
+      await loggedDb.collection('sheets').doc(seasonName).update({
         [`individual.${title}`]: parsedData,
         lastUpdatedAt: new Date().toISOString()
       });

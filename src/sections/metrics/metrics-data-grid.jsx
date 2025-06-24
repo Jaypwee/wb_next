@@ -85,6 +85,54 @@ function NationalityFlag({ nationality }) {
     );
   }
   
+  if (nationality === 'vietnam') {
+    return (
+      <Iconify
+        icon="twemoji:flag-vietnam"
+        sx={{
+          width: 28,
+          height: 28,
+        }}
+      />
+    );
+  }
+  
+  if (nationality === 'russia') {
+    return (
+      <Iconify
+        icon="twemoji:flag-russia"
+        sx={{
+          width: 28,
+          height: 28,
+        }}
+      />
+    );
+  }
+  
+  if (nationality === 'usa') {
+    return (
+      <Iconify
+        icon="twemoji:flag-united-states"
+        sx={{
+          width: 28,
+          height: 28,
+        }}
+      />
+    );
+  }
+  
+  if (nationality === 'china') {
+    return (
+      <Iconify
+        icon="twemoji:flag-china"
+        sx={{
+          width: 28,
+          height: 28,
+        }}
+      />
+    );
+  }
+  
   if (nationality === 'international') {
     return (
       <Iconify

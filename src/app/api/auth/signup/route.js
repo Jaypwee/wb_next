@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { adminDb, adminAuth } from 'src/lib/firebase-admin';
+import { createLoggedFirestore } from 'src/lib/firestore-logger';
 
 export async function POST(request) {
   try {
@@ -8,7 +9,6 @@ export async function POST(request) {
 
     // Check if gameuid already exists
     const usersRef = adminDb.collection('users');
-
 
     // Check if user exists in users collection
     const userDoc = await usersRef.doc(gameuid).get();
@@ -33,8 +33,15 @@ export async function POST(request) {
       password,
     });
 
-    // Create user profile in Firestore
-    await usersRef.doc(gameuid).set({
+    // Create logged Firestore instance for signup operation
+    const loggedDb = createLoggedFirestore({
+      uid: userRecord.uid,
+      email,
+      role: 'user'
+    });
+
+    // Create user profile in Firestore using logged operation
+    await loggedDb.collection('users').doc(gameuid).update({
       uid: userRecord.uid,
       email,
       nationality,
