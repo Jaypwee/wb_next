@@ -25,6 +25,8 @@ import { useUserContext } from 'src/context/user/context';
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
 
+import { RoleBasedGuard } from 'src/auth/guard';
+
 import UsersDataGrid from './components/users-data-grid';
 import { useFileUpload, useReportUpload } from '../hooks/admin';
 import { InfantryGroupManager } from './components/infantry-group-manager';
@@ -159,9 +161,10 @@ export function AdminView() {
   };
 
   return (
-    <Container maxWidth="xl">
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        관리자 페이지
+    <RoleBasedGuard allowedRoles={['admin']}>
+      <Container maxWidth="xl">
+        <Typography variant="h4" sx={{ mb: 5 }}>
+          관리자 페이지
       </Typography>
 
       <Stack spacing={3}>
@@ -268,5 +271,6 @@ export function AdminView() {
         <InfantryGroupManager users={users} />
       </Stack>
     </Container>
+    </RoleBasedGuard>
   );
 } 

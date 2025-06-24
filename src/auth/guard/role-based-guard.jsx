@@ -9,6 +9,8 @@ import { ForbiddenIllustration } from 'src/assets/illustrations';
 
 import { varBounce, MotionContainer } from 'src/components/animate';
 
+import { useAuthContext } from '../hooks';
+
 // ----------------------------------------------------------------------
 
 /**
@@ -17,8 +19,12 @@ import { varBounce, MotionContainer } from 'src/components/animate';
  * You can customize the logic and conditions to better suit your application's requirements.
  */
 
-export function RoleBasedGuard({ sx, children, hasContent, currentRole, allowedRoles }) {
-  if (currentRole && allowedRoles && !allowedRoles.includes(currentRole)) {
+export function RoleBasedGuard({ sx, children, hasContent = true, allowedRoles }) {
+  const { user } = useAuthContext();
+  const currentRole = user?.role;
+  console.log(user, allowedRoles, currentRole);
+
+  if (user && allowedRoles && !allowedRoles.includes(currentRole)) {
     return hasContent ? (
       <Container
         component={MotionContainer}

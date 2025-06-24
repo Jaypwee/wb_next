@@ -11,7 +11,7 @@ import { iconButtonClasses } from '@mui/material/IconButton';
 import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useAuthContext } from 'src/auth/hooks';
 
 import { NavMobile } from './nav-mobile';
 import { HomeFooter } from '../main/footer';
@@ -34,7 +34,7 @@ import { dashboardLayoutVars, dashboardNavColorVars } from './css-vars';
 export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery = 'lg' }) {
   const theme = useTheme();
 
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
 
   const settings = useSettingsContext();
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
