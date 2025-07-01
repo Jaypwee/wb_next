@@ -1,5 +1,8 @@
 'use client';
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { useMemo, useState, useEffect, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
@@ -14,13 +17,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import axios from 'src/lib/axios';
 import { useTranslate } from 'src/locales';
+import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 
 import { Iconify } from 'src/components/iconify';
 import { LoadingScreen } from 'src/components/loading-screen';
 
 import { EventDialog } from './components/event-dialog';
 import { CalendarGrid } from './components/calendar-grid';
-import { getUserTimezone, getTimezoneDisplayName } from './utils/timezone';
+
+// Extend dayjs with timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // ----------------------------------------------------------------------
 
@@ -134,13 +141,12 @@ export function ScheduleCalendar({ readOnly = false }) {
           const newEvent = {
             ...eventData,
             id: Date.now().toString(),
-            timezone: eventData.timezone || getUserTimezone(),
           };
           updatedEvents = [...events, newEvent];
         }
 
         // Save to API first
-        await saveEventsToAPI(updatedEvents);
+        await makeAuthenticatedRequest(() => saveEventsToAPI(updatedEvents));
         
         // Update local state
         setEvents(updatedEvents);
@@ -181,9 +187,30 @@ export function ScheduleCalendar({ readOnly = false }) {
     
     startTransition(async () => {
       try {
-        const updatedEvents = events.map(event => 
-          event.id === eventId ? { ...event, date: newDate } : event
-        );
+        const updatedEvents = events.map(event => {
+          if (event.id === eventId) {
+            if (event.datetime) {
+              // New format: Update the datetime while preserving time
+              const utcDateTime = dayjs.utc(event.datetime);
+              const localDateTime = utcDateTime.local();
+              const newDateTime = dayjs(newDate)
+                .hour(localDateTime.hour())
+                .minute(localDateTime.minute())
+                .second(0)
+                .millisecond(0);
+              
+              return {
+                ...event,
+                datetime: newDateTime.utc().toISOString(),
+                date: newDate, // Keep legacy field for compatibility
+              };
+            } else {
+              // Legacy format: Just update the date
+              return { ...event, date: newDate };
+            }
+          }
+          return event;
+        });
         
         // Save to API first
         await saveEventsToAPI(updatedEvents);
@@ -200,6 +227,25 @@ export function ScheduleCalendar({ readOnly = false }) {
   const handleRetry = () => {
     setIsInitialLoading(true);
     fetchEvents();
+  };
+
+  // Get current timezone for display
+  const getCurrentTimezone = () => {
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: userTimezone,
+        timeZoneName: 'short',
+      });
+      
+      const parts = formatter.formatToParts(now);
+      const timeZoneName = parts.find(part => part.type === 'timeZoneName')?.value;
+      
+      return `${userTimezone.replace('_', ' ')} (${timeZoneName})`;
+    } catch (formatError) {
+      return userTimezone;
+    }
   };
 
   // Show loading state for initial load
@@ -273,7 +319,7 @@ export function ScheduleCalendar({ readOnly = false }) {
           </Button>
           <Chip
             icon={<Iconify icon="mdi:clock-outline" />}
-            label={getTimezoneDisplayName()}
+            label={getCurrentTimezone()}
             size="small"
             variant="outlined"
             sx={{ ml: 1 }}

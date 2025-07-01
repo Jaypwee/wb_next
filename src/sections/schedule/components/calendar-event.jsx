@@ -1,17 +1,27 @@
 'use client';
 
+import dayjs from 'dayjs';
+import { useState } from 'react';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
 import { useTranslate } from 'src/locales';
 
-import { getUserTimezone, formatTimeWithTimezone } from '../utils/timezone';
+import { EventDetailsDialog } from './event-details-dialog';
+
+// Extend dayjs with timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // ----------------------------------------------------------------------
 
 export function CalendarEvent({ event, onEdit, readOnly = false }) {
   const { t } = useTranslate();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleDragStart = (e) => {
     if (readOnly) {
@@ -24,68 +34,85 @@ export function CalendarEvent({ event, onEdit, readOnly = false }) {
 
   const handleClick = (e) => {
     e.stopPropagation();
-    if (!readOnly) {
+    if (readOnly) {
+      setDialogOpen(true);
+    } else {
       onEdit(event);
     }
   };
 
-  const displayTime = formatTimeWithTimezone(
-    event.date, 
-    event.startTime, 
-    event.timezone || getUserTimezone()
-  );
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
 
-  const showTimezoneIndicator = event.timezone && event.timezone !== getUserTimezone();
+  // Format time for display - convert UTC to user's local timezone
+  const formatDisplayTime = () => {
+    try {
+      if (event.datetime) {
+        // New format: UTC datetime
+        const utcDateTime = dayjs.utc(event.datetime);
+        const localDateTime = utcDateTime.local();
+        return localDateTime.format('h:mm A');
+      } else if (event.date && event.startTime) {
+        // Legacy format support
+        const dateTime = dayjs(`${event.date}T${event.startTime}`);
+        return dateTime.format('h:mm a');
+      }
+      return '';
+    } catch (error) {
+      console.warn('Failed to format event time:', error);
+      return event.startTime || '';
+    }
+  };
+
+  const displayTime = formatDisplayTime();
 
   return (
-    <Box
-      draggable={!readOnly}
-      onDragStart={handleDragStart}
-      onClick={handleClick}
-      sx={{
-        p: 0.5,
-        mb: 0.5,
-        borderRadius: 0.5,
-        bgcolor: alpha(event.color, 0.15),
-        border: `1px solid ${event.color}`,
-        cursor: readOnly ? 'default' : 'pointer',
-        position: 'relative',
-        '&:hover': {
-        bgcolor: alpha(event.color, 0.25),
-        },
-      }}
-    >
-      <Typography
-        variant="caption"
+    <>
+      <Box
+        draggable={!readOnly}
+        onDragStart={handleDragStart}
+        onClick={handleClick}
         sx={{
-          color: event.color,
-          fontWeight: 500,
-          fontSize: '0.7rem',
-          lineHeight: 1.2,
-          display: 'block',
+          p: 0.5,
+          mb: 0.5,
+          borderRadius: 0.5,
+          bgcolor: alpha(event.color, 0.15),
+          border: `1px solid ${event.color}`,
+          cursor: readOnly ? 'pointer' : 'pointer',
+          position: 'relative',
+          width: '100%',
+          maxWidth: '100%',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          '&:hover': {
+          bgcolor: alpha(event.color, 0.25),
+          },
         }}
       >
-        {displayTime} {event.title}
-      </Typography>
-      
-      {showTimezoneIndicator && (
-        <Box
+        <Typography
+          variant="caption"
           sx={{
-            position: 'absolute',
-            top: 2,
-            right: 2,
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            bgcolor: 'warning.main',
-            opacity: 0.8,
+            color: event.color,
+            fontWeight: 500,
+            fontSize: '0.7rem',
+            lineHeight: 1.2,
+            display: 'block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
-          title={t('schedule.events.eventInTimezone', { timezone: event.timezone })}
+        >
+          {displayTime} | {event.title}
+        </Typography>
+      </Box>
+
+      {readOnly && (
+        <EventDetailsDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          event={event}
         />
       )}
-    </Box>
+    </>
   );
 } 

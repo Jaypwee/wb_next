@@ -1,6 +1,9 @@
 'use client';
 
+import dayjs from 'dayjs';
 import { useMemo } from 'react';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -10,6 +13,10 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useTranslate } from 'src/locales';
 
 import { CalendarEvent } from './calendar-event';
+
+// Extend dayjs with timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +43,25 @@ export function CalendarGrid({
   const theme = useTheme();
   const { t } = useTranslate();
 
+  // Helper function to get event date string for filtering
+  const getEventDateString = (event) => {
+    try {
+      if (event.datetime) {
+        // New format: UTC datetime - convert to local timezone for calendar display
+        const utcDateTime = dayjs.utc(event.datetime);
+        const localDateTime = utcDateTime.local();
+        return localDateTime.format('YYYY-MM-DD');
+      } else if (event.date) {
+        // Legacy format: date string
+        return event.date;
+      }
+      return null;
+    } catch (error) {
+      console.warn('Failed to get event date:', error);
+      return event.date || null;
+    }
+  };
+
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -54,7 +80,12 @@ export function CalendarGrid({
     // Generate 42 days (6 weeks × 7 days) to fill the calendar grid
     for (let i = 0; i < 42; i++) {
       const dayString = currentDay.toISOString().split('T')[0];
-      const dayEvents = events.filter(event => event.date === dayString);
+      
+      // Filter events for this day using the helper function
+      const dayEvents = events.filter(event => {
+        const eventDateString = getEventDateString(event);
+        return eventDateString === dayString;
+      });
       
       days.push({
         date: new Date(currentDay),
@@ -76,8 +107,13 @@ export function CalendarGrid({
     
     e.preventDefault();
     const eventId = e.dataTransfer.getData('text/plain');
-    if (eventId && targetDate !== events.find(event => event.id === eventId)?.date) {
-      onEventDrop(eventId, targetDate);
+    const draggedEvent = events.find(event => event.id === eventId);
+    
+    if (eventId && draggedEvent) {
+      const currentEventDate = getEventDateString(draggedEvent);
+      if (targetDate !== currentEventDate) {
+        onEventDrop(eventId, targetDate);
+      }
     }
   };
 
@@ -126,6 +162,9 @@ export function CalendarGrid({
           gridTemplateColumns: 'repeat(7, 1fr)',
           gap: 1,
           height: 600,
+          width: '100%',
+          maxWidth: '100%',
+          overflow: 'hidden',
         }}
       >
         {calendarDays.map((day, index) => {
@@ -142,6 +181,9 @@ export function CalendarGrid({
               sx={{
                 p: 1,
                 minHeight: 100,
+                width: '100%',
+                maxWidth: '100%',
+                overflow: 'hidden',
                 cursor: readOnly ? 'default' : 'pointer',
                 position: 'relative',
                 bgcolor: day.isCurrentMonth ? 'background.paper' : 'action.hover',
@@ -181,7 +223,11 @@ export function CalendarGrid({
               </Typography>
 
               {/* Events */}
-              <Box sx={{ mt: 0.5 }}>
+              <Box sx={{ 
+                mt: 0.5,
+                width: '100%',
+                overflow: 'hidden'
+              }}>
                 {day.events.slice(0, 3).map((event) => (
                   <CalendarEvent
                     key={event.id}

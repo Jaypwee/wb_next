@@ -1,4 +1,7 @@
 {
+  "common": {
+    "close": "Close"
+  },
   "auth": {
     "common": {
       "email": "Email",
@@ -103,9 +106,6 @@
       "eventTitle": "Event Title",
       "date": "Date",
       "startTime": "Start Time",
-      "endTime": "End Time",
-      "timezone": "Timezone",
-      "yourLocalTime": "Your Local Time",
       "color": "Color",
       "description": "Description",
       "delete": "Delete",
@@ -115,7 +115,11 @@
     },
     "events": {
       "moreEvents": "+{{count}} more",
-      "eventInTimezone": "Event in {{timezone}}"
+      "eventInTimezone": "Event in {{timezone}}",
+      "dateAndTime": "Date & Time",
+      "description": "Description",
+      "category": "Category",
+      "location": "Location"
     },
     "colorOptions": {
       "primary": "Primary",

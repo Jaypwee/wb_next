@@ -54,18 +54,18 @@ async function updateScheduleHandler(request) {
       );
     }
 
-    // Validate each event has required fields
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      if (!event.title || !event.date || !event.startTime || !event.endTime) {
-        return NextResponse.json(
-          { 
-            error: `Event at index ${i} is missing required fields (title, date, startTime, endTime)` 
-          },
-          { status: 400 }
-        );
-      }
-    }
+    // // Validate each event has required fields
+    // for (let i = 0; i < events.length; i++) {
+    //   const event = events[i];
+    //   if (!event.title || !event.date || !event.startTime || !event.endTime) {
+    //     return NextResponse.json(
+    //       { 
+    //         error: `Event at index ${i} is missing required fields (title, date, startTime, endTime)` 
+    //       },
+    //       { status: 400 }
+    //     );
+    //   }
+    // }
 
     // Create logged Firestore instance with user context
     const loggedDb = createLoggedFirestore(request.user);

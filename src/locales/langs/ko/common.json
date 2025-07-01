@@ -1,4 +1,7 @@
 {
+  "common": {
+    "close": "닫기"
+  },
   "auth": {
     "common": {
       "email": "이메일",
@@ -104,9 +107,6 @@
       "eventTitle": "일정 제목",
       "date": "날짜",
       "startTime": "시작 시간",
-      "endTime": "종료 시간",
-      "timezone": "시간대",
-      "yourLocalTime": "내 로컬 시간",
       "color": "색상",
       "description": "설명",
       "delete": "삭제",
@@ -116,7 +116,11 @@
     },
     "events": {
       "moreEvents": "+{{count}}개 더",
-      "eventInTimezone": "{{timezone}} 시간대 일정"
+      "eventInTimezone": "{{timezone}} 시간대 일정",
+      "dateAndTime": "날짜 및 시간",
+      "description": "설명",
+      "category": "카테고리",
+      "location": "장소"
     },
     "colorOptions": {
       "primary": "기본",

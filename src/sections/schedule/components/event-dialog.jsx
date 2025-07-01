@@ -1,18 +1,16 @@
 'use client';
 
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useState, useEffect } from 'react';
+import timezone from 'dayjs/plugin/timezone';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import Select from '@mui/material/Select';
 import { alpha } from '@mui/material/styles';
-import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -21,7 +19,9 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 
 import { useTranslate } from 'src/locales';
 
-import { getUserTimezone, getCommonTimezones, getTimezoneDisplayName } from '../utils/timezone';
+// Extend dayjs with timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // ----------------------------------------------------------------------
 
@@ -42,20 +42,31 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
     title: '',
     date: null,
     startTime: dayjs().hour(9).minute(0),
-    endTime: dayjs().hour(10).minute(0),
-    timezone: getUserTimezone(),
     color: COLOR_OPTIONS[0].value,
     description: '',
   });
 
   useEffect(() => {
     if (event) {
+      // Parse UTC datetime back to local timezone for editing
+      let eventDate = null;
+      let eventStartTime = dayjs().hour(9).minute(0);
+      
+      if (event.datetime) {
+        const utcDateTime = dayjs.utc(event.datetime);
+        const localDateTime = utcDateTime.local();
+        eventDate = localDateTime;
+        eventStartTime = localDateTime;
+      } else if (event.date && event.startTime) {
+        // Legacy format support
+        eventDate = dayjs(event.date);
+        eventStartTime = dayjs(event.startTime, 'HH:mm');
+      }
+      
       setFormData({
         title: event.title || '',
-        date: event.date ? dayjs(event.date) : null,
-        startTime: event.startTime ? dayjs(event.startTime, 'HH:mm') : dayjs().hour(9).minute(0),
-        endTime: event.endTime ? dayjs(event.endTime, 'HH:mm') : dayjs().hour(10).minute(0),
-        timezone: event.timezone || getUserTimezone(),
+        date: eventDate,
+        startTime: eventStartTime,
         color: event.color || COLOR_OPTIONS[0].value,
         description: event.description || '',
       });
@@ -65,7 +76,6 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
         date: dayjs(date),
         title: '',
         description: '',
-        timezone: getUserTimezone(),
       }));
     }
   }, [event, date]);
@@ -95,15 +105,23 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
     e.preventDefault();
     if (readOnly) return; // Prevent submission in read-only mode
     
-    if (formData.title.trim() && formData.date) {
+    if (formData.title.trim() && formData.date && formData.startTime) {
+      // Combine date and time, then convert to UTC with 'Z' suffix
+      const combinedDateTime = formData.date
+        .hour(formData.startTime.hour())
+        .minute(formData.startTime.minute())
+        .second(0)
+        .millisecond(0);
+      
+      const utcDateTime = combinedDateTime.utc().toISOString();
+      
       const eventData = {
         title: formData.title,
-        date: formData.date.format('YYYY-MM-DD'),
-        startTime: formData.startTime.format('HH:mm'),
-        endTime: formData.endTime.format('HH:mm'),
-        timezone: formData.timezone,
+        datetime: utcDateTime, // Store as UTC datetime with 'Z' suffix
         color: formData.color,
         description: formData.description,
+        // Keep legacy date field for compatibility during transition
+        date: formData.date.format('YYYY-MM-DD'),
       };
       onSave(eventData);
     }
@@ -162,57 +180,17 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
             }}
           />
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TimePicker
-              label={t('schedule.eventDialog.startTime')}
-              value={formData.startTime}
-              onChange={handleDateTimeChange('startTime')}
-              slotProps={{
-                textField: {
-                  required: true,
-                  sx: { flex: 1 },
-                },
-              }}
-            />
-            <TimePicker
-              label={t('schedule.eventDialog.endTime')}
-              value={formData.endTime}
-              onChange={handleDateTimeChange('endTime')}
-              slotProps={{
-                textField: {
-                  required: true,
-                  sx: { flex: 1 },
-                },
-              }}
-            />
-          </Box>
-
-          <FormControl fullWidth>
-            <InputLabel>{t('schedule.eventDialog.timezone')}</InputLabel>
-            <Select
-              value={formData.timezone}
-              onChange={handleChange('timezone')}
-              label={t('schedule.eventDialog.timezone')}
-            >
-              <MenuItem value={getUserTimezone()}>
-                <Box>
-                  <Typography variant="body2" fontWeight="medium">
-                    {getTimezoneDisplayName(getUserTimezone())}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t('schedule.eventDialog.yourLocalTime')}
-                  </Typography>
-                </Box>
-              </MenuItem>
-              {getCommonTimezones()
-                .filter(tz => tz !== getUserTimezone())
-                .map((timezone) => (
-                  <MenuItem key={timezone} value={timezone}>
-                    {getTimezoneDisplayName(timezone)}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
+          <TimePicker
+            label={t('schedule.eventDialog.startTime')}
+            value={formData.startTime}
+            onChange={handleDateTimeChange('startTime')}
+            slotProps={{
+              textField: {
+                required: true,
+                fullWidth: true,
+              },
+            }}
+          />
 
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -269,7 +247,7 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
         <Button 
           type="submit" 
           variant="contained"
-          disabled={!formData.title.trim() || !formData.date}
+          disabled={!formData.title.trim() || !formData.date || !formData.startTime}
         >
           {event ? t('schedule.eventDialog.saveChanges') : t('schedule.eventDialog.addEventButton')}
         </Button>
