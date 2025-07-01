@@ -3,6 +3,7 @@ export { MetricsProvider, useMetricsContext } from './context';
 export {
   setError,
   setLoading,
+  setOverview,
   setSeasonDates,
   setSelectedSeason,
   setSelectedMetrics,

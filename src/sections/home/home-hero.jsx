@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState } from 'react';
 import { m, useScroll, useSpring, useTransform, useMotionValueEvent } from 'framer-motion';
 
@@ -32,7 +34,7 @@ const motionProps = {
 
 export function HomeHero({ sx, ...other }) {
   const scrollProgress = useScrollPercent();
-  const { t } = useTranslate()
+  const { t } = useTranslate();
 
   const mdUp = useMediaQuery((theme) => theme.breakpoints.up(mdKey));
 

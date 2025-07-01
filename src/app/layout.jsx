@@ -10,10 +10,12 @@ import { MetricsProvider } from 'src/context/metrics';
 import { themeConfig, ThemeProvider } from 'src/theme';
 import { I18nProvider, LocalizationProvider } from 'src/locales';
 
+import { Snackbar } from 'src/components/snackbar';
 import { ProgressBar } from 'src/components/progress-bar';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import { detectSettings } from 'src/components/settings/server';
 import { QueryProvider } from 'src/components/providers/query-provider';
+import { PayPalProviderWrapper } from 'src/components/providers/paypal-script-provider';
 import { SettingsDrawer, defaultSettings, SettingsProvider } from 'src/components/settings';
 
 import { AuthProvider } from 'src/auth/context/firebase';
@@ -53,6 +55,8 @@ async function getAppConfig() {
   }
 }
 
+
+
 export default async function RootLayout({ children }) {
   const appConfig = await getAppConfig();
 
@@ -78,13 +82,16 @@ export default async function RootLayout({ children }) {
                         modeStorageKey={themeConfig.modeStorageKey}
                         defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
                       >
-                        <QueryProvider>
-                          <MotionLazy>
-                            <ProgressBar />
-                            <SettingsDrawer defaultSettings={defaultSettings} />
-                            {children}
-                          </MotionLazy>
-                        </QueryProvider>
+                        <PayPalProviderWrapper>
+                          <QueryProvider>
+                            <MotionLazy>
+                              <ProgressBar />
+                              <SettingsDrawer defaultSettings={defaultSettings} />
+                              <Snackbar />
+                              {children}
+                            </MotionLazy>
+                          </QueryProvider>
+                        </PayPalProviderWrapper>
                       </ThemeProvider>
                     </AppRouterCacheProvider>
                   </LocalizationProvider>

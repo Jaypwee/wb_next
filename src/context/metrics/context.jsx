@@ -7,6 +7,7 @@ import {
   setError,
   setEndDate,
   setLoading,
+  setOverview,
   setStartDate,
   setSeasonDates,
   setSelectedSeason,
@@ -20,6 +21,7 @@ const initialState = {
   startDate: '',
   endDate: '',
   selectedMetrics: null,
+  overview: null,
   seasonDates: {
     startDate: null,
     endDate: null,
@@ -42,6 +44,7 @@ export function MetricsProvider({ children }) {
     setStartDate: (date) => dispatch(setStartDate(date)),
     setEndDate: (date) => dispatch(setEndDate(date)),
     setSelectedMetrics: (metrics) => dispatch(setSelectedMetrics(metrics)),
+    setOverview: (overview) => dispatch(setOverview(overview)),
     setSeasonDates: (dates) => dispatch(setSeasonDates(dates)),
     setLoading: (isLoading) => dispatch(setLoading(isLoading)),
     setError: (error) => dispatch(setError(error)),

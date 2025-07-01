@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { adminDb } from 'src/lib/firebase-admin';
+import { adminDb, adminStorage } from 'src/lib/firebase-admin';
 import { createLoggedFirestore } from 'src/lib/firestore-logger';
 import { withAuth, withAuthAndRole } from 'src/lib/auth-middleware';
 
@@ -217,16 +217,58 @@ async function deleteUserHandler(request) {
 
 async function updateUserHandler(request) {
   try {
-    // Get data from request body instead of query parameters
-    const body = await request.json();
-    const { uid, nationality, mainTroops, isInfantryGroup, labels } = body;
-
-    // Validate required uid field
-    if (!uid) {
-      return NextResponse.json(
-        { error: 'UID is required in request body' },
-        { status: 400 }
-      );
+    let uid, nationality, mainTroops, isInfantryGroup, labels, fileToUpload;
+    
+    // Get authenticated user first
+    const authenticatedUser = request.user;
+    
+    // Check if request is multipart/form-data (file upload)
+    const contentType = request.headers.get('content-type');
+    const isFileUpload = contentType?.includes('multipart/form-data');
+    
+    if (isFileUpload) {
+      // Handle file upload - use authenticated user's uid
+      const formData = await request.formData();
+      fileToUpload = formData.get('file');
+      uid = authenticatedUser.uid; // Always use authenticated user's uid for file uploads
+      
+      // Validate file
+      if (!fileToUpload || !fileToUpload.name) {
+        return NextResponse.json(
+          { error: 'No file provided for upload' },
+          { status: 400 }
+        );
+      }
+      
+      // Validate file type (allow common image formats)
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(fileToUpload.type)) {
+        return NextResponse.json(
+          { error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.' },
+          { status: 400 }
+        );
+      }
+      
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (fileToUpload.size > maxSize) {
+        return NextResponse.json(
+          { error: 'File size too large. Maximum size is 5MB.' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Handle regular JSON data
+      const body = await request.json();
+      ({ uid, nationality, mainTroops, isInfantryGroup, labels } = body);
+      
+      // Validate required uid field for non-file uploads
+      if (!uid) {
+        return NextResponse.json(
+          { error: 'UID is required in request body' },
+          { status: 400 }
+        );
+      }
     }
 
     // Validate labels if provided
@@ -236,9 +278,6 @@ async function updateUserHandler(request) {
         { status: 400 }
       );
     }
-
-    // Get authenticated user
-    const authenticatedUser = request.user;
     
     // Create logged Firestore instance with user context
     const loggedDb = createLoggedFirestore(authenticatedUser);
@@ -273,14 +312,54 @@ async function updateUserHandler(request) {
       );
     }
     
-    // Authorization logic: Users can update their own profile OR admins can update any profile
-    const canUpdate = authenticatedUser.uid === actualUid || authenticatedUser.role === 'admin';
+    // Authorization logic: 
+    // - For file uploads: uid is always the authenticated user's uid (no additional check needed)
+    // - For other updates: Users can update their own profile OR admins can update any profile
+    const canUpdate = isFileUpload || authenticatedUser.uid === actualUid || authenticatedUser.role === 'admin';
     
     if (!canUpdate) {
       return NextResponse.json(
         { error: 'Unauthorized: You can only update your own profile or must be an admin' },
         { status: 403 }
       );
+    }
+
+    // Handle file upload if present
+    let avatarUrl;
+    if (fileToUpload) {
+      try {
+        // Generate unique filename
+        const fileExtension = fileToUpload.name.split('.').pop() || 'jpg';
+        const fileName = `avatar-${uid}-${Date.now()}.${fileExtension}`;
+        const storagePath = `avatars/${fileName}`;
+        
+        // Convert file to buffer
+        const fileBuffer = Buffer.from(await fileToUpload.arrayBuffer());
+        
+        // Get storage bucket
+        const bucket = adminStorage.bucket();
+        const file = bucket.file(storagePath);
+        
+        // Upload file to Firebase Storage
+        await file.save(fileBuffer, {
+          metadata: {
+            contentType: fileToUpload.type,
+          },
+        });
+        
+        // Make the file publicly accessible
+        await file.makePublic();
+        
+        // Get the public URL
+        avatarUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+        
+      } catch (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        return NextResponse.json(
+          { error: 'Failed to upload file to storage' },
+          { status: 500 }
+        );
+      }
     }
 
     // Validate mainTroops values if provided
@@ -320,10 +399,15 @@ async function updateUserHandler(request) {
       updateData.labels = labels;
     }
 
+    // Handle avatar URL update from file upload only
+    if (avatarUrl !== undefined && avatarUrl !== null) {
+      updateData.avatarUrl = avatarUrl;
+    }
+
     // Check if any valid fields were provided
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
-        { error: 'No valid fields provided for update. Allowed fields: nationality, mainTroops, isInfantryGroup, labels' },
+        { error: 'No valid fields provided for update. Allowed fields: nationality, mainTroops, isInfantryGroup, labels, or file upload' },
         { status: 400 }
       );
     }
@@ -343,7 +427,7 @@ async function updateUserHandler(request) {
 
     return NextResponse.json(
       { 
-        message: 'User updated successfully',
+        message: fileToUpload ? 'Avatar uploaded and user updated successfully' : 'User updated successfully',
         uid,
         updatedFields: Object.keys(updateData).filter(key => key !== 'updatedAt'),
         updatedBy: authenticatedUser.uid,

@@ -227,7 +227,7 @@ export function Texts({ sx, ...other }) {
           animate={{ x: ['0%', '-50%'] }}
           transition={{ duration: 64, ease: 'linear', repeat: Infinity }}
         >
-          Minimal Design System Minimal Design System
+          WAR BEASTS WAR BEASTS WAR BEASTS WAR BEASTS WAR BEASTS WAR BEASTS
         </m.text>
       </Box>
     </Box>

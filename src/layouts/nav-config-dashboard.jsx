@@ -2,6 +2,7 @@ import { paths } from 'src/routes/paths';
 
 import { CONFIG } from 'src/global-config';
 
+import { Iconify } from 'src/components/iconify';
 import { SvgColor } from 'src/components/svg-color';
 
 // ----------------------------------------------------------------------
@@ -35,6 +36,7 @@ const ICONS = {
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
   parameter: icon('ic-parameter'),
+  donation: <Iconify icon="solar:hand-heart-bold" width={24} />,
 };
 
 // ----------------------------------------------------------------------
@@ -51,6 +53,11 @@ export const navData = [
         title: 'Home',
         path: paths.dashboard.root,
         icon: ICONS.lock
+      },
+      {
+        title: 'Schedule',
+        path: paths.dashboard.schedule,
+        icon: ICONS.calendar,
       },
       { title: 'Admin', 
         path: paths.dashboard.admin, 
@@ -85,6 +92,20 @@ export const navData = [
           
       //   ],
       // },
+    ],
+  },
+  /**
+   * Misc
+   */
+  {
+    title: 'Misc',
+    subheader: 'Misc',
+    items: [
+      {
+        title: 'Donations',
+        path: paths.dashboard.donations,
+        icon: ICONS.donation,
+      },
     ],
   },
 ];

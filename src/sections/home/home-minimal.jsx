@@ -1,3 +1,5 @@
+'use client';
+
 import { m } from 'framer-motion';
 import { varAlpha } from 'minimal-shared/utils';
 
@@ -8,10 +10,11 @@ import SvgIcon from '@mui/material/SvgIcon';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 
-import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales/use-locales';
 
 import { varFade, MotionViewport } from 'src/components/animate';
+
+import { UserOverview } from 'src/sections/chart-view/user-overview';
 
 import { SectionTitle } from './components/section-title';
 import { CircleSvg, FloatLine, FloatPlusIcon } from './components/svg-elements';
@@ -82,22 +85,20 @@ export function HomeMinimal({ sx, ...other }) {
             bgcolor: 'background.default',
             boxShadow: `-40px 40px 80px 0px ${varAlpha(
               theme.vars.palette.grey['500Channel'],
-              0.16
+              0.32
             )}`,
             ...theme.applyStyles('dark', {
               boxShadow: `-40px 40px 80px 0px ${varAlpha(
                 theme.vars.palette.common.blackChannel,
-                0.16
+                0.32
               )}`,
             }),
           }),
         ]}
       >
-        <Box
-          component="img"
-          alt="Home chart"
-          src={`${CONFIG.assetsDir}/assets/images/home/home-chart.webp`}
-          sx={{ width: 720 }}
+        <UserOverview 
+          title="Live Analytics"
+          subheader="Real-time user distribution and engagement metrics"
         />
       </Box>
     </Stack>

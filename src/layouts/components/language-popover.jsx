@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { usePopover } from 'minimal-shared/hooks';
 
 import MenuList from '@mui/material/MenuList';
@@ -16,18 +16,18 @@ import { varTap, varHover, transitionTap } from 'src/components/animate';
 
 export function LanguagePopover({ data = [], sx, ...other }) {
   const { open, anchorEl, onClose, onOpen } = usePopover();
-  const { onChangeLang } = useTranslate();
-  const [locale, setLocale] = useState(data[0].value);
+  const { onChangeLang, currentLang: i18nCurrentLang } = useTranslate();
 
-  const currentLang = data.find((lang) => lang.value === locale);
+  // Find the current language from the provided data that matches the i18n current language
+  // This ensures the component reflects the actual stored/current locale
+  const currentLang = data.find((lang) => lang.value === i18nCurrentLang?.value) || data[0];
 
   const handleChangeLang = useCallback(
     (newLang) => {
-      setLocale(newLang);
       onChangeLang(newLang);
       onClose();
     },
-    [onClose]
+    [onChangeLang, onClose]
   );
 
   const renderMenuList = () => (

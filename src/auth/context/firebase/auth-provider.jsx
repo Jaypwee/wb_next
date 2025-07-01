@@ -68,7 +68,7 @@ export function AuthProvider({ children }) {
             id: state.user?.uid,
             idToken: state.user?.idToken,
             displayName: state.user?.displayName,
-            photoURL: state.user?.photoURL,
+            avatarUrl: state.user?.avatarURL,
             role: state.user?.role || null,
           }
         : null,

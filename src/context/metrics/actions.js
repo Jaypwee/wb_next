@@ -35,4 +35,9 @@ export const setLoading = (isLoading) => ({
 export const setError = (error) => ({
   type: ActionTypes.SET_ERROR,
   payload: error,
+});
+
+export const setOverview = (overview) => ({
+  type: ActionTypes.SET_OVERVIEW,
+  payload: overview,
 }); 

@@ -9,6 +9,7 @@ import { useRouter } from 'src/routes/hooks';
 import { toast } from 'src/components/snackbar';
 
 import { allLangs } from './all-langs';
+import { setStoredLocale } from './utils/locale-storage';
 import { fallbackLng, changeLangMessages as messages } from './locales-config';
 
 // ----------------------------------------------------------------------
@@ -34,6 +35,10 @@ export function useTranslate(ns) {
           success: () => currentMessages.success,
           error: currentMessages.error,
         });
+
+        // Explicitly save the language preference to localStorage
+        // This ensures the preference is persisted even if automatic detection fails
+        setStoredLocale(newLang);
 
         if (currentLang) {
           dayjs.locale(currentLang.adapterLocale);

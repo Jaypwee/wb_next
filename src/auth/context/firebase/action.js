@@ -1,7 +1,10 @@
 'use client';
 
 import {
+  EmailAuthProvider,
   signOut as _signOut,
+  reauthenticateWithCredential,
+  updatePassword as _updatePassword,
   sendPasswordResetEmail as _sendPasswordResetEmail,
   signInWithEmailAndPassword as _signInWithEmailAndPassword,
 } from 'firebase/auth';
@@ -67,4 +70,30 @@ export const signOut = async () => {
 
 export const sendPasswordResetEmail = async ({ email }) => {
   await _sendPasswordResetEmail(AUTH, email);
+};
+
+/** **************************************
+ * Update password
+ *************************************** */
+
+// ----------------------------------------------------------------------
+
+export const updatePassword = async ({ currentPassword, newPassword }) => {
+  try {
+    const user = AUTH.currentUser;
+    
+    if (!user) {
+      throw new Error('No authenticated user found');
+    }
+
+    // Re-authenticate the user with their current password
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // Update the password
+    await _updatePassword(user, newPassword);
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
 };

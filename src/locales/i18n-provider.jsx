@@ -2,31 +2,30 @@
 
 import i18next from 'i18next';
 import { useMemo } from 'react';
-import { getStorage } from 'minimal-shared/utils';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next, I18nextProvider as Provider } from 'react-i18next';
 
-import { CONFIG } from 'src/global-config';
-
+import { getStoredLocale } from './utils/locale-storage';
 import { i18nOptions, fallbackLng } from './locales-config';
 
 // ----------------------------------------------------------------------
 
-let lng;
-
 /**
- * [1] localStorage
- * Auto detection:
- * const lng = getStorage('i18nextLng')
+ * Always use localStorage to persist locale settings
+ * This ensures the app remembers the user's language preference
  */
-if (CONFIG.isStaticExport) {
-  lng = getStorage('i18nextLng', fallbackLng);
-}
+const lng = getStoredLocale(fallbackLng);
 
-const init = CONFIG.isStaticExport
-  ? { ...i18nOptions(lng), detection: { caches: ['localStorage'] } }
-  : { ...i18nOptions(), detection: { caches: ['cookie'] } };
+// Always include localStorage in detection caches for locale persistence
+const init = {
+  ...i18nOptions(lng),
+  detection: {
+    caches: ['localStorage', 'cookie'], // Always include localStorage first for persistence
+    lookupLocalStorage: 'i18nextLng',
+    lookupCookie: 'i18next',
+  },
+};
 
 i18next
   .use(LanguageDetector)

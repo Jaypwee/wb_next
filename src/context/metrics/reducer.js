@@ -8,6 +8,7 @@ export const ActionTypes = {
   SET_SEASON_DATES: 'SET_SEASON_DATES',
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
+  SET_OVERVIEW: 'SET_OVERVIEW',
 };
 
 // ----------------------------------------------------------------------
@@ -57,6 +58,12 @@ export function reducer(state, action) {
       return {
         ...state,
         error: action.payload,
+      };
+
+    case ActionTypes.SET_OVERVIEW:
+      return {
+        ...state,
+        overview: action.payload,
       };
 
     default:

@@ -1,3 +1,5 @@
+import { ROOTS } from 'src/routes/paths';
+
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -10,7 +12,7 @@ export const _account = [
   },
   {
     label: 'Account settings',
-    href: '#',
+    href: `${ROOTS.DASHBOARD}/user/settings`,
     icon: <Iconify icon="solar:settings-bold-duotone" />,
   },
 ];

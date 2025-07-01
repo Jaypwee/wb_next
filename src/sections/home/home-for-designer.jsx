@@ -28,12 +28,12 @@ export function HomeForDesigner({ sx, ...other }) {
           ...theme.mixins.bgGradient({
             images: [
               `linear-gradient(135deg, ${varAlpha(theme.vars.palette.grey['900Channel'], 0.8)} 0%, ${theme.vars.palette.grey[900]} 75%)`,
-              `url(${CONFIG.assetsDir}/assets/images/home/for-designer.webp)`,
+              `url(${CONFIG.assetsDir}/assets/background/dashboard_example.png)`,
             ],
           }),
           [theme.breakpoints.up('md')]: {
             ...theme.mixins.bgGradient({
-              images: [`url(${CONFIG.assetsDir}/assets/images/home/for-designer.webp)`],
+              images: [`url(${CONFIG.assetsDir}/assets/background/dashboard_example.png)`],
               sizes: ['auto 92%'],
             }),
             minHeight: 720,
@@ -143,13 +143,11 @@ const renderActionButton = () => (
       size="large"
       color="primary"
       variant="text"
-      target="_blank"
-      rel="noopener"
-      href={paths.figmaUrl}
+      href={paths.dashboard.root}
       endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
       sx={{ px: 2, borderRadius: 'inherit' }}
     >
-      Checkout workspace
+      Check out dashboard
     </Button>
   </AnimateBorder>
 );

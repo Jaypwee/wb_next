@@ -4,16 +4,12 @@ import { m, useSpring, useScroll, useTransform, useMotionValueEvent } from 'fram
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
 
-import { paths } from 'src/routes/paths';
-
 import { CONFIG } from 'src/global-config';
 
-import { Iconify } from 'src/components/iconify';
 import { varFade, MotionViewport } from 'src/components/animate';
 
 import { SectionTitle, SectionCaption } from './components/section-title';
@@ -65,21 +61,6 @@ export function HomeHugePackElements({ sx, ...other }) {
               </m.div>
             </Grid>
           </Grid>
-
-          <m.div variants={varFade('inUp', { distance: 24 })}>
-            <Button
-              size="large"
-              color="inherit"
-              variant="outlined"
-              target="_blank"
-              rel="noopener"
-              href={paths.components}
-              endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
-              sx={{ mt: 5, mx: 'auto' }}
-            >
-              Browse components
-            </Button>
-          </m.div>
         </Container>
       </MotionViewport>
       <ScrollableContent />
@@ -92,7 +73,6 @@ export function HomeHugePackElements({ sx, ...other }) {
 function ScrollableContent() {
   const theme = useTheme();
   const isRtl = theme.direction === 'rtl';
-  console.log('isRtl', isRtl);
 
   const containerRef = useRef(null);
   const containerRect = useClientRect(containerRef);
@@ -110,6 +90,8 @@ function ScrollableContent() {
 
   const x1 = useSpring(useTransform(scrollYProgress, [0, 1], [0, scrollRange]), physics);
   const x2 = useSpring(useTransform(scrollYProgress, [0, 1], [scrollRange, 0]), physics);
+
+  console.log(scrollRange, scrollYProgress, x1, x2)
 
   const background = useTransform(
     scrollYProgress,
@@ -131,6 +113,37 @@ function ScrollableContent() {
     }
   });
 
+  // Images to loop through
+  const images = [
+    `${CONFIG.assetsDir}/assets/icons/apps/WB_tiger.png`,
+    `${CONFIG.assetsDir}/assets/icons/apps/WB_icon_orange.png`,
+  ];
+
+  // Generate repeating image pattern for horizontal scrolling
+  const generateImageRow = (rowImages, itemHeight) => {
+    const repeatedImages = [];
+    // TODO: Make this dynamic based on the size of the image list
+    const totalRepeat = 50; // Number of times to repeat the pattern
+    
+    for (let i = 0; i < totalRepeat; i++) {
+      rowImages.forEach((image, index) => {
+        repeatedImages.push(
+          <ImageItem
+            key={`${i}-${index}`}
+            src={image}
+            alt={`Image ${i}-${index}`}
+            sx={{
+              height: itemHeight,
+              width: itemHeight, // Make it square
+              marginRight: theme.spacing(2),
+            }}
+          />
+        );
+      });
+    }
+    return repeatedImages;
+  };
+
   return (
     <ScrollRoot ref={containerRef} sx={{ height: scrollRect.scrollWidth, minHeight: '100vh' }}>
       <ScrollContainer style={{ background }} data-scrolling={startScroll}>
@@ -138,25 +151,29 @@ function ScrollableContent() {
           <ScrollItem
             style={{ x: x1 }}
             sx={{
+              width: { xs: '600%', md: '200%'},
               height: { xs: 160, md: 180 },
-              width: { xs: '600%', md: '300%' },
-              backgroundImage: `url(${CONFIG.assetsDir}/assets/images/home/bundle-light-1.webp)`,
-              ...theme.applyStyles('dark', {
-                backgroundImage: `url(${CONFIG.assetsDir}/assets/images/home/bundle-dark-1.webp)`,
-              }),
+              display: 'flex',
+              alignItems: 'center',
+              overflow: 'hidden',
+              flexShrink: 0,
             }}
-          />
+          >
+            {generateImageRow(images, { xs: 120, md: 140 })}
+          </ScrollItem>
           <ScrollItem
             style={{ x: x2 }}
             sx={{
+              width: { xs: '600%', md: '200%'},
               height: { xs: 400, md: 480 },
-              width: { xs: '600%', md: '300%' },
-              backgroundImage: `url(${CONFIG.assetsDir}/assets/images/home/bundle-light-2.webp)`,
-              ...theme.applyStyles('dark', {
-                backgroundImage: `url(${CONFIG.assetsDir}/assets/images/home/bundle-dark-2.webp)`,
-              }),
+              display: 'flex',
+              alignItems: 'center',
+              overflow: 'hidden',
+              flexShrink: 0,
             }}
-          />
+          >
+            {generateImageRow([...images].reverse(), { xs: 300, md: 380 })}
+          </ScrollItem>
         </ScrollContent>
       </ScrollContainer>
     </ScrollRoot>
@@ -196,7 +213,18 @@ const ScrollContent = styled(m.div)(({ theme }) => ({
 }));
 
 const ScrollItem = styled(m.div)({
-  backgroundSize: 'auto 100%',
-  backgroundRepeat: 'repeat-x',
-  backgroundPosition: 'center center',
+  flexShrink: 0,
 });
+
+const ImageItem = styled('img')(({ theme }) => ({
+  objectFit: 'contain',
+  flexShrink: 0,
+  borderRadius: theme.shape.borderRadius,
+  filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))',
+  transition: theme.transitions.create(['transform'], {
+    duration: theme.transitions.duration.short,
+  }),
+  '&:hover': {
+    transform: 'scale(1.05)',
+  },
+}));

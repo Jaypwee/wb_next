@@ -71,6 +71,61 @@
       "multinational_description": "Our fighters are stationed in countries such as Korea, Vietnam, Russia, Europe, and the U.S. We are capable of fighting 24/7."
     }
   },
+  "schedule": {
+    "title": "KvK Season Schedule",
+    "today": "Today",
+    "weekdays": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue", 
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "eventDialog": {
+      "addEvent": "Add Event",
+      "editEvent": "Edit Event",
+      "eventTitle": "Event Title",
+      "date": "Date",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "timezone": "Timezone",
+      "yourLocalTime": "Your Local Time",
+      "color": "Color",
+      "description": "Description",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "addEventButton": "Add Event"
+    },
+    "events": {
+      "moreEvents": "+{{count}} more",
+      "eventInTimezone": "Event in {{timezone}}"
+    },
+    "colorOptions": {
+      "primary": "Primary",
+      "secondary": "Secondary", 
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info",
+      "success": "Success"
+    }
+  },
   "nav": {
     "dashboard": {
       "title": "Metrics",

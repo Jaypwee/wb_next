@@ -6,6 +6,9 @@ import { BackToTopButton } from 'src/components/animate/back-to-top-button';
 import { ScrollProgress, useScrollProgress } from 'src/components/animate/scroll-progress';
 
 import { HomeHero } from '../home-hero';
+import { HomeMinimal } from '../home-minimal';
+import { HomeForDesigner } from '../home-for-designer';
+import { HomeHugePackElements } from '../home-hugepack-elements';
 // ----------------------------------------------------------------------
 
 export function HomeView() {
@@ -26,11 +29,11 @@ export function HomeView() {
       <HomeHero />
 
       <Stack sx={{ position: 'relative', bgcolor: 'background.default' }}>
-        {/* <HomeMinimal /> */}
+        <HomeMinimal />
 
-        {/* <HomeHugePackElements /> */}
+        <HomeHugePackElements />
 
-        {/* <HomeForDesigner /> */}
+        <HomeForDesigner />
 
         {/* <HomeHighlightFeatures /> */}
 

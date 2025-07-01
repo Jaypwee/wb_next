@@ -199,7 +199,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     { 
       field: 'nationality', 
       headerName: '', 
-      width: 60,
+      width: 28,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -257,7 +257,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     { 
       field: 'mainTroops', 
       headerName: '', 
-      width: 60,
+      width: 28,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -274,7 +274,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     { 
       field: 'value', 
       headerName: metricName, 
-      width: 250,
+      width: 150,
       renderCell: (params) => (
         <Box sx={{ fontWeight: 'bold', color: 'success.main' }}>
           {params.value}
@@ -294,7 +294,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     { 
       field: 'currentPower', 
       headerName: 'Current Power', 
-      width: 300,
+      width: 260,
       renderCell: (params) => {
         // Calculate the difference between highest and current power
         const highestPower = parseInt(params.row.highestPower.replace(/,/g, ''), 10) || 0;

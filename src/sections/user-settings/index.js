@@ -1,0 +1,1 @@
+export { UserSettingsView } from './view'; 

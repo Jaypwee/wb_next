@@ -35,4 +35,12 @@ export const CONFIG = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APPID ?? '',
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID ?? '',
   },
+  /**
+   * PayPal
+   */
+  paypal: {
+    clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '',
+    currency: 'USD', // Change this to your preferred currency
+    intent: 'capture',
+  },
 };

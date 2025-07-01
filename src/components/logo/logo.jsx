@@ -13,7 +13,7 @@ import { logoClasses } from './classes';
 
 // ----------------------------------------------------------------------
 
-export function Logo({ sx, disabled, className, href = '/', isSingle = true, ...other }) {
+export function Logo({ sx, disabled, className, href = '/', isSingle = true, isMini = false, ...other }) {
   const singleLogo = (
     <img
       alt="WB Logo"
@@ -53,6 +53,7 @@ export function Logo({ sx, disabled, className, href = '/', isSingle = true, ...
         {
           width: 200,
           height: 80,
+          ...(isMini && { width: 100, height: 40 }),
           ...(!isSingle && { width: 150, height: 54 }),
           ...(disabled && { pointerEvents: 'none' }),
           // Add hover effect

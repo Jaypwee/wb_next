@@ -54,6 +54,79 @@
       "kvkReportUpload": "KvK 시즌 전체 서버 통계 업로드 (개발중)"
     }
   },
+  "home": {
+    "hero": {
+      "title_1": "전쟁을 추구하는",
+      "title_2": "우리는",
+      "subtitle": "We fight with manners. We fight with coordination. We fight as one.\n And mostly, we do not run away from war. We are the War Beast."
+    },
+    "minimal": {
+      "caption": "승리의 여정",
+      "title_1": "전략적 오더",
+      "title_2": "와 단합력",
+      "infantry_title": "전문 보병단",
+      "infantry_description": "전문 보병 유저는 긴밀한 협동으로 유리한 전투를 이끌어갑니다.",
+      "leadership_title": "리더십",
+      "leadership_description": "연합 리더는 전략적 계획을 세우고 연합 활동을 조정합니다.",
+      "multinational_title": "Multi-National Alliance",
+      "multinational_description": "Our fighters are stationed in countries such as Korea, Vietnam, Russia, Europe, and the U.S. We are capable of fighting 24/7."
+    }
+  },
+  "schedule": {
+    "title": "분쟁 시즌 일정",
+    "today": "오늘",
+    "weekdays": {
+      "sun": "일",
+      "mon": "월",
+      "tue": "화",
+      "wed": "수", 
+      "thu": "목",
+      "fri": "금",
+      "sat": "토"
+    },
+    "months": {
+      "january": "1월",
+      "february": "2월",
+      "march": "3월",
+      "april": "4월",
+      "may": "5월",
+      "june": "6월",
+      "july": "7월",
+      "august": "8월",
+      "september": "9월",
+      "october": "10월",
+      "november": "11월",
+      "december": "12월"
+    },
+    "eventDialog": {
+      "addEvent": "일정 추가",
+      "editEvent": "일정 수정",
+      "eventTitle": "일정 제목",
+      "date": "날짜",
+      "startTime": "시작 시간",
+      "endTime": "종료 시간",
+      "timezone": "시간대",
+      "yourLocalTime": "내 로컬 시간",
+      "color": "색상",
+      "description": "설명",
+      "delete": "삭제",
+      "cancel": "취소",
+      "saveChanges": "변경사항 저장",
+      "addEventButton": "일정 추가"
+    },
+    "events": {
+      "moreEvents": "+{{count}}개 더",
+      "eventInTimezone": "{{timezone}} 시간대 일정"
+    },
+    "colorOptions": {
+      "primary": "기본",
+      "secondary": "보조",
+      "error": "오류",
+      "warning": "경고", 
+      "info": "정보",
+      "success": "성공"
+    }
+  },
   "nav": {
     "dashboard": {
       "title": "종합 통계",

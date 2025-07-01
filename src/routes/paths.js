@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------
 
-const ROOTS = {
+export const ROOTS = {
   AUTH: '/auth',
   DASHBOARD: '/dashboard',
 };
@@ -28,12 +28,18 @@ export const paths = {
       resetPassword: `${ROOTS.AUTH}/firebase/reset-password`,
     }
   },
+  // USER
+  user: {
+    settings: `${ROOTS.DASHBOARD}/user/settings`,
+  },
+  // LEADERSHIP
+  leadership: `/leadership`,
   // DASHBOARD
   dashboard: {
     root: ROOTS.DASHBOARD,
-    two: `${ROOTS.DASHBOARD}/two`,
-    three: `${ROOTS.DASHBOARD}/three`,
     admin: `${ROOTS.DASHBOARD}/admin`,
+    donations: `${ROOTS.DASHBOARD}/donations`,
+    schedule: `${ROOTS.DASHBOARD}/schedule`,
     metrics: {
       root: `${ROOTS.DASHBOARD}/metrics`,
       merits: `${ROOTS.DASHBOARD}/metrics/merits`,

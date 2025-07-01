@@ -15,9 +15,9 @@ import { Logo } from 'src/components/logo';
 
 import { useAuthContext } from 'src/auth/hooks';
 
+import { HomeFooter } from './footer';
 import { NavMobile } from './nav/mobile';
 import { NavDesktop } from './nav/desktop';
-import { Footer, HomeFooter } from './footer';
 import { MainSection } from '../core/main-section';
 import { MenuButton } from '../components/menu-button';
 import { LayoutSection } from '../core/layout-section';
@@ -134,11 +134,7 @@ export function MainLayout({ sx, cssVars, children, slotProps, layoutQuery = 'md
   };
 
   const renderFooter = () =>
-    isHomePage ? (
       <HomeFooter sx={slotProps?.footer?.sx} />
-    ) : (
-      <Footer sx={slotProps?.footer?.sx} layoutQuery={layoutQuery} />
-    );
 
   const renderMain = () => <MainSection {...slotProps?.main}>{children}</MainSection>;
 
