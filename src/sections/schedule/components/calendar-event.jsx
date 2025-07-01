@@ -52,11 +52,7 @@ export function CalendarEvent({ event, onEdit, readOnly = false }) {
         // New format: UTC datetime
         const utcDateTime = dayjs.utc(event.datetime);
         const localDateTime = utcDateTime.local();
-        return localDateTime.format('h:mm A');
-      } else if (event.date && event.startTime) {
-        // Legacy format support
-        const dateTime = dayjs(`${event.date}T${event.startTime}`);
-        return dateTime.format('h:mm a');
+        return localDateTime.format('HH:mm');
       }
       return '';
     } catch (error) {
