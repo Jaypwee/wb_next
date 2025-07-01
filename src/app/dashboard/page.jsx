@@ -7,5 +7,5 @@ import { BlankView } from 'src/sections/blank/view';
 export const metadata = { title: `Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
-  return <BlankView title="Home - Overview" />;
+  return <BlankView title="Overview - WORK IN PROGRESS" />;
 }

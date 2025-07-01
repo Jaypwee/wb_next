@@ -1,8 +1,12 @@
+'use client';
+
 import { useBoolean } from 'minimal-shared/hooks';
 import { useRef, useEffect, useCallback } from 'react';
 import { isActiveLink, isExternalLink } from 'minimal-shared/utils';
 
 import { usePathname } from 'src/routes/hooks';
+
+import { useTranslate } from 'src/locales';
 
 import { NavItem } from './nav-item';
 import { navSectionClasses } from '../styles';
@@ -13,6 +17,7 @@ import { NavUl, NavLi, NavCollapse } from '../components';
 export function NavList({ data, depth, render, slotProps, checkPermissions, enabledRootRedirect }) {
   const pathname = usePathname();
   const navItemRef = useRef(null);
+  const { t } = useTranslate();
 
   const isActive = isActiveLink(pathname, data.path, !!data.children);
 
@@ -38,8 +43,9 @@ export function NavList({ data, depth, render, slotProps, checkPermissions, enab
       path={data.path}
       icon={data.icon}
       info={data.info}
-      title={data.title}
+      title={t(data.title)}
       caption={data.caption}
+      tooltip={data.tooltip ? t(data.tooltip) : undefined}
       // state
       open={open}
       active={isActive}

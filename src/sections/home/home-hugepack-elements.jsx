@@ -43,8 +43,8 @@ export function HomeHugePackElements({ sx, ...other }) {
         <Container sx={{ textAlign: { xs: 'center', md: 'left' } }}>
           <Grid container rowSpacing={{ xs: 3, md: 0 }} columnSpacing={{ xs: 0, md: 8 }}>
             <Grid size={{ xs: 12, md: 6, lg: 7 }}>
-              <SectionCaption title="Interface Starter Kit" />
-              <SectionTitle title="Large bundle of" txtGradient="elements" sx={{ mt: 3 }} />
+              <SectionCaption title="Fun and Laughter" />
+              <SectionTitle title="Memories of the War" txtGradient="Beasts" sx={{ mt: 3 }} />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6, lg: 5 }}>
@@ -53,10 +53,10 @@ export function HomeHugePackElements({ sx, ...other }) {
                   sx={{ color: 'text.disabled', fontSize: { md: 20 }, lineHeight: { md: 36 / 20 } }}
                 >
                   <Box component="span" sx={{ color: 'text.primary' }}>
-                    Explore a comprehensive range of elements
+                    Take a look at some of our fun memories
                   </Box>
                   <br />
-                  like menus, sliders, buttons, inputs, and others, all conveniently gathered here.
+                  like war, funny moments, stupid moments, and more!
                 </Typography>
               </m.div>
             </Grid>
@@ -90,8 +90,6 @@ function ScrollableContent() {
 
   const x1 = useSpring(useTransform(scrollYProgress, [0, 1], [0, scrollRange]), physics);
   const x2 = useSpring(useTransform(scrollYProgress, [0, 1], [scrollRange, 0]), physics);
-
-  console.log(scrollRange, scrollYProgress, x1, x2)
 
   const background = useTransform(
     scrollYProgress,

@@ -17,10 +17,6 @@ export const paths = {
       updatePassword: `${ROOTS.AUTH}/amplify/update-password`,
       resetPassword: `${ROOTS.AUTH}/amplify/reset-password`,
     },
-    jwt: {
-      signIn: `${ROOTS.AUTH}/jwt/sign-in`,
-      signUp: `${ROOTS.AUTH}/jwt/sign-up`,
-    },
     firebase: {
       signIn: `${ROOTS.AUTH}/firebase/sign-in`,
       verify: `${ROOTS.AUTH}/firebase/verify`,
@@ -46,6 +42,9 @@ export const paths = {
       kills: `${ROOTS.DASHBOARD}/metrics/kills`,
       deads: `${ROOTS.DASHBOARD}/metrics/deads`,
       mana: `${ROOTS.DASHBOARD}/metrics/mana-spent`,
+    },
+    kvk: {
+      root: `${ROOTS.DASHBOARD}/kvk`,
     },
   },
 };

@@ -1,8 +1,12 @@
+'use client';
+
 import { useBoolean } from 'minimal-shared/hooks';
 import { mergeClasses } from 'minimal-shared/utils';
 
 import Collapse from '@mui/material/Collapse';
 import { useTheme } from '@mui/material/styles';
+
+import { useTranslate } from 'src/locales';
 
 import { NavList } from './nav-list';
 import { Nav, NavUl, NavLi, NavSubheader } from '../components';
@@ -52,6 +56,7 @@ export function NavSectionVertical({
 
 function Group({ items, render, subheader, slotProps, checkPermissions, enabledRootRedirect }) {
   const groupOpen = useBoolean(true);
+  const { t } = useTranslate();
 
   const renderContent = () => (
     <NavUl sx={{ gap: 'var(--nav-item-gap)' }}>
@@ -79,7 +84,7 @@ function Group({ items, render, subheader, slotProps, checkPermissions, enabledR
             onClick={groupOpen.onToggle}
             sx={slotProps?.subheader}
           >
-            {subheader}
+            {t(subheader)}
           </NavSubheader>
 
           <Collapse in={groupOpen.value}>{renderContent()}</Collapse>

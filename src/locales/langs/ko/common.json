@@ -64,10 +64,10 @@
       "caption": "승리의 여정",
       "title_1": "전략적 오더",
       "title_2": "와 단합력",
-      "infantry_title": "전문 보병단",
-      "infantry_description": "전문 보병 유저는 긴밀한 협동으로 유리한 전투를 이끌어갑니다.",
+      "infantry_title": "보병단",
+      "infantry_description": "긴밀한 단합력으로 이루어진 워 비스트의 보병 주축 인원들이 전장의 판도를 움직입니다.",
       "leadership_title": "리더십",
-      "leadership_description": "연합 리더는 전략적 계획을 세우고 연합 활동을 조정합니다.",
+      "leadership_description": "20명 안팎으로 이루어진 WB 임원진들은 밤낮없이 전장에서 연맹원들을 통솔하며, 승리를 위한 최적의 전략과 유리한 전투 구도를 제시합니다.",
       "multinational_title": "Multi-National Alliance",
       "multinational_description": "Our fighters are stationed in countries such as Korea, Vietnam, Russia, Europe, and the U.S. We are capable of fighting 24/7."
     }
@@ -129,19 +129,35 @@
   },
   "nav": {
     "dashboard": {
-      "title": "종합 통계",
-      "merits": "전공",
-      "kills": "킬",
-      "deaths": "데스",
-      "heals": "힐",
-      "Bastion": "보루전"
+      "general":{
+        "title": "일반",
+        "home": "홈",
+        "schedule": "분쟁 시즌 일정",
+        "admin": "관리자"
+      },
+      "individual":{
+        "title": "데이터",
+        "individual": "개인 시즌 통계",
+        "merits": "전공",
+        "kills": "부대 처치",
+        "deaths": "부대 사망",
+        "heals": "마나 소모량",
+        "Bastion": "보루전"
+      },
+      "kvk":{
+        "title": "시즌 왕국"
+      },
+      "misc":{
+        "title": "기타",
+        "donations": "개발자에게 후원 <3"
+      }
     },
     "hallOfFame": {
       "title": "활동 명예의 전당",
       "kills": "킬",
       "deaths": "데스",
       "heals": "힐",
-      "Bastion": "보루전전"
+      "Bastion": "보루전"
     }
   }
 }

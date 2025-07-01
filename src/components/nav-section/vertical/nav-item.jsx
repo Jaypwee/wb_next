@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { mergeClasses } from 'minimal-shared/utils';
 
+import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
 
 import { Iconify } from '../../iconify';
@@ -16,6 +19,7 @@ export function NavItem({
   info,
   title,
   caption,
+  tooltip,
   /********/
   open,
   active,
@@ -30,6 +34,9 @@ export function NavItem({
   enabledRootRedirect,
   ...other
 }) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
   const navItem = createNavItem({
     path,
     icon,
@@ -48,7 +55,21 @@ export function NavItem({
     variant: navItem.rootItem ? 'rootItem' : 'subItem',
   };
 
-  return (
+  const handleMouseEnter = (event) => {
+    if (tooltip) {
+      setAnchorEl(event.currentTarget);
+      setPopoverOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (tooltip) {
+      setPopoverOpen(false);
+      setAnchorEl(null);
+    }
+  };
+
+  const renderItem = () => (
     <ItemRoot
       aria-label={title}
       {...ownerState}
@@ -59,6 +80,8 @@ export function NavItem({
         [navSectionClasses.state.disabled]: disabled,
       })}
       sx={slotProps?.sx}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       {...other}
     >
       {icon && (
@@ -102,6 +125,45 @@ export function NavItem({
         />
       )}
     </ItemRoot>
+  );
+
+  return (
+    <>
+      {renderItem()}
+      {tooltip && (
+        <Popover
+          open={popoverOpen}
+          anchorEl={anchorEl}
+          onClose={() => setPopoverOpen(false)}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'center',
+            horizontal: 'left',
+          }}
+          disableRestoreFocus
+          sx={{
+            pointerEvents: 'none',
+            '& .MuiPopover-paper': {
+              pointerEvents: 'auto',
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              color: 'white',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              maxWidth: '300px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              marginLeft: '8px',
+            },
+          }}
+        >
+          <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
+            {tooltip}
+          </Typography>
+        </Popover>
+      )}
+    </>
   );
 }
 

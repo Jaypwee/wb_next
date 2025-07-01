@@ -126,14 +126,34 @@
       "success": "Success"
     }
   },
+  
   "nav": {
     "dashboard": {
-      "title": "Metrics",
-      "merits": "Merits",
-      "kills": "Kills",
-      "deaths": "Deaths",
-      "heals": "Heals",
-      "Bastion": "Bastion"
+      "general":{
+        "title": "General",
+        "home": "Home",
+        "schedule": "Schedule",
+        "admin": "Admin"
+      },
+      "individual":{
+        "title": "Metrics",
+        "individual": "Individual",
+        "merits": "Merits",
+        "kills": "Units Killed",
+        "deaths": "Units Dead",
+        "heals": "Mana Spent",
+        "Bastion": "Bastion"
+      },
+      "kvk":{
+        "title": "KvK"
+      },
+      "misc":{
+        "title": "Misc",
+        "donations": "Donations <3"
+      },
+      "tooltips": {
+        "kvk": "KvK Metrics will launch on 2025-07-18. Stay tuned!"
+      }
     },
     "hallOfFame": {
       "title": "Hall of Fame",
