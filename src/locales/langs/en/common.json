@@ -81,7 +81,11 @@
     "hero": {
       "title_1": "Are you a war machine?",
       "title_2": "Join the",
-      "subtitle": "We fight with manners. We fight with coordination. We fight as one.\n And mostly, we do not run away from war. We are the War Beast."
+      "subtitle": "We fight with manners. We fight with coordination. We fight as one.\n And mostly, we do not run away from war. We are the War Beast.",
+      "sign_up": "Sign Up",
+      "sign_up_caption": "Already in WB?",
+      "apply_now": "Apply Now",
+      "check_out_faq": "Check out our FAQ"
     },
     "minimal": {
       "caption": "Achieving Victory",
@@ -93,6 +97,19 @@
       "leadership_description": "Alliance leaderds spend day and night to devise strategic plans for victory and coordinate events for the alliance.",
       "multinational_title": "Multi-National Alliance",
       "multinational_description": "Our fighters are stationed in countries such as Korea, Vietnam, Russia, Europe, and the U.S. We are capable of fighting 24/7."
+    },
+    "hugePack": {
+      "caption": "Fun and Laughter",
+      "title_1": "Memories of the War",
+      "title_2": "Beasts",
+      "description_1": "Take a look at some of our fun memories",
+      "description_2": "like war, funny moments, stupid moments, and more!"
+    },
+    "designer": {
+      "caption": "Data Analytics",
+      "title": "Seasonal Metrics",
+      "description": "We gather in-depth individual and kingdom-wide metrics to maintain the highest standards of activity.",
+      "checkOutDashboard": "Check out dashboard"
     }
   },
   "schedule": {
@@ -150,6 +167,24 @@
       "warning": "Warning",
       "info": "Info",
       "success": "Success"
+    }
+  },
+  "metrics": {
+    "dataGrid": {
+      "rank": "Rank",
+      "name": "Name", 
+      "highestPower": "Highest Power",
+      "currentPower": "Current Power",
+      "leaderboardTitle": "Leaderboard",
+      "leaderboardSubheader": "Top performers ranked by",
+      "noDataAvailable": "No data available",
+      "noResultsFound": "No results found",
+      "troops": {
+        "infantryMain": "Infantry Main",
+        "archerMain": "Archer Main", 
+        "mageMain": "Mage Main",
+        "cavalryMain": "Cavalry Main"
+      }
     }
   },
   

@@ -17,6 +17,7 @@ import {
   GridToolbarDensitySelector,
 } from '@mui/x-data-grid';
 
+import { useTranslate } from 'src/locales';
 import { METRIC_SERIES, formatDataGridData } from 'src/services/metrics';
 
 import { Iconify } from 'src/components/iconify';
@@ -150,22 +151,22 @@ function NationalityFlag({ nationality }) {
 }
 
 // Troop type icon component
-function getTroopConfig(troopType) {
+function getTroopConfig(troopType, t) {
   // Default to infantry if undefined
   const troop = troopType || '';
   
   const troopConfig = {
-    infantry: { icon: 'mdi:shield', color: '#1976d2', label: 'Infantry Main' },
-    archer: { icon: 'mdi:bow-arrow', color: '#388e3c', label: 'Archer Main' },
-    mage: { icon: 'mdi:magic-staff', color: '#7b1fa2', label: 'Mage Main' },
-    cavalry: { icon: 'mdi:horse-variant', color: '#f57c00', label: 'Cavalry Main' }
+    infantry: { icon: 'mdi:shield', color: '#1976d2', label: t('metrics.dataGrid.troops.infantryMain') },
+    archer: { icon: 'mdi:bow-arrow', color: '#388e3c', label: t('metrics.dataGrid.troops.archerMain') },
+    mage: { icon: 'mdi:magic-staff', color: '#7b1fa2', label: t('metrics.dataGrid.troops.mageMain') },
+    cavalry: { icon: 'mdi:horse-variant', color: '#f57c00', label: t('metrics.dataGrid.troops.cavalryMain') }
   };
 
   return troopConfig[troop] || null;
 }
 
-function TroopIcon({ troopType }) {
-  const config = getTroopConfig(troopType);
+function TroopIcon({ troopType, t }) {
+  const config = getTroopConfig(troopType, t);
   if (!config) return null;
 
   return (
@@ -183,6 +184,7 @@ function TroopIcon({ troopType }) {
 }
 
 export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
+  const { t } = useTranslate();
   const [filterButtonEl, setFilterButtonEl] = useState(null);
 
   // Format data for DataGrid
@@ -215,7 +217,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     },
     { 
       field: 'rank', 
-      headerName: 'Rank', 
+      headerName: t('metrics.dataGrid.rank'), 
       width: 60,
       type: 'number',
       renderCell: (params) => (
@@ -226,7 +228,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     },
     { 
       field: 'name', 
-      headerName: 'Name', 
+      headerName: t('metrics.dataGrid.name'), 
       minWidth: 300,
       flex: 1,
       renderCell: (params) => {
@@ -266,7 +268,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
         const userMainTroops = users?.[userId]?.mainTroops;
         return (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <TroopIcon troopType={userMainTroops} />
+            <TroopIcon troopType={userMainTroops} t={t} />
           </Box>
         );
       },
@@ -283,7 +285,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     },
     { 
       field: 'highestPower', 
-      headerName: 'Highest Power', 
+      headerName: t('metrics.dataGrid.highestPower'), 
       width: 150,
       renderCell: (params) => (
         <Box sx={{ color: 'text.secondary' }}>
@@ -293,7 +295,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
     },
     { 
       field: 'currentPower', 
-      headerName: 'Current Power', 
+      headerName: t('metrics.dataGrid.currentPower'), 
       width: 260,
       renderCell: (params) => {
         // Calculate the difference between highest and current power
@@ -337,8 +339,8 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
   return (
     <Card sx={{ height: '100%' }}>
       <CardHeader 
-        title={`${metricName} Leaderboard`} 
-        subheader={`Top performers ranked by ${metricName.toLowerCase()}`} 
+        title={`${metricName} ${t('metrics.dataGrid.leaderboardTitle')}`} 
+        subheader={`${t('metrics.dataGrid.leaderboardSubheader')} ${metricName.toLowerCase()}`} 
       />
 
       <DataGrid
@@ -349,8 +351,8 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
         pageSizeOptions={[5, 10, 20, 50, { value: -1, label: 'All' }]}
         slots={{
           toolbar: CustomToolbar,
-          noRowsOverlay: () => <EmptyContent title="No data available" />,
-          noResultsOverlay: () => <EmptyContent title="No results found" />,
+          noRowsOverlay: () => <EmptyContent title={t('metrics.dataGrid.noDataAvailable')} />,
+          noResultsOverlay: () => <EmptyContent title={t('metrics.dataGrid.noResultsFound')} />,
         }}
         slotProps={{
           toolbar: { setFilterButtonEl },

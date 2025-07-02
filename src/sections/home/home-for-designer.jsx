@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import { paths } from 'src/routes/paths';
 
 import { CONFIG } from 'src/global-config';
+import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
 import { varFade, AnimateBorder, MotionViewport } from 'src/components/animate';
@@ -17,6 +18,8 @@ import { SectionTitle } from './components/section-title';
 // ----------------------------------------------------------------------
 
 export function HomeForDesigner({ sx, ...other }) {
+  const { t } = useTranslate();
+  
   return (
     <Box
       component="section"
@@ -67,9 +70,9 @@ export function HomeForDesigner({ sx, ...other }) {
           ]}
         >
           <SectionTitle
-            caption="Data Analytics"
-            title="Seasonal Metrics"
-            description="We gather in-depth individual and kingdom-wide metrics to maintain the highest standards of activity."
+            caption={t('home.designer.caption')}
+            title={t('home.designer.title')}
+            description={t('home.designer.description')}
             sx={[
               () => ({
                 zIndex: 1,
@@ -105,7 +108,7 @@ export function HomeForDesigner({ sx, ...other }) {
             variants={varFade('inLeft', { distance: 24 })}
             sx={{ alignSelf: { md: 'flex-end' } }}
           >
-            {renderActionButton()}
+            {renderActionButton(t)}
           </Box>
         </Stack>
 
@@ -118,7 +121,7 @@ export function HomeForDesigner({ sx, ...other }) {
 
 // ----------------------------------------------------------------------
 
-const renderActionButton = () => (
+const renderActionButton = (t) => (
   <AnimateBorder
     sx={{ borderRadius: 1.25 }}
     duration={12}
@@ -147,7 +150,7 @@ const renderActionButton = () => (
       endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
       sx={{ px: 2, borderRadius: 'inherit' }}
     >
-      Check out dashboard
+      {t('home.designer.checkOutDashboard')}
     </Button>
   </AnimateBorder>
 );

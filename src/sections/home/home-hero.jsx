@@ -151,9 +151,9 @@ export function HomeHero({ sx, ...other }) {
                   }),
                 ]}
               >
-                Already in WB?
+                {t('home.hero.sign_up_caption')}
               </Box>
-              Sign Up
+              {t('home.hero.sign_up')}
             </span>
           </Button>
 
@@ -165,7 +165,7 @@ export function HomeHero({ sx, ...other }) {
             sx={{ gap: 0.75, alignItems: 'center', display: 'inline-flex' }}
           >
             <Iconify width={16} icon="eva:external-link-fill" />
-            Check out our FAQ
+            {t('home.hero.check_out_faq')}
           </Link>
         </Stack>
       </m.div>
@@ -181,7 +181,7 @@ export function HomeHero({ sx, ...other }) {
           startIcon={<Iconify width={24} icon="game-icons:crossed-swords" />}
           sx={{ borderColor: 'text.primary' }}
         >
-          Apply Now
+          {t('home.hero.apply_now')}
         </Button>
       </m.div>
     </Box>
