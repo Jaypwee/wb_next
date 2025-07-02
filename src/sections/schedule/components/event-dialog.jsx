@@ -40,6 +40,7 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
   const { t } = useTranslate();
   const [formData, setFormData] = useState({
     title: '',
+    titleEnglish: '',
     date: null,
     startTime: dayjs().hour(9).minute(0),
     color: COLOR_OPTIONS[0].value,
@@ -65,6 +66,7 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
       
       setFormData({
         title: event.title || '',
+        titleEnglish: event.titleEnglish || '',
         date: eventDate,
         startTime: eventStartTime,
         color: event.color || COLOR_OPTIONS[0].value,
@@ -75,6 +77,7 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
         ...prev,
         date: dayjs(date),
         title: '',
+        titleEnglish: '',
         description: '',
       }));
     }
@@ -117,6 +120,7 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
       
       const eventData = {
         title: formData.title,
+        titleEnglish: formData.titleEnglish,
         datetime: utcDateTime, // Store as UTC datetime with 'Z' suffix
         color: formData.color,
         description: formData.description,
@@ -166,6 +170,13 @@ export function EventDialog({ open, event, date, onSave, onDelete, onClose, read
             required
             fullWidth
             autoFocus
+          />
+
+          <TextField
+            label={t('schedule.eventDialog.eventTitleEnglish')}
+            value={formData.titleEnglish}
+            onChange={handleChange('titleEnglish')}
+            fullWidth
           />
 
           <DatePicker

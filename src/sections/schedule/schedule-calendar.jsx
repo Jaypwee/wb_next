@@ -81,6 +81,8 @@ export function ScheduleCalendar({ readOnly = false }) {
     fetchEvents();
   }, []);
 
+
+
   const { year, monthName } = useMemo(() => {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();

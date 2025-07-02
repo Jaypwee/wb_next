@@ -1,11 +1,14 @@
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
+import { useTranslate } from 'src/locales';
+
 import { Chart, useChart, ChartLegends } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
 export function ChartDonut({ chart }) {
   const theme = useTheme();
+  const { t } = useTranslate();
 
   const chartColors = chart.colors ?? [
     hexAlpha(theme.palette.primary.dark, 0.8),
@@ -37,7 +40,7 @@ export function ChartDonut({ chart }) {
             show: true,
             total: {
               show: true,
-              label: 'Registered',
+              label: t('dashboard.userOverview.registered'),
               fontSize: '14px',
               fontWeight: 600,
               color: theme.palette.text.primary,

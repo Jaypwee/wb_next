@@ -20,7 +20,7 @@ dayjs.extend(timezone);
 // ----------------------------------------------------------------------
 
 export function CalendarEvent({ event, onEdit, readOnly = false }) {
-  const { t } = useTranslate();
+  const { currentLang } = useTranslate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleDragStart = (e) => {
@@ -63,6 +63,16 @@ export function CalendarEvent({ event, onEdit, readOnly = false }) {
 
   const displayTime = formatDisplayTime();
 
+  // Get the appropriate title based on current locale
+  const getDisplayTitle = () => {
+    if (currentLang?.value === 'en' && event.titleEnglish) {
+      return event.titleEnglish;
+    }
+    return event.title || '';
+  };
+
+  const displayTitle = getDisplayTitle();
+
   return (
     <>
       <Box
@@ -98,7 +108,7 @@ export function CalendarEvent({ event, onEdit, readOnly = false }) {
             whiteSpace: 'nowrap',
           }}
         >
-          {displayTime} | {event.title}
+          {displayTime} | {displayTitle}
         </Typography>
       </Box>
 

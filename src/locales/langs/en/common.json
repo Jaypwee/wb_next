@@ -54,6 +54,27 @@
       "upload": "Upload",
       "individualReportUpload": "Individual Report Upload",
       "kvkReportUpload": "KvK Season Total Server Statistics Upload (WIP)"
+    },
+    "userOverview": {
+      "totalActiveFighters": "Total Active Fighters",
+      "troopTypes": "Troop Types",
+      "nationalities_title": "Nationalities",
+      "registered": "Registered",
+      "noDataAvailable": "No overview data available",
+      "troops": {
+        "infantry": "Infantry",
+        "archer": "Archer",
+        "mage": "Mage",
+        "cavalry": "Cavalry"
+      },
+      "nationalities": {
+        "korean": "Korean",
+        "vietnam": "Vietnam",
+        "russia": "Russia",
+        "usa": "USA",
+        "china": "China",
+        "international": "International"
+      }
     }
   },
   "home": {
@@ -103,7 +124,8 @@
     "eventDialog": {
       "addEvent": "Add Event",
       "editEvent": "Edit Event",
-      "eventTitle": "Event Title",
+      "eventTitle": "Event Title (Korean)",
+      "eventTitleEnglish": "Event Title (English)",
       "date": "Date",
       "startTime": "Start Time",
       "color": "Color",

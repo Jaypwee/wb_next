@@ -4,10 +4,10 @@ import { useEffect, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { useTranslate } from 'src/locales';
 import { fetchUserOverview } from 'src/services/user';
 import { useMetricsContext } from 'src/context/metrics';
 
@@ -18,12 +18,11 @@ import { ChartDonut } from './components/chart-donut';
 // ----------------------------------------------------------------------
 
 export function UserOverview({ 
-  title = "User Overview",
-  subheader = "Distribution of users by main troops and nationality",
   showTotalUsers = true,
   sx = {},
   ...other 
 }) {
+  const { t } = useTranslate();
   const { overview, setOverview, setError } = useMetricsContext();
   const [isPending, startTransition] = useTransition();
 
@@ -53,11 +52,10 @@ export function UserOverview({
     if (!mainTroops) return null;
 
     const troopLabels = {
-      infantry: 'Infantry',
-      archer: 'Archer',
-      mage: 'Mage',
-      cavalry: 'Cavalry',
-      unknown: 'Unknown'
+      infantry: t('dashboard.userOverview.troops.infantry'),
+      archer: t('dashboard.userOverview.troops.archer'),
+      mage: t('dashboard.userOverview.troops.mage'),
+      cavalry: t('dashboard.userOverview.troops.cavalry')
     };
 
     const troopColors = {
@@ -92,13 +90,12 @@ export function UserOverview({
     if (!nationality) return null;
 
     const nationalityLabels = {
-      korean: 'Korean',
-      vietnam: 'Vietnam',
-      russia: 'Russia',
-      usa: 'USA',
-      china: 'China',
-      international: 'International',
-      unknown: 'Unknown'
+      korean: t('dashboard.userOverview.nationalities.korean'),
+      vietnam: t('dashboard.userOverview.nationalities.vietnam'),
+      russia: t('dashboard.userOverview.nationalities.russia'),
+      usa: t('dashboard.userOverview.nationalities.usa'),
+      china: t('dashboard.userOverview.nationalities.china'),
+      international: t('dashboard.userOverview.nationalities.international')
     };
 
     const nationalityColors = {
@@ -133,7 +130,6 @@ export function UserOverview({
   if (isPending) {
     return (
       <Card sx={{ height: '100%', ...sx }} {...other}>
-        <CardHeader title={title} subheader={subheader} />
         <Box
           sx={{
             display: 'flex',
@@ -151,8 +147,7 @@ export function UserOverview({
   if (!overview) {
     return (
       <Card sx={{ height: '100%', ...sx }} {...other}>
-        <CardHeader title={title} subheader={subheader} />
-        <EmptyContent title="No overview data available" />
+        <EmptyContent title={t('dashboard.userOverview.noDataAvailable')} />
       </Card>
     );
   }
@@ -169,7 +164,7 @@ export function UserOverview({
               {overview.totalUsers}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Total Active Fighters
+              {t('dashboard.userOverview.totalActiveFighters')}
             </Typography>
           </Box>
         )}
@@ -187,7 +182,7 @@ export function UserOverview({
           {mainTroopsChart && (
             <Box>
               <Typography variant="h6" gutterBottom sx={{ mb: 2, textAlign: 'center' }}>
-                Troop Types
+                {t('dashboard.userOverview.troopTypes')}
               </Typography>
               <ChartDonut chart={mainTroopsChart} />
             </Box>
@@ -197,7 +192,7 @@ export function UserOverview({
           {nationalityChart && (
             <Box>
               <Typography variant="h6" gutterBottom sx={{ mb: 2, textAlign: 'center' }}>
-                Nationalities
+                {t('dashboard.userOverview.nationalities_title')}
               </Typography>
               <ChartDonut chart={nationalityChart} />
             </Box>

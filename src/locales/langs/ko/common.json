@@ -55,6 +55,27 @@
       "upload": "업로드",
       "individualReportUpload": "주간 전공 보고 업로드",
       "kvkReportUpload": "KvK 시즌 전체 서버 통계 업로드 (개발중)"
+    },
+    "userOverview": {
+      "totalActiveFighters": "활동 중인 연맹원",
+      "troopTypes": "계정별 부대 유형",
+      "nationalities_title": "국적 분포도",
+      "noDataAvailable": "개요 데이터가 없습니다",
+      "registered": "등록된 계정 수",
+      "troops": {
+        "infantry": "보병",
+        "archer": "궁병",
+        "mage": "법사",
+        "cavalry": "기병"
+      },
+      "nationalities": {
+        "korean": "한국",
+        "vietnam": "베트남",
+        "russia": "러시아",
+        "usa": "미국",
+        "china": "중국",
+        "international": "국제"
+      }
     }
   },
   "home": {
@@ -68,11 +89,11 @@
       "title_1": "전략적 오더",
       "title_2": "와 단합력",
       "infantry_title": "보병단",
-      "infantry_description": "긴밀한 단합력으로 이루어진 워 비스트의 보병 주축 인원들이 전장의 판도를 움직입니다.",
+      "infantry_description": "긴밀한 단합력으로 이루어진 WB식 전투의 한 주축을 이루는 보병 전문 인원들이 전장의 판도를 움직입니다.",
       "leadership_title": "리더십",
       "leadership_description": "20명 안팎으로 이루어진 WB 임원진들은 밤낮없이 전장에서 연맹원들을 통솔하며, 승리를 위한 최적의 전략과 유리한 전투 구도를 제시합니다.",
-      "multinational_title": "Multi-National Alliance",
-      "multinational_description": "Our fighters are stationed in countries such as Korea, Vietnam, Russia, Europe, and the U.S. We are capable of fighting 24/7."
+      "multinational_title": "다국적 연맹",
+      "multinational_description": "우리 연맹원들은 한국, 베트남, 러시아, 유럽, 미국, 중국 등 다양한 국가에서 활동하며, 24시간 365일 전쟁에 참여할 수 있습니다."
     }
   },
   "schedule": {
@@ -104,7 +125,8 @@
     "eventDialog": {
       "addEvent": "일정 추가",
       "editEvent": "일정 수정",
-      "eventTitle": "일정 제목",
+      "eventTitle": "일정 제목 (한국어)",
+      "eventTitleEnglish": "일정 제목 (English)",
       "date": "날짜",
       "startTime": "시작 시간",
       "color": "색상",

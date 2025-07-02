@@ -7,9 +7,9 @@ import timezone from 'dayjs/plugin/timezone';
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
-import { alpha, useTheme } from '@mui/material/styles';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 
@@ -22,8 +22,7 @@ dayjs.extend(timezone);
 // ----------------------------------------------------------------------
 
 export function EventDetailsDialog({ open, onClose, event }) {
-  const theme = useTheme();
-  const { t } = useTranslate();
+  const { t, currentLang } = useTranslate();
 
   if (!event) return null;
 
@@ -65,6 +64,16 @@ export function EventDetailsDialog({ open, onClose, event }) {
 
   const { time: displayTime, date: displayDate } = formatEventDateTime();
 
+  // Get the appropriate title based on current locale
+  const getDisplayTitle = () => {
+    if (currentLang?.value === 'en' && event.titleEnglish) {
+      return event.titleEnglish;
+    }
+    return event.title || '';
+  };
+
+  const displayTitle = getDisplayTitle();
+
   return (
     <Dialog 
       open={open} 
@@ -89,7 +98,7 @@ export function EventDetailsDialog({ open, onClose, event }) {
             }}
           />
           <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
-            {event.title}
+            {displayTitle}
           </Typography>
         </Box>
       </DialogTitle>
