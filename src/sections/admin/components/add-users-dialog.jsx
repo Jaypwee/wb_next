@@ -21,8 +21,8 @@ import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 const userIdSchema = z.string()
   .min(1, 'User ID is required')
   .regex(/^\d+$/, 'User ID must contain only numbers')
-  .refine((val) => val.length >= 7 && val.length <= 8, {
-    message: 'User ID must be 7-8 digits long',
+  .refine((val) => val.length >= 6 && val.length <= 8, {
+    message: 'User ID must be 6-8 digits long',
   });
 
 const AddUsersDialog = ({ open, onClose, onSubmit }) => {
@@ -148,7 +148,7 @@ const AddUsersDialog = ({ open, onClose, onSubmit }) => {
       
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          유저 ID(9-10자리)를 입력하세요.
+          유저 ID(6-8자리)를 입력하세요.
         </Typography>
         
         <Stack spacing={2} sx={{ mt: 1 }}>

@@ -42,7 +42,7 @@
       "createAccount": "Create account",
       "errors": {
         "gameuidRequired": "Game UID is required",
-        "gameuidInvalid": "Game UID must be exactly 8 numbers",
+        "gameuidInvalid": "Game UID must be exactly 6-8 numbers",
         "nationalityRequired": "Nationality is required",
         "mainTroopsRequired": "Main troop type is required"
       }
@@ -170,6 +170,19 @@
     }
   },
   "metrics": {
+    "series": {
+      "merits": "Merits",
+      "unitsKilled": "T5 Units Killed",
+      "unitsDead": "Units Dead",
+      "manaSpent": "Mana Spent",
+      "t5KillCount": "T5 Kill Count"
+    },
+    "chart": {
+      "metricsOverview": "Metrics Overview",
+      "metricsComparison": "Metrics Comparison",
+      "dataFor": "Data for {{date}}",
+      "comparingData": "Comparing data from {{startDate}} to {{endDate}}"
+    },
     "dataGrid": {
       "rank": "Rank",
       "name": "Name", 
@@ -184,7 +197,29 @@
         "archerMain": "Archer Main", 
         "mageMain": "Mage Main",
         "cavalryMain": "Cavalry Main"
+      },
+      "toolbar": {
+        "search": "Search...",
+        "columns": "Columns",
+        "filters": "Filters",
+        "density": "Density",
+        "export": "Export",
+        "showColumns": "Show columns",
+        "hideColumns": "Hide columns",
+        "filterTable": "Filter table",
+        "densityCompact": "Compact",
+        "densityStandard": "Standard",
+        "densityComfortable": "Comfortable",
+        "exportLabel": "Export",
+        "exportCSV": "Download as CSV",
+        "exportPrint": "Print"
       }
+    },
+    "dropdown": {
+      "selectStartDate": "Select start date",
+      "selectEndDate": "Select end date",
+      "loading": "Loading...",
+      "apply": "Apply"
     }
   },
   

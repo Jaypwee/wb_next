@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { useTranslate } from 'src/locales';
 import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 import { fetchSeasonInfo, fetchSeasonDates } from 'src/services/season';
 
@@ -22,6 +23,7 @@ export function MetricsDropdown({
   onApply,
   isPending = false
 }) {
+  const { t } = useTranslate();
   const [seasonInfo, setSeasonInfo] = useState(null);
   const [seasonDates, setSeasonDates] = useState([]);
   const [isLoadingSeasons, startSeasonsTransition] = useTransition();
@@ -90,14 +92,14 @@ export function MetricsDropdown({
         <>
           <CustomDropdown 
             options={seasonDates || []}
-            initialValue={startDate || "Select start date"}
+            initialValue={startDate || t('metrics.dropdown.selectStartDate')}
             onChange={onStartDateChange}
           />
           
           {startDate && (
             <CustomDropdown 
               options={getAvailableEndDates()}
-              initialValue={endDate || "Select end date"}
+              initialValue={endDate || t('metrics.dropdown.selectEndDate')}
               onChange={onEndDateChange}
             />
           )}
@@ -108,7 +110,7 @@ export function MetricsDropdown({
             disabled={!startDate || isPending}
             sx={{ ml: 'auto' }}
           >
-            {isPending ? 'Loading...' : 'Apply'}
+            {isPending ? t('metrics.dropdown.loading') : t('metrics.dropdown.apply')}
           </Button>
         </>
       )}

@@ -49,7 +49,7 @@ export function FirebaseSignUpView() {
     gameuid: zod
       .string()
       .min(1, { message: t('auth.signUp.errors.gameuidRequired') })
-      .regex(/^\d{7,8}$/, { message: t('auth.signUp.errors.gameuidInvalid') }),
+      .regex(/^\d{6,8}$/, { message: t('auth.signUp.errors.gameuidInvalid') }),
     nationality: zod.string().min(1, { message: t('auth.signUp.errors.nationalityRequired') }),
     mainTroops: zod.string().min(1, { message: t('auth.signUp.errors.mainTroopsRequired') }),
   });

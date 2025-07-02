@@ -43,7 +43,7 @@
       "errors": {
         "nicknameRequired": "인게임 이름을 입력해주세요",
         "gameuidRequired": "게임 UID를 입력해주세요",
-        "gameuidInvalid": "게임 UID는 8자리 숫자여야 합니다",
+        "gameuidInvalid": "게임 UID는 6-8자리 숫자여야 합니다",
         "nationalityRequired": "국적을 선택해주세요",
         "mainTroopsRequired": "주력 부대를 선택해주세요"
       }
@@ -171,11 +171,25 @@
     }
   },
   "metrics": {
+    "series": {
+      "merits": "전공",
+      "unitsKilled": "T5 처치 병력",
+      "unitsDead": "사망 병력",
+      "manaSpent": "소모 마나",
+      "t5KillCount": "T5 처치 수"
+    },
+    "chart": {
+      "metricsOverview": "지표 개요",
+      "metricsComparison": "지표 비교",
+      "dataFor": "{{date}} 데이터",
+      "comparingData": "{{startDate}}부터 {{endDate}}까지 데이터 비교"
+    },
     "dataGrid": {
       "rank": "순위",
       "name": "이름",
-      "highestPower": "최고 파워",
-      "currentPower": "현재 파워", 
+      "merits": "전공",
+      "highestPower": "최고 전투력",
+      "currentPower": "현재 전투력", 
       "leaderboardTitle": "리더보드",
       "leaderboardSubheader": "순위는 다음 기준으로 결정됩니다:",
       "noDataAvailable": "데이터가 없습니다",
@@ -185,7 +199,29 @@
         "archerMain": "궁병 메인",
         "mageMain": "법사 메인", 
         "cavalryMain": "기병 메인"
+      },
+      "toolbar": {
+        "search": "검색...",
+        "columns": "열 보기",
+        "filters": "필터 적용",
+        "density": "밀도",
+        "export": "내보내기",
+        "showColumns": "열 보기",
+        "hideColumns": "열 숨기기",
+        "filterTable": "테이블 필터",
+        "densityCompact": "압축",
+        "densityStandard": "표준",
+        "densityComfortable": "여유",
+        "exportLabel": "내보내기",
+        "exportCSV": "CSV로 다운로드",
+        "exportPrint": "인쇄"
       }
+    },
+    "dropdown": {
+      "selectStartDate": "집계 시작일",
+      "selectEndDate": "집계 종료일",
+      "loading": "로딩중...",
+      "apply": "적용"
     }
   },
   "nav": {

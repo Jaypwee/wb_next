@@ -5,7 +5,7 @@ import axios from 'src/lib/axios';
  */
 export const METRIC_SERIES = {
   MERITS: {
-    name: 'Merits',
+    name: 'metrics.dataGrid.merits',
     key: 'merits',
   },
   UNITS_KILLED: {

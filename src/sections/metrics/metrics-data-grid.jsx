@@ -194,7 +194,32 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
   }, [selectedMetrics, type]);
 
   // Get metric name for display
-  const metricName = METRIC_SERIES[type]?.name || 'Metrics';
+  const metricName = t(METRIC_SERIES[type]?.name) || 'Metrics';
+
+  // Create localized text for DataGrid
+  const localeText = useMemo(() => ({
+    // Toolbar
+    toolbarQuickFilterPlaceholder: t('metrics.dataGrid.toolbar.search'),
+    toolbarColumns: t('metrics.dataGrid.toolbar.columns'),
+    toolbarFilters: t('metrics.dataGrid.toolbar.filters'),
+    toolbarDensity: t('metrics.dataGrid.toolbar.density'),
+    toolbarExport: t('metrics.dataGrid.toolbar.export'),
+    
+    // Column menu
+    columnMenuShowColumns: t('metrics.dataGrid.toolbar.showColumns'),
+    columnMenuHideColumn: t('metrics.dataGrid.toolbar.hideColumns'),
+    columnMenuFilter: t('metrics.dataGrid.toolbar.filterTable'),
+    
+    // Density
+    toolbarDensityCompact: t('metrics.dataGrid.toolbar.densityCompact'),
+    toolbarDensityStandard: t('metrics.dataGrid.toolbar.densityStandard'),
+    toolbarDensityComfortable: t('metrics.dataGrid.toolbar.densityComfortable'),
+    
+    // Export
+    toolbarExportLabel: t('metrics.dataGrid.toolbar.exportLabel'),
+    toolbarExportCSV: t('metrics.dataGrid.toolbar.exportCSV'),
+    toolbarExportPrint: t('metrics.dataGrid.toolbar.exportPrint'),
+  }), [t]);
 
   // Define columns
   const columns = useMemo(() => [
@@ -334,7 +359,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
         );
       },
     },
-  ], [metricName, users]);
+  ], [metricName, users, t]);
 
   return (
     <Card sx={{ height: '100%' }}>
@@ -349,6 +374,7 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
         disableRowSelectionOnClick
         initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
         pageSizeOptions={[5, 10, 20, 50, { value: -1, label: 'All' }]}
+        localeText={localeText}
         slots={{
           toolbar: CustomToolbar,
           noRowsOverlay: () => <EmptyContent title={t('metrics.dataGrid.noDataAvailable')} />,
