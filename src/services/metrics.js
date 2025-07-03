@@ -9,19 +9,19 @@ export const METRIC_SERIES = {
     key: 'merits',
   },
   UNITS_KILLED: {
-    name: 'T5 Units Killed',
+    name: 'metrics.series.unitsKilled',
     key: 'unitsKilled',
   },
   UNITS_DEAD: {
-    name: 'Units Dead',
+    name: 'metrics.series.unitsDead',
     key: 'unitsDead',
   },
   MANA_SPENT: {
-    name: 'Mana Spent',
+    name: 'metrics.series.manaSpent',
     key: 'manaSpent',
   },
   T5_KILL_COUNT: {
-    name: 'T5 Kill Count',
+    name: 'metrics.series.t5KillCount',
     key: 't5KillCount',
   },
 };
