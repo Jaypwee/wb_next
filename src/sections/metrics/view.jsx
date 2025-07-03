@@ -1,15 +1,18 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react';
+import { useMemo, useState, useEffect, useCallback, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 
+import { useTranslate } from 'src/locales';
 import { useUserContext } from 'src/context/user';
 import { useMetricsContext } from 'src/context/metrics';
 import { makeAuthenticatedRequest } from 'src/lib/token-utils';
-import { formatChartData, fetchMetricsData } from 'src/services/metrics';
+import { formatChartData, fetchMetricsData, formatDataGridData } from 'src/services/metrics';
 
 import { useSettingsContext } from 'src/components/settings';
 import { MetricsDropdown } from 'src/components/metrics-dropdown';
@@ -18,10 +21,21 @@ import { MetricsBarChart } from './metrics-bar-chart';
 import { MetricsDataGrid } from './metrics-data-grid';
 // ----------------------------------------------------------------------
 
-export function MetricsView({ type = 'MERITS' }) {
+const TAB_OPTIONS = [
+  { value: 'MERITS', label: 'metrics.series.merits' },
+  { value: 'UNITS_KILLED', label: 'metrics.series.unitsKilled' },
+  { value: 'UNITS_DEAD', label: 'metrics.series.unitsDead' },
+  { value: 'MANA_SPENT', label: 'metrics.series.manaSpent' },
+  // { value: 'T5_KILL_COUNT', label: 'metrics.series.t5KillCount' },
+];
+
+export function MetricsView({ type: initialType = 'MERITS' }) {
   const settings = useSettingsContext();
+  const { t } = useTranslate();
   const [isPending, startTransition] = useTransition();
-  const [formattedChartData, setFormattedChartData] = useState(null);
+  const [formattedChartDataByType, setFormattedChartDataByType] = useState({});
+  const [formattedGridDataByType, setFormattedGridDataByType] = useState({});
+  const [currentType, setCurrentType] = useState(initialType);
   const {
     selectedSeason,
     startDate,
@@ -43,17 +57,30 @@ export function MetricsView({ type = 'MERITS' }) {
   }, [loadUsers]);
 
   useEffect(() => {
-    if (selectedMetrics && startDate && endDate && type) {
-      const formattedData = formatChartData({
-        data: selectedMetrics.data,
-        startDate,
-        endDate,
-        type
+    if (selectedMetrics && startDate && endDate) {
+      // Format chart data for all types
+      const formattedChartByType = {};
+      const formattedGridByType = {};
+      
+      TAB_OPTIONS.forEach(({ value: type }) => {
+        formattedChartByType[type] = formatChartData({
+          data: selectedMetrics.data,
+          startDate,
+          endDate,
+          type
+        });
+        
+        formattedGridByType[type] = formatDataGridData({
+          data: selectedMetrics.data,
+          type
+        });
       });
-
-      setFormattedChartData(formattedData);
+      console.log('format effect')
+      
+      setFormattedChartDataByType(formattedChartByType);
+      setFormattedGridDataByType(formattedGridByType);
     }
-  }, [selectedMetrics, startDate, endDate, type]);
+  }, [selectedMetrics, startDate, endDate]);
 
   const handleApply = async () => {
     try {
@@ -68,20 +95,49 @@ export function MetricsView({ type = 'MERITS' }) {
 
         setSelectedMetrics(chartData);
 
-        const formattedData = formatChartData({
-          data: chartData.data,
-          startDate,
-          endDate,
-          type
+        // Format chart data for all types
+        const formattedChartByType = {};
+        const formattedGridByType = {};
+        
+        TAB_OPTIONS.forEach(({ value: type }) => {
+          formattedChartByType[type] = formatChartData({
+            data: chartData.data,
+            startDate,
+            endDate,
+            type
+          });
+          
+          formattedGridByType[type] = formatDataGridData({
+            data: chartData.data,
+            type
+          });
         });
 
-        setFormattedChartData(formattedData);
+        setFormattedChartDataByType(formattedChartByType);
+        setFormattedGridDataByType(formattedGridByType);
       });
     } catch (error) {
       console.error('Error fetching metrics:', error);
       setError(error.message);
     }
   };
+
+  const handleTabChange = useCallback((event, newValue) => {
+    setCurrentType(newValue);
+  }, []);
+
+  // Memoize current formatted data to prevent unnecessary re-renders
+  const currentFormattedChartData = useMemo(() => 
+    formattedChartDataByType[currentType] || null,
+    [formattedChartDataByType, currentType]
+  );
+  
+  const currentFormattedGridData = useMemo(() => 
+    formattedGridDataByType[currentType] || [],
+    [formattedGridDataByType, currentType]
+  );
+
+  console.log(isPending)
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -136,6 +192,30 @@ export function MetricsView({ type = 'MERITS' }) {
 
             <Box
               sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                mb: 2,
+              }}
+            >
+              <Tabs
+                value={currentType}
+                onChange={handleTabChange}
+                aria-label="metrics type tabs"
+                variant="scrollable"
+                scrollButtons="auto"
+              >
+                {TAB_OPTIONS.map((tab) => (
+                  <Tab
+                    key={tab.value}
+                    label={t(tab.label)}
+                    value={tab.value}
+                  />
+                ))}
+              </Tabs>
+            </Box>
+
+            <Box
+              sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 3,
@@ -143,14 +223,15 @@ export function MetricsView({ type = 'MERITS' }) {
               }}
             >
               <Box sx={{ flex: 1 }}>
-                <MetricsBarChart {...formattedChartData} />
+                <MetricsBarChart {...currentFormattedChartData} />
               </Box>
 
               <Box sx={{ flex: 1, minHeight: '45vh' }}>
                 <MetricsDataGrid 
                   selectedMetrics={selectedMetrics}
-                  type={type}
+                  type={currentType}
                   users={users}
+                  gridData={currentFormattedGridData}
                 />
               </Box>
             </Box>

@@ -9,9 +9,11 @@ import {
   setLoading,
   setOverview,
   setStartDate,
+  setSeasonInfo,
   setSeasonDates,
   setSelectedSeason,
   setSelectedMetrics,
+  setSeasonDatesCache,
 } from './actions';
 
 // ----------------------------------------------------------------------
@@ -22,6 +24,8 @@ const initialState = {
   endDate: '',
   selectedMetrics: null,
   overview: null,
+  seasonInfo: null,
+  seasonDatesCache: {},
   seasonDates: {
     startDate: null,
     endDate: null,
@@ -46,6 +50,8 @@ export function MetricsProvider({ children }) {
     setSelectedMetrics: (metrics) => dispatch(setSelectedMetrics(metrics)),
     setOverview: (overview) => dispatch(setOverview(overview)),
     setSeasonDates: (dates) => dispatch(setSeasonDates(dates)),
+    setSeasonInfo: (info) => dispatch(setSeasonInfo(info)),
+    setSeasonDatesCache: (seasonName, dates) => dispatch(setSeasonDatesCache(seasonName, dates)),
     setLoading: (isLoading) => dispatch(setLoading(isLoading)),
     setError: (error) => dispatch(setError(error)),
   };

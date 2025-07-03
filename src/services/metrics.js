@@ -79,9 +79,6 @@ export function formatChartData({ data, startDate, endDate, type = 'MERITS' }) {
     const bValue = b[series[0].key] || 0;
     return bValue - aValue; // Sort in descending order
   });
-
-  console.log(sortedEntries);
-
   // Extract sorted categories (using names) and create series data
   const categories = sortedEntries.map(([, userData]) => userData.name);
   const seriesData = series.map(metric => ({

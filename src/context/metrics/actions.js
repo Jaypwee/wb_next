@@ -27,6 +27,16 @@ export const setSeasonDates = (dates) => ({
   payload: dates,
 });
 
+export const setSeasonInfo = (info) => ({
+  type: ActionTypes.SET_SEASON_INFO,
+  payload: info,
+});
+
+export const setSeasonDatesCache = (seasonName, dates) => ({
+  type: ActionTypes.SET_SEASON_DATES_CACHE,
+  payload: { seasonName, dates },
+});
+
 export const setLoading = (isLoading) => ({
   type: ActionTypes.SET_LOADING,
   payload: isLoading,

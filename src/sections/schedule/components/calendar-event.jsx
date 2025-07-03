@@ -6,8 +6,9 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
 import Box from '@mui/material/Box';
-import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { useTranslate } from 'src/locales';
 
@@ -21,6 +22,8 @@ dayjs.extend(timezone);
 
 export function CalendarEvent({ event, onEdit, readOnly = false }) {
   const { currentLang } = useTranslate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleDragStart = (e) => {
@@ -108,7 +111,7 @@ export function CalendarEvent({ event, onEdit, readOnly = false }) {
             whiteSpace: 'nowrap',
           }}
         >
-          {displayTime} | {displayTitle}
+          {isMobile ? displayTitle : `${displayTime} | ${displayTitle}`}
         </Typography>
       </Box>
 

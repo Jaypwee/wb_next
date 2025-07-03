@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import { useTranslate } from 'src/locales';
+import { EventsProvider } from 'src/context/events';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useAuthContext } from 'src/auth/hooks';
@@ -33,7 +34,9 @@ export function ScheduleView() {
           overflow: 'hidden',
         }}
       >
-        <ScheduleCalendar readOnly={isReadOnly} />
+        <EventsProvider>
+          <ScheduleCalendar readOnly={isReadOnly} />
+        </EventsProvider>
       </Box>
     </DashboardContent>
   );

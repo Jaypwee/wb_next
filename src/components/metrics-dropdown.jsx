@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useTranslate } from 'src/locales';
+import { useMetricsContext } from 'src/context/metrics';
 import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 import { fetchSeasonInfo, fetchSeasonDates } from 'src/services/season';
 
@@ -24,48 +25,65 @@ export function MetricsDropdown({
   isPending = false
 }) {
   const { t } = useTranslate();
-  const [seasonInfo, setSeasonInfo] = useState(null);
-  const [seasonDates, setSeasonDates] = useState([]);
+  const {
+    seasonInfo,
+    seasonDatesCache,
+    setSeasonInfo,
+    setSeasonDatesCache,
+  } = useMetricsContext();
   const [isLoadingSeasons, startSeasonsTransition] = useTransition();
   const [isLoadingDates, startDatesTransition] = useTransition();
 
-  // Fetch season info on mount
+  // Fetch season info on mount if not already cached
   useEffect(() => {
-    startSeasonsTransition(async () => {
-      try {
-        const data = await makeAuthenticatedRequest(fetchSeasonInfo);
-        setSeasonInfo(data);
-        
-        // Set initial season if not already set
-        if (data?.current_season && !selectedSeason) {
-          onSeasonChange(data.current_season);
+    if (!seasonInfo) {
+      startSeasonsTransition(async () => {
+        try {
+          const data = await makeAuthenticatedRequest(fetchSeasonInfo);
+          setSeasonInfo(data);
+          
+          // Set initial season if not already set
+          if (data?.current_season && !selectedSeason) {
+            onSeasonChange(data.current_season);
+          }
+        } catch (error) {
+          console.error('Error loading season info:', error);
         }
-      } catch (error) {
-        console.error('Error loading season info:', error);
-      }
-    });
-  }, []); // Only run once on mount
+      });
+    } else if (seasonInfo?.current_season && !selectedSeason) {
+      // If season info is already cached, set initial season
+      onSeasonChange(seasonInfo.current_season);
+    }
+  }, [seasonInfo, selectedSeason, onSeasonChange, setSeasonInfo]);
 
-  // Fetch dates when season changes
+  // Fetch dates when season changes, but only if not already cached
   useEffect(() => {
     if (!selectedSeason) return;
+
+    // Check if dates are already cached for this season
+    if (seasonDatesCache[selectedSeason]) {
+      return; // Already cached, no need to fetch
+    }
 
     startDatesTransition(async () => {
       try {
         const dates = await makeAuthenticatedRequest(() => fetchSeasonDates(selectedSeason));
-        setSeasonDates(dates || []);
+        setSeasonDatesCache(selectedSeason, dates || []);
       } catch (error) {
         console.error('Error loading season dates:', error);
-        setSeasonDates([]);
+        setSeasonDatesCache(selectedSeason, []);
       }
     });
-  }, [selectedSeason]);
+  }, [selectedSeason, seasonDatesCache, setSeasonDatesCache]);
+
+  // Get current season dates from cache
+  const currentSeasonDates = seasonDatesCache[selectedSeason] || [];
 
   // Get available end dates based on selected start date
   const getAvailableEndDates = () => {
-    if (!startDate || !seasonDates) return [];
-    const startIndex = seasonDates.indexOf(startDate);
-    return seasonDates.slice(startIndex + 1);
+    if (!startDate || !currentSeasonDates.length) return [];
+    const startIndex = currentSeasonDates.indexOf(startDate);
+    return currentSeasonDates.slice(startIndex + 1);
   };
 
   if (isLoadingSeasons) {
@@ -91,7 +109,7 @@ export function MetricsDropdown({
       ) : (
         <>
           <CustomDropdown 
-            options={seasonDates || []}
+            options={currentSeasonDates}
             initialValue={startDate || t('metrics.dropdown.selectStartDate')}
             onChange={onStartDateChange}
           />

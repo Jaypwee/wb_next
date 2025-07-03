@@ -18,7 +18,7 @@ import {
 } from '@mui/x-data-grid';
 
 import { useTranslate } from 'src/locales';
-import { METRIC_SERIES, formatDataGridData } from 'src/services/metrics';
+import { METRIC_SERIES } from 'src/services/metrics';
 
 import { Iconify } from 'src/components/iconify';
 import { BadgeCell } from 'src/components/badge-cell';
@@ -183,15 +183,9 @@ function TroopIcon({ troopType, t }) {
   );
 }
 
-export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS' }) {
+export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS', gridData = [] }) {
   const { t } = useTranslate();
   const [filterButtonEl, setFilterButtonEl] = useState(null);
-
-  // Format data for DataGrid
-  const gridData = useMemo(() => {
-    if (!selectedMetrics?.data) return [];
-    return formatDataGridData({ data: selectedMetrics.data, type });
-  }, [selectedMetrics, type]);
 
   // Get metric name for display
   const metricName = t(METRIC_SERIES[type]?.name) || 'Metrics';

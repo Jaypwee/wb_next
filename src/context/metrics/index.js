@@ -4,7 +4,9 @@ export {
   setError,
   setLoading,
   setOverview,
+  setSeasonInfo,
   setSeasonDates,
   setSelectedSeason,
   setSelectedMetrics,
+  setSeasonDatesCache,
 } from './actions'; 

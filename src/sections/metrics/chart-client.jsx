@@ -1,12 +1,17 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
 import { Chart, useChart } from 'src/components/chart';
 
 export function ChartClient({ type, series, categories, sx }) {
   const theme = useTheme();
-  const chartColors = [hexAlpha(theme.palette.primary.dark, 0.8)];
+  
+  const chartColors = useMemo(() => [
+    hexAlpha(theme.palette.primary.dark, 0.8)
+  ], [theme.palette.primary.dark]);
 
   const chartOptions = useChart({
     colors: chartColors,
@@ -31,7 +36,6 @@ export function ChartClient({ type, series, categories, sx }) {
       enabled: true,
       textAnchor: 'start',
       formatter: (value) => value.toLocaleString(),
-
     },
     tooltip: {
       y: { 

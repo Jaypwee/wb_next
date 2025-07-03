@@ -17,7 +17,6 @@ import { PayPalDonationButton } from 'src/components/paypal-donation';
 
 export function DonationsView() {
   const handleDonationSuccess = (details) => {
-    console.log('Donation successful:', details);
     // You can add custom success handling here
     // For example, show a success message, update user status, etc.
   };

@@ -46,7 +46,7 @@ export function CustomDropdown({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        PaperProps={{
+        slotProps={{
           sx: {
             width: '200px',
             maxHeight: 300

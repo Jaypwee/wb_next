@@ -76,6 +76,14 @@
         "china": "중국",
         "international": "국제"
       }
+    },
+    "upcomingEvents": {
+      "title": "다가오는 일정",
+      "today": "오늘",
+      "tomorrow": "내일",
+      "inTwoDays": "모레",
+      "noEvents": "예정된 일정 없음",
+      "noEventsDescription": "향후 3일간 예정된 일정이 없습니다"
     }
   },
   "home": {
@@ -173,9 +181,9 @@
   "metrics": {
     "series": {
       "merits": "전공",
-      "unitsKilled": "T5 처치 병력",
-      "unitsDead": "사망 병력",
-      "manaSpent": "소모 마나",
+      "unitsKilled": "T5 부대 처치 수",
+      "unitsDead": "부대 사망 수",
+      "manaSpent": "마나 소모량",
       "t5KillCount": "T5 처치 수"
     },
     "chart": {
@@ -243,6 +251,9 @@
       },
       "kvk":{
         "title": "시즌 왕국"
+      },
+      "tooltips": {
+        "kvk": "KvK 시즌 왕국 종합 통계는 7월 18일에 정식 출시 예정입니다. 많은 관심 부탁드립니다!"
       },
       "misc":{
         "title": "기타",

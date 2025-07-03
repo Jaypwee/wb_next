@@ -1,11 +1,11 @@
 import { CONFIG } from 'src/global-config';
 
-import { BlankView } from 'src/sections/blank/view';
+import { DashboardHomeView } from 'src/sections/dashboard/dashboard-home-view';
 
 // ----------------------------------------------------------------------
 
 export const metadata = { title: `Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
-  return <BlankView title="Overview - WORK IN PROGRESS" />;
+  return <DashboardHomeView />;
 }

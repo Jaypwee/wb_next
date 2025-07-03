@@ -77,14 +77,8 @@ export const navData = [
     items: [
       {
         title: 'nav.dashboard.individual.individual',
-        path: paths.dashboard.metrics.root,
+        path: paths.dashboard.metrics.merits,
         icon: ICONS.analytics,
-        children: [
-          { title: 'nav.dashboard.individual.merits', path: paths.dashboard.metrics.merits },
-          { title: 'nav.dashboard.individual.kills', path: paths.dashboard.metrics.kills },
-          { title: 'nav.dashboard.individual.deaths', path: paths.dashboard.metrics.deads },
-          { title: 'nav.dashboard.individual.heals', path: paths.dashboard.metrics.mana },
-        ],
       },
       {
         title: 'nav.dashboard.kvk.title',

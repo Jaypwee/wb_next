@@ -3,7 +3,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { useMemo, useState, useEffect, useTransition } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -15,9 +15,8 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import axios from 'src/lib/axios';
 import { useTranslate } from 'src/locales';
-import { makeAuthenticatedRequest } from 'src/lib/token-utils';
+import { useEventsContext } from 'src/context/events';
 
 import { Iconify } from 'src/components/iconify';
 import { LoadingScreen } from 'src/components/loading-screen';
@@ -35,51 +34,32 @@ export function ScheduleCalendar({ readOnly = false }) {
   const theme = useTheme();
   const { t } = useTranslate();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState([]);
-  const [error, setError] = useState(null);
   const [eventDialog, setEventDialog] = useState({
     open: false,
     event: null,
     date: null,
   });
   
-  // Use useTransition for async operations
-  const [isPending, startTransition] = useTransition();
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  // Fetch events from API
-  const fetchEvents = async () => {
-    try {
-      setError(null);
-      const response = await axios.get('/api/season/schedule');
-      setEvents(response.data.events || []);
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError(err.response?.data?.error || 'Failed to load events');
-      setEvents([]); // Set empty array on error
-    } finally {
-      setIsInitialLoading(false);
-    }
-  };
-
-  // Save events to API
-  const saveEventsToAPI = async (updatedEvents) => {
-    if (readOnly) return; // Don't save in read-only mode
-    
-    try {
-      setError(null);
-      await axios.post('/api/season/schedule', { events: updatedEvents });
-    } catch (err) {
-      console.error('Error saving events:', err);
-      setError(err.response?.data?.error || 'Failed to save events');
-      throw err; // Re-throw to handle in calling function
-    }
-  };
+  // Use events context
+  const {
+    events,
+    error,
+    isLoading,
+    isInitialLoading,
+    loadEvents,
+    createEvent,
+    editEvent,
+    removeEvent,
+    moveEvent,
+    retryLoad,
+  } = useEventsContext();
 
   // Load events on component mount
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (events.length === 0) {
+      loadEvents();
+    }
+  }, [events.length, loadEvents]);
 
 
 
@@ -126,109 +106,54 @@ export function ScheduleCalendar({ readOnly = false }) {
     });
   };
 
-  const handleSaveEvent = (eventData) => {
+  const handleSaveEvent = async (eventData) => {
     if (readOnly) return; // Prevent saving events in read-only mode
     
-    startTransition(async () => {
-      try {
-        let updatedEvents;
-        
-        if (eventDialog.event) {
-          // Edit existing event
-          updatedEvents = events.map(event => 
-            event.id === eventDialog.event.id ? { ...eventData, id: event.id } : event
-          );
-        } else {
-          // Add new event
-          const newEvent = {
-            ...eventData,
-            id: Date.now().toString(),
-          };
-          updatedEvents = [...events, newEvent];
-        }
-
-        // Save to API first
-        await makeAuthenticatedRequest(() => saveEventsToAPI(updatedEvents));
-        
-        // Update local state
-        setEvents(updatedEvents);
-        setEventDialog({ open: false, event: null, date: null });
-      } catch (err) {
-        // Error is already set in saveEventsToAPI, don't close dialog so user can retry
-        console.error('Failed to save event:', err);
+    try {
+      if (eventDialog.event) {
+        // Edit existing event
+        await editEvent(eventDialog.event.id, eventData);
+      } else {
+        // Add new event
+        await createEvent(eventData);
       }
-    });
+      
+      setEventDialog({ open: false, event: null, date: null });
+    } catch (err) {
+      // Error is already handled in context, don't close dialog so user can retry
+      console.error('Failed to save event:', err);
+    }
   };
 
-  const handleDeleteEvent = (eventId) => {
+  const handleDeleteEvent = async (eventId) => {
     if (readOnly) return; // Prevent deleting events in read-only mode
     
-    startTransition(async () => {
-      try {
-        const updatedEvents = events.filter(event => event.id !== eventId);
-        
-        // Save to API first
-        await saveEventsToAPI(updatedEvents);
-        
-        // Update local state
-        setEvents(updatedEvents);
-        setEventDialog({ open: false, event: null, date: null });
-      } catch (err) {
-        // Error is already set in saveEventsToAPI, don't close dialog so user can retry
-        console.error('Failed to delete event:', err);
-      }
-    });
+    try {
+      await removeEvent(eventId);
+      setEventDialog({ open: false, event: null, date: null });
+    } catch (err) {
+      // Error is already handled in context, don't close dialog so user can retry
+      console.error('Failed to delete event:', err);
+    }
   };
 
   const handleCloseDialog = () => {
     setEventDialog({ open: false, event: null, date: null });
   };
 
-  const handleEventDrop = (eventId, newDate) => {
+  const handleEventDrop = async (eventId, newDate) => {
     if (readOnly) return; // Prevent drag-and-drop in read-only mode
     
-    startTransition(async () => {
-      try {
-        const updatedEvents = events.map(event => {
-          if (event.id === eventId) {
-            if (event.datetime) {
-              // New format: Update the datetime while preserving time
-              const utcDateTime = dayjs.utc(event.datetime);
-              const localDateTime = utcDateTime.local();
-              const newDateTime = dayjs(newDate)
-                .hour(localDateTime.hour())
-                .minute(localDateTime.minute())
-                .second(0)
-                .millisecond(0);
-              
-              return {
-                ...event,
-                datetime: newDateTime.utc().toISOString(),
-                date: newDate, // Keep legacy field for compatibility
-              };
-            } else {
-              // Legacy format: Just update the date
-              return { ...event, date: newDate };
-            }
-          }
-          return event;
-        });
-        
-        // Save to API first
-        await saveEventsToAPI(updatedEvents);
-        
-        // Update local state
-        setEvents(updatedEvents);
-      } catch (err) {
-        console.error('Failed to move event:', err);
-        // Optionally show a toast notification here
-      }
-    });
+    try {
+      await moveEvent(eventId, newDate);
+    } catch (err) {
+      console.error('Failed to move event:', err);
+      // Optionally show a toast notification here
+    }
   };
 
   const handleRetry = () => {
-    setIsInitialLoading(true);
-    fetchEvents();
+    retryLoad();
   };
 
   // Get current timezone for display
@@ -265,8 +190,8 @@ export function ScheduleCalendar({ readOnly = false }) {
         height: '100%',
         bgcolor: 'background.paper',
         border: `1px solid ${theme.palette.divider}`,
-        // Add slight opacity when transition is pending
-        opacity: isPending ? 0.7 : 1,
+        // Add slight opacity when loading
+        opacity: isLoading ? 0.7 : 1,
         transition: 'opacity 0.2s ease-in-out',
       }}
     >
@@ -285,8 +210,8 @@ export function ScheduleCalendar({ readOnly = false }) {
         </Alert>
       )}
 
-      {/* Transition Pending Indicator */}
-      {isPending && (
+      {/* Loading Indicator */}
+      {isLoading && (
         <Alert severity="info" sx={{ mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CircularProgress size={16} />

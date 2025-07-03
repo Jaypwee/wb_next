@@ -6,6 +6,8 @@ export const ActionTypes = {
   SET_END_DATE: 'SET_END_DATE',
   SET_SELECTED_METRICS: 'SET_SELECTED_METRICS',
   SET_SEASON_DATES: 'SET_SEASON_DATES',
+  SET_SEASON_INFO: 'SET_SEASON_INFO',
+  SET_SEASON_DATES_CACHE: 'SET_SEASON_DATES_CACHE',
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
   SET_OVERVIEW: 'SET_OVERVIEW',
@@ -46,6 +48,21 @@ export function reducer(state, action) {
       return {
         ...state,
         seasonDates: action.payload,
+      };
+
+    case ActionTypes.SET_SEASON_INFO:
+      return {
+        ...state,
+        seasonInfo: action.payload,
+      };
+
+    case ActionTypes.SET_SEASON_DATES_CACHE:
+      return {
+        ...state,
+        seasonDatesCache: {
+          ...state.seasonDatesCache,
+          [action.payload.seasonName]: action.payload.dates,
+        },
       };
 
     case ActionTypes.SET_LOADING:

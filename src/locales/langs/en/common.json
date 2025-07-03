@@ -75,6 +75,14 @@
         "china": "China",
         "international": "International"
       }
+    },
+    "upcomingEvents": {
+      "title": "Upcoming Events",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inTwoDays": "In 2 Days",
+      "noEvents": "No upcoming events",
+      "noEventsDescription": "No events scheduled for the next 3 days"
     }
   },
   "home": {
