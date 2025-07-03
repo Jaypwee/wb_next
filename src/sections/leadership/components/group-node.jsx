@@ -16,6 +16,8 @@ import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { CustomPopover } from 'src/components/custom-popover';
 
+import { useAuthContext } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 export function GroupNode({ 
@@ -34,7 +36,7 @@ export function GroupNode({
   onEdit: onEditProp
 }) {
   const menuActions = usePopover();
-
+  const { user } = useAuthContext();
   const onDelete = () => {
     menuActions.onClose();
     if (onDeleteProp) {
@@ -176,19 +178,21 @@ export function GroupNode({
             ...(Array.isArray(sx) ? sx : [sx]),
           ]}
         >
-          <IconButton
-            // disabled={isRootGroup}
-            color={menuActions.open ? 'inherit' : 'default'}
-            onClick={menuActions.onOpen}
-            sx={{
-              top: 8,
-              right: 8,
-              position: 'absolute',
-              ...(isLabel && { display: 'none' }),
-            }}
-          >
-            <Iconify icon="eva:more-horizontal-fill" />
-          </IconButton>
+          {user?.role === 'admin' && (
+            <IconButton
+              disabled={user?.role !== 'admin'}
+              color={menuActions.open ? 'inherit' : 'default'}
+              onClick={menuActions.onOpen}
+              sx={{
+                top: 8,
+                right: 8,
+                position: 'absolute',
+                ...(isLabel && { display: 'none' }),
+              }}
+            >
+              <Iconify icon="eva:more-horizontal-fill" />
+            </IconButton>
+          )}
 
           {depth !== 1 && !isRootGroup && (
             <Box
