@@ -20,6 +20,7 @@ import {
   GridToolbarDensitySelector,
 } from '@mui/x-data-grid';
 
+import { toast } from 'src/components/snackbar';
 import { BadgeCell } from 'src/components/badge-cell';
 import { EmptyContent } from 'src/components/empty-content';
 
@@ -189,21 +190,21 @@ const UsersDataGrid = React.memo(({
 
   // Handle dialog actions
   const handleAddUsers = (userIds) => {
-    console.log('Added users:', userIds);
+    toast.info(`Added users: ${userIds.join(', ')}`);
     if (onUsersAdded) {
       onUsersAdded(userIds);
     }
   };
 
   const handleDeleteUsers = (userIds) => {
-    console.log('Deleted users:', userIds);
+    toast.info(`Deleted users: ${userIds.join(', ')}`);
     if (onUsersDeleted) {
       onUsersDeleted(userIds);
     }
   };
 
   const handleLabelsAdded = (userIds, labelType) => {
-    console.log('Added labels:', { userIds, labelType });
+    toast.info(`Added labels: ${labelType} to users: ${userIds.join(', ')}`);
     // Optionally refresh users data or handle success
   };
 

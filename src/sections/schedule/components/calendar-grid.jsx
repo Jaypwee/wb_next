@@ -79,7 +79,8 @@ export function CalendarGrid({
     
     // Generate 42 days (6 weeks × 7 days) to fill the calendar grid
     for (let i = 0; i < 42; i++) {
-      const dayString = currentDay.toISOString().split('T')[0];
+      // Generate dayString using local time to match event date processing
+      const dayString = `${currentDay.getFullYear()}-${String(currentDay.getMonth() + 1).padStart(2, '0')}-${String(currentDay.getDate()).padStart(2, '0')}`;
       
       // Filter events for this day using the helper function
       const dayEvents = events.filter(event => {

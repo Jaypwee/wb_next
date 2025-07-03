@@ -80,7 +80,7 @@ export function EventDetailsDialog({ open, onClose, event }) {
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
+      slotProps={{
         sx: {
           borderRadius: 2,
         }

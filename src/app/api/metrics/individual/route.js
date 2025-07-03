@@ -53,9 +53,6 @@ async function getHandler(request) {
     // Get both start and end date data
     const startDateData = sheetData.individual?.[startDate];
     const endDateData = sheetData.individual?.[endDate];
-
-    console.log('in route')
-
     if (!startDateData || !endDateData) {
       return new Response(JSON.stringify({ error: 'Data not found for one or both dates' }), {
         status: 404,
@@ -74,7 +71,6 @@ async function getHandler(request) {
           currentPower: endDateData[userId].currentPower,
           highestPower: endDateData[userId].highestPower,
         };
-        console.log(differences[userId]);
 
         // Calculate differences for each attribute
         for (const attr of attributesToCompare) {

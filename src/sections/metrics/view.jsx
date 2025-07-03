@@ -75,7 +75,6 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
           type
         });
       });
-      console.log('format effect')
       
       setFormattedChartDataByType(formattedChartByType);
       setFormattedGridDataByType(formattedGridByType);
@@ -136,9 +135,6 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
     formattedGridDataByType[currentType] || [],
     [formattedGridDataByType, currentType]
   );
-
-  console.log(isPending)
-
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>

@@ -22,7 +22,6 @@ import { useAuthContext } from '../hooks';
 export function RoleBasedGuard({ sx, children, hasContent = true, allowedRoles }) {
   const { user } = useAuthContext();
   const currentRole = user?.role;
-  console.log(user, allowedRoles, currentRole);
 
   if (user && allowedRoles && !allowedRoles.includes(currentRole)) {
     return hasContent ? (
