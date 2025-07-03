@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 
 import { usePathname } from 'src/routes/hooks';
@@ -12,6 +11,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { Nav, NavUl } from '../components';
 import { NavList } from './nav-mobile-list';
 import { SignInButton } from '../../../components/sign-in-button';
+import { SignOutButton } from '../../../components/sign-out-button';  
 
 // ----------------------------------------------------------------------
 
@@ -83,12 +83,7 @@ export function NavMobile({ data, open, onClose, slots, sx }) {
         >
           <SignInButton fullWidth />
 
-          <Button
-            fullWidth
-            variant="contained"
-          >
-            Test
-          </Button>
+          <SignOutButton fullWidth />
         </Box>
       )}
     </Drawer>
