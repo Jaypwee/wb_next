@@ -14,7 +14,6 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 
-import { CONFIG } from 'src/global-config';
 import { useTranslate } from 'src/locales';
 
 import { Iconify } from 'src/components/iconify';
@@ -197,7 +196,7 @@ export function HomeHero({ sx, ...other }) {
           right: { xs: -20, sm: 0, md: 20, lg: 100 },
           top: '50%',
           transform: 'translateY(-50%)',
-          zIndex: 100,
+          zIndex: 8,
           pointerEvents: 'none',
         }),
       ]}
@@ -239,37 +238,6 @@ export function HomeHero({ sx, ...other }) {
     </Box>
   );
 
-  const renderIcons = () => (
-    <Stack spacing={3} sx={{ textAlign: 'center' }}>
-      <m.div {...motionProps}>
-        <Typography variant="overline" sx={{ opacity: 0.4 }}>
-          Available For
-        </Typography>
-      </m.div>
-
-      <Box sx={{ gap: 2.5, display: 'flex' }}>
-        {['js', 'ts', 'nextjs', 'vite', 'figma'].map((platform) => (
-          <m.div {...motionProps} key={platform}>
-            <Box
-              component="img"
-              alt={platform}
-              src={`${CONFIG.assetsDir}/assets/icons/platforms/ic-${platform}.svg`}
-              sx={[
-                (theme) => ({
-                  width: 24,
-                  height: 24,
-                  ...theme.applyStyles('dark', {
-                    ...(platform === 'nextjs' && { filter: 'invert(1)' }),
-                  }),
-                }),
-              ]}
-            />
-          </m.div>
-        ))}
-      </Box>
-    </Stack>
-  );
-
   return (
     <Box
       ref={scrollProgress.elementRef}
@@ -278,6 +246,7 @@ export function HomeHero({ sx, ...other }) {
         (theme) => ({
           overflow: 'hidden',
           position: 'relative',
+          mt: 16,
           [theme.breakpoints.up(mdKey)]: {
             minHeight: 760,
             height: '100vh',
@@ -318,6 +287,7 @@ export function HomeHero({ sx, ...other }) {
               zIndex: 9,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               flexDirection: 'column',
               [theme.breakpoints.up(mdKey)]: {
                 flex: '1 1 auto',
