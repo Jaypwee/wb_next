@@ -296,9 +296,13 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS', gridD
       field: 'value', 
       headerName: metricName, 
       width: 150,
+      valueGetter: (params) => 
+        // Parse the formatted string to get the numeric value for sorting
+         parseInt(params?.replace(/,/g, ''), 10) || 0
+      ,
       renderCell: (params) => (
         <Box sx={{ fontWeight: 'bold', color: 'success.main' }}>
-          {params.value}
+          {params.value.toLocaleString()}
         </Box>
       ),
     },
@@ -306,9 +310,13 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS', gridD
       field: 'highestPower', 
       headerName: t('metrics.dataGrid.highestPower'), 
       width: 150,
+      valueGetter: (params) => 
+        // Parse the formatted string to get the numeric value for sorting
+         parseInt(params?.replace(/,/g, ''), 10) || 0
+      ,
       renderCell: (params) => (
         <Box sx={{ color: 'text.secondary' }}>
-          {params.value}
+          {params.value.toLocaleString()}
         </Box>
       ),
     },
@@ -316,16 +324,20 @@ export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS', gridD
       field: 'currentPower', 
       headerName: t('metrics.dataGrid.currentPower'), 
       width: 260,
+      valueGetter: (params) => 
+        // Parse the formatted string to get the numeric value for sorting
+         parseInt(params?.replace(/,/g, ''), 10) || 0
+      ,
       renderCell: (params) => {
         // Calculate the difference between highest and current power
-        const highestPower = parseInt(params.row.highestPower.replace(/,/g, ''), 10) || 0;
-        const currentPower = parseInt(params.value.replace(/,/g, ''), 10) || 0;
+        const highestPower = parseInt(params.row.highestPower?.toString().replace(/,/g, '') || '0', 10) || 0;
+        const currentPower = parseInt(params.value?.toString().replace(/,/g, '') || '0', 10) || 0;
         const difference = currentPower - highestPower;
         
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ color: 'text.secondary' }}>
-              {params.value}
+              {params.value.toLocaleString()}
             </Box>
             {difference !== 0 && (
               <Box 
