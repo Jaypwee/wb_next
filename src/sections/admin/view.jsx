@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -18,9 +18,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
+import axios from 'src/lib/axios';
 import { useTranslate } from 'src/locales';
 import { fetchSeasonInfo } from 'src/services/season';
 import { useUserContext } from 'src/context/user/context';
+import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
@@ -36,28 +38,90 @@ const seasonInfoPromise = fetchSeasonInfo();
 
 // ----------------------------------------------------------------------
 
-const SeasonNameInput = ({ value, onChange }) => (
-  <Box>
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-      <Typography variant="h6">
-        시즌 추가하기
-      </Typography>
-      <Button
-        variant="contained"
-        onClick={onChange}
-        disabled={!value}
-      >
-        적용하기
-      </Button>
+const SeasonNameInput = ({ value, onChange, onSeasonCreated }) => {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleCreateSeason = () => {
+    if (!value || value.trim() === '') {
+      setError('시즌 이름을 입력해주세요');
+      return;
+    }
+
+    setError('');
+    setSuccess('');
+
+    startTransition(async () => {
+      try {
+        await makeAuthenticatedRequest(async () => 
+          axios.post('/api/season/names', {
+            season_name: value.trim()
+          })
+        );
+
+        setSuccess('시즌이 성공적으로 생성되었습니다!');
+        onChange(''); // Clear the input
+        
+        // Notify parent component if callback provided
+        if (onSeasonCreated) {
+          onSeasonCreated();
+        }
+      } catch (err) {
+        console.error('Error creating season:', err);
+        
+        // Handle specific error messages from the API
+        if (err.response?.data?.error) {
+          if (err.response.data.error === 'Season name already exists') {
+            setError('이미 존재하는 시즌 이름입니다');
+          } else if (err.response.data.error === 'Valid season_name is required') {
+            setError('올바른 시즌 이름을 입력해주세요');
+          } else {
+            setError(err.response.data.error);
+          }
+        } else {
+          setError('시즌 생성 중 오류가 발생했습니다');
+        }
+      }
+    });
+  };
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h6">
+          시즌 추가하기
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={handleCreateSeason}
+          disabled={!value || isPending}
+          startIcon={isPending ? <CircularProgress size={20} /> : null}
+        >
+          {isPending ? '생성중...' : '적용하기'}
+        </Button>
+      </Box>
+      <TextField
+        fullWidth
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setError(''); // Clear error when typing
+          setSuccess(''); // Clear success when typing
+        }}
+        placeholder="추가할 시즌 이름을 입력해주세요 (영어)"
+        error={!!error}
+        helperText={error || success}
+        disabled={isPending}
+        sx={{
+         '& .MuiFormHelperText-root': {
+            color: success ? 'success.main' : undefined,
+          },
+        }}
+      />
     </Box>
-    <TextField
-      fullWidth
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="추가할 시즌 이름을 입력해주세요 (영어)"
-    />
-  </Box>
-);
+  );
+};
 
 const ReportControls = ({ 
   seasonName, 
@@ -114,8 +178,8 @@ const ReportControls = ({
 // ----------------------------------------------------------------------
 
 export function AdminView() {
-  const [seasonName, setSeasonName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [newSeasonName, setNewSeasonName] = useState('');
   const { t } = useTranslate();
   
   // User context integration
@@ -160,117 +224,125 @@ export function AdminView() {
     setSelectedUsers(newSelection);
   };
 
+  // Handle season creation success
+  const handleSeasonCreated = async () => {
+    // For now, we'll just show a message about refreshing
+    // In a production app, you might want to refetch the season list
+    await fetchSeasonInfo();
+  };
+
   return (
     <RoleBasedGuard allowedRoles={['admin']}>
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
           관리자 페이지
-      </Typography>
+        </Typography>
 
-      <Stack spacing={3}>
-        <SeasonNameInput 
-          value={seasonName} 
-          onChange={setSeasonName} 
-        />
+        <Stack spacing={3}>
+          <SeasonNameInput 
+            value={newSeasonName} 
+            onChange={setNewSeasonName}
+            onSeasonCreated={handleSeasonCreated}
+          />
 
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="h6">
-                {t('dashboard.admin.individualReportUpload')}
-              </Typography>
-              <ReportControls
-                seasonName={individualReportSeasonName}
-                title={individualReportTitle}
-                date={individualReportDate}
-                onSeasonNameChange={setIndividualReportSeasonName}
-                onTitleChange={setIndividualReportTitle}
-                onDateChange={setIndividualReportDate}
-                seasonInfo={total_seasons}
-              />
-            </Stack>
-            <Button
-              variant="contained"
-              startIcon={uploadMutation.isPending && uploadMutation.variables?.type === 'single' ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <Iconify icon="eva:cloud-upload-fill" />
-              )}
-              onClick={() => handleUpload('single', singleFile)}
-              disabled={!singleFile || !individualReportSeasonName || !individualReportTitle || (individualReportTitle === 'inProgress' && !individualReportDate) || uploadMutation.isPending}
-            >
-              {uploadMutation.isPending && uploadMutation.variables?.type === 'single' ? 'Uploading...' : 'Upload'}
-            </Button>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography variant="h6">
+                  {t('dashboard.admin.individualReportUpload')}
+                </Typography>
+                <ReportControls
+                  seasonName={individualReportSeasonName}
+                  title={individualReportTitle}
+                  date={individualReportDate}
+                  onSeasonNameChange={setIndividualReportSeasonName}
+                  onTitleChange={setIndividualReportTitle}
+                  onDateChange={setIndividualReportDate}
+                  seasonInfo={total_seasons}
+                />
+              </Stack>
+              <Button
+                variant="contained"
+                startIcon={uploadMutation.isPending && uploadMutation.variables?.type === 'single' ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <Iconify icon="eva:cloud-upload-fill" />
+                )}
+                onClick={() => handleUpload('single', singleFile)}
+                disabled={!singleFile || !individualReportSeasonName || !individualReportTitle || (individualReportTitle === 'inProgress' && !individualReportDate) || uploadMutation.isPending}
+              >
+                {uploadMutation.isPending && uploadMutation.variables?.type === 'single' ? 'Uploading...' : 'Upload'}
+              </Button>
+            </Box>
+            <Upload
+              value={singleFile}
+              onDelete={() => handleDelete('single')}
+              onChange={(file) => setSingleFile(file)}
+              onDrop={(files) => handleDrop(files, 'single')}
+              disabled={uploadMutation.isPending}
+            />
           </Box>
-          <Upload
-            value={singleFile}
-            onDelete={() => handleDelete('single')}
-            onChange={(file) => setSingleFile(file)}
-            onDrop={(files) => handleDrop(files, 'single')}
-            disabled={uploadMutation.isPending}
-          />
-        </Box>
 
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Typography variant="h6">
-                KvK 분쟁 시즌 데이터 업로드
-              </Typography>
-              <ReportControls
-                seasonName={kvkReportSeasonName}
-                title={kvkReportTitle}
-                date={kvkReportDate}
-                onSeasonNameChange={setKvkReportSeasonName}
-                onTitleChange={setKvkReportTitle}
-                onDateChange={setKvkReportDate}
-                seasonInfo={total_seasons}
-              />
-            </Stack>
-            <Button
-              variant="contained"
-              startIcon={uploadMutation.isPending && uploadMutation.variables?.type === 'multiple' ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <Iconify icon="eva:cloud-upload-fill" />
-              )}
-              onClick={() => handleUpload('multiple', null, multipleFiles)}
-              disabled={!multipleFiles.length || !kvkReportSeasonName || !kvkReportTitle || (kvkReportTitle === 'inProgress' && !kvkReportDate) || uploadMutation.isPending}
-            >
-              {uploadMutation.isPending && uploadMutation.variables?.type === 'multiple' ? 'Uploading...' : 'Upload'}
-            </Button>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography variant="h6">
+                  KvK 분쟁 시즌 데이터 업로드
+                </Typography>
+                <ReportControls
+                  seasonName={kvkReportSeasonName}
+                  title={kvkReportTitle}
+                  date={kvkReportDate}
+                  onSeasonNameChange={setKvkReportSeasonName}
+                  onTitleChange={setKvkReportTitle}
+                  onDateChange={setKvkReportDate}
+                  seasonInfo={total_seasons}
+                />
+              </Stack>
+              <Button
+                variant="contained"
+                startIcon={uploadMutation.isPending && uploadMutation.variables?.type === 'multiple' ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <Iconify icon="eva:cloud-upload-fill" />
+                )}
+                onClick={() => handleUpload('multiple', null, multipleFiles)}
+                disabled={!multipleFiles.length || !kvkReportSeasonName || !kvkReportTitle || (kvkReportTitle === 'inProgress' && !kvkReportDate) || uploadMutation.isPending}
+              >
+                {uploadMutation.isPending && uploadMutation.variables?.type === 'multiple' ? 'Uploading...' : 'Upload'}
+              </Button>
+            </Box>
+            <Upload
+              multiple
+              value={multipleFiles}
+              onRemove={handleMultipleDelete}
+              onUpload={() => handleUpload('multiple', null, multipleFiles)}
+              onRemoveAll={() => handleDelete('multiple')}
+              onChange={(files) => setMultipleFiles(files)}
+              onDrop={(files) => handleDrop(files, 'multiple')}
+              disabled={uploadMutation.isPending}
+            />
           </Box>
-          <Upload
-            multiple
-            value={multipleFiles}
-            onRemove={handleMultipleDelete}
-            onUpload={() => handleUpload('multiple', null, multipleFiles)}
-            onRemoveAll={() => handleDelete('multiple')}
-            onChange={(files) => setMultipleFiles(files)}
-            onDrop={(files) => handleDrop(files, 'multiple')}
-            disabled={uploadMutation.isPending}
-          />
-        </Box>
 
-        {/* User Management DataGrid */}
-        <Box>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            연맹원 목록
-          </Typography>
-          
-          <UsersDataGrid
-            users={users}
-            isLoading={usersLoading}
-            error={usersError}
-            selectedUsers={selectedUsers}
-            onSelectionChange={handleSelectionChange}
-          />
-        </Box>
+          {/* User Management DataGrid */}
+          <Box>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              연맹원 목록
+            </Typography>
+            
+            <UsersDataGrid
+              users={users}
+              isLoading={usersLoading}
+              error={usersError}
+              selectedUsers={selectedUsers}
+              onSelectionChange={handleSelectionChange}
+            />
+          </Box>
 
-        {/* Infantry Group Management */}
-        <InfantryGroupManager users={users} />
-      </Stack>
-    </Container>
+          {/* Infantry Group Management */}
+          <InfantryGroupManager users={users} />
+        </Stack>
+      </Container>
     </RoleBasedGuard>
   );
 } 
