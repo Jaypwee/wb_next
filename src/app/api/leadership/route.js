@@ -20,7 +20,73 @@ async function getLeadershipHandler(request) {
     }
 
     const data = doc.data();
-    const leadership = data?.leadership;
+    let leadership = data?.leadership;
+
+    // Process leadership data to add missing avatar URLs
+    if (leadership && typeof leadership === 'object') {
+      // Recursive function to collect UIDs that need avatar URLs
+      const collectUidsToFetch = (node) => {
+        let uids = [];
+        
+        // Check if current node needs an avatar URL
+        if (node.role && !node.avatarUrl && node.uid) {
+          uids.push(node.uid);
+        }
+        
+        // Recursively check children
+        if (Array.isArray(node.children)) {
+          node.children.forEach(child => {
+            uids = uids.concat(collectUidsToFetch(child));
+          });
+        }
+        
+        return uids;
+      };
+
+      // Recursive function to update nodes with avatar URLs
+      const updateNodeWithAvatars = (node, avatarMap) => {
+        const updatedNode = { ...node };
+        
+        // Update current node if it needs an avatar URL
+        if (node.role && !node.avatarUrl && node.uid && avatarMap[node.uid]) {
+          updatedNode.avatarUrl = avatarMap[node.uid];
+        }
+        
+        // Recursively update children
+        if (Array.isArray(node.children)) {
+          updatedNode.children = node.children.map(child => 
+            updateNodeWithAvatars(child, avatarMap)
+          );
+        }
+        
+        return updatedNode;
+      };
+
+      // Collect all UIDs that need avatar URLs
+      const uidsToFetch = collectUidsToFetch(leadership);
+      if (uidsToFetch.length > 0) {
+        try {
+          // Fetch all users at once using querySnapshot
+          const usersSnapshot = await loggedDb.collection('users')
+            .where('__name__', 'in', uidsToFetch)
+            .get();
+
+          // Create a map of uid -> avatarURL for quick lookup
+          const avatarMap = {};
+          usersSnapshot.forEach(userDoc => {
+            const userData = userDoc.data();
+            if (userData?.avatarUrl) {
+              avatarMap[userDoc.id] = userData.avatarUrl;
+            }
+          });
+          // Update leadership data with avatar URLs
+          leadership = updateNodeWithAvatars(leadership, avatarMap);
+        } catch (userError) {
+          console.warn('Failed to fetch user avatars:', userError);
+          // Continue with original leadership data if avatar fetch fails
+        }
+      }
+    }
 
     return NextResponse.json(
       { 
