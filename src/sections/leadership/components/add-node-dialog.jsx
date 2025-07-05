@@ -41,11 +41,16 @@ const addNodeSchema = z.object({
     .string()
     .min(1, 'Game UID is required')
     .regex(/^\d{7,8}$/, 'Game UID must be a 7-8 digit number'),
-  role: z
+  roleKorean: z
     .string()
-    .min(1, 'Role is required')
-    .min(2, 'Role must be at least 2 characters')
-    .max(100, 'Role must be less than 100 characters'),
+    .min(1, 'Korean role is required')
+    .min(2, 'Korean role must be at least 2 characters')
+    .max(100, 'Korean role must be less than 100 characters'),
+  roleEnglish: z
+    .string()
+    .min(1, 'English role is required')
+    .min(2, 'English role must be at least 2 characters')
+    .max(100, 'English role must be less than 100 characters'),
   group: z
     .string()
     .min(1, 'Group is required'),
@@ -76,7 +81,8 @@ export function AddNodeDialog({
     defaultValues: {
       name: '',
       uid: '',
-      role: '',
+      roleKorean: '',
+      roleEnglish: '',
       group: defaultGroup,
     },
   });
@@ -89,7 +95,8 @@ export function AddNodeDialog({
       const formValues = {
         name: existingData?.name || '',
         uid: existingData?.uid || '',
-        role: existingData?.role || '',
+        roleKorean: existingData?.roleKorean || existingData?.role || '',
+        roleEnglish: existingData?.roleEnglish || existingData?.role || '',
         group: existingData?.group || defaultGroup,
       };
 
@@ -109,7 +116,8 @@ export function AddNodeDialog({
       const nodeData = {
         name: data.name.trim(),
         uid: data.uid.trim(),
-        role: data.role.trim(),
+        roleKorean: data.roleKorean.trim(),
+        roleEnglish: data.roleEnglish.trim(),
         group: data.group,
       };
 
@@ -203,15 +211,26 @@ export function AddNodeDialog({
               ))}
             </TextField>
 
-            {/* Role Field */}
-            <TextField
-              fullWidth
-              label="Role"
-              placeholder="Enter role title (e.g., Lead, Senior Developer, etc.)"
-              {...register('role')}
-              error={!!errors.role}
-              helperText={errors.role?.message}
-            />
+            {/* Role Fields */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Role (Korean)"
+                placeholder="Enter Korean role title"
+                {...register('roleKorean')}
+                error={!!errors.roleKorean}
+                helperText={errors.roleKorean?.message}
+              />
+
+              <TextField
+                fullWidth
+                label="Role (English)"
+                placeholder="Enter English role title"
+                {...register('roleEnglish')}
+                error={!!errors.roleEnglish}
+                helperText={errors.roleEnglish?.message}
+              />
+            </Box>
           </Box>
         </DialogContent>
 

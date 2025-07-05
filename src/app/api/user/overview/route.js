@@ -4,8 +4,6 @@ import { adminDb } from 'src/lib/firebase-admin';
 
 async function getUserOverviewHandler() {
   try {
-    console.log('Accessing user overview data');
-
     // Get reference to the users collection
     const usersRef = adminDb.collection('users');
     

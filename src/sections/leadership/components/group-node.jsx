@@ -11,6 +11,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
+import { useTranslate } from 'src/locales';
+
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
@@ -24,6 +26,8 @@ export function GroupNode({
   sx, 
   name, 
   role, 
+  roleKorean,
+  roleEnglish,
   depth, 
   group, 
   uid,
@@ -37,10 +41,20 @@ export function GroupNode({
 }) {
   const menuActions = usePopover();
   const { user } = useAuthContext();
+  const { currentLang } = useTranslate();
+
+  // Determine which role to display based on current locale
+  const displayRole = () => {
+    if (currentLang?.value === 'ko') {
+      return roleKorean || role; // Fallback to legacy role field
+    }
+    return roleEnglish || role; // Fallback to legacy role field
+  };
+
   const onDelete = () => {
     menuActions.onClose();
     if (onDeleteProp) {
-      onDeleteProp(path, { name, role, group });
+      onDeleteProp(path, { name, role, roleKorean, roleEnglish, group });
     } else {
       toast.warning(`Delete action triggered for: ${name}`);
     }
@@ -49,7 +63,7 @@ export function GroupNode({
   const onEdit = () => {
     menuActions.onClose();
     if (onEditProp) {
-      onEditProp(path, { name, role, group, uid });
+      onEditProp(path, { name, role, roleKorean, roleEnglish, group, uid });
     } else {
       toast.info(`Edit action triggered for: ${name}`);
     }
@@ -58,7 +72,7 @@ export function GroupNode({
   const handleAddChild = () => {
     menuActions.onClose();
     if (onAddChild) {
-      onAddChild(path, { name, role, group });
+      onAddChild(path, { name, role, roleKorean, roleEnglish, group });
     } else {
       toast.info(`Add child to: ${name}`);
     }
@@ -67,7 +81,7 @@ export function GroupNode({
   const handleAddSibling = () => {
     menuActions.onClose();
     if (onAddSibling) {
-      onAddSibling(path, { name, role, group });
+      onAddSibling(path, { name, role, roleKorean, roleEnglish, group });
     } else {
       toast.info(`Add sibling to: ${name}`);
     }
@@ -246,7 +260,7 @@ export function GroupNode({
               variant="caption"
               sx={{ mt: 0.5, color: 'text.secondary' }}
             >
-              {role}
+              {displayRole()}
             </Typography>
           )}
         </Card>

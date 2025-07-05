@@ -102,7 +102,6 @@ export function LeadershipView() {
 
   // Handle edit person
   const handleEditPerson = (path, nodeInfo) => {
-    console.log('Edit person:', nodeInfo);
     setDialogState({
       open: true,
       mode: 'edit',
@@ -113,6 +112,8 @@ export function LeadershipView() {
         name: nodeInfo.name,
         uid: nodeInfo.uid || '',
         role: nodeInfo.role,
+        roleKorean: nodeInfo.roleKorean,
+        roleEnglish: nodeInfo.roleEnglish,
         group: nodeInfo.group,
       },
     });
