@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react';
+import { useRef, useState, useEffect, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -47,6 +47,12 @@ export function LeadershipView() {
   const [treeData, setTreeData] = useState(null);
   const [isPending, startTransition] = useTransition();
   
+  // Drag-to-scroll state
+  const scrollContainerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [scrollStart, setScrollStart] = useState({ x: 0, y: 0 });
+  
   // Dialog state
   const [dialogState, setDialogState] = useState({
     open: false,
@@ -77,6 +83,86 @@ export function LeadershipView() {
 
     loadLeadershipData();
   }, []);
+
+  // Drag-to-scroll event handlers
+  const handleMouseDown = (e) => {
+    if (!scrollContainerRef.current) return;
+    
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+    });
+    setScrollStart({
+      x: scrollContainerRef.current.scrollLeft,
+      y: scrollContainerRef.current.scrollTop,
+    });
+    
+    // Prevent text selection while dragging
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    
+    const deltaX = e.clientX - dragStart.x;
+    const deltaY = e.clientY - dragStart.y;
+    
+    scrollContainerRef.current.scrollLeft = scrollStart.x - deltaX;
+    scrollContainerRef.current.scrollTop = scrollStart.y - deltaY;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Add global mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, dragStart, scrollStart]);
+
+  // Center the chart initially when tree data is loaded
+  useEffect(() => {
+    if (treeData && scrollContainerRef.current) {
+      // Use a small timeout to ensure the chart is fully rendered
+      const timer = setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (container) {
+          // Calculate center position
+          const centerX = (container.scrollWidth - container.clientWidth) / 2;
+          const centerY = (container.scrollHeight - container.clientHeight) / 2;
+          
+          // Scroll to center
+          container.scrollTo({
+            left: centerX,
+            top: centerY,
+            behavior: 'smooth'
+          });
+        }
+      }, 100); // Small delay to ensure rendering is complete
+
+      return () => clearTimeout(timer);
+    }
+    
+    return undefined;
+  }, [treeData]);
 
   // Handle adding a child node
   const handleAddChild = (path, nodeInfo) => {
@@ -181,34 +267,51 @@ export function LeadershipView() {
   }
 
   return (
-    <Container maxWidth="fit-content" sx={{ py: 3, minHeight: '100vh' }}>
+    <Container maxWidth={false} sx={{ py: 3, minHeight: '100vh', width: '100vw', overflow: 'hidden' }}>
       <Box
+        ref={scrollContainerRef}
+        onMouseDown={handleMouseDown}
         sx={{
           paddingTop: 4,
-          display: 'flex',
-          justifyContent: 'center',
           overflowX: 'auto',
           overflowY: 'visible',
-          minWidth: 'fit-content',
+          height: '100vh',
           opacity: isPending ? 0.7 : 1,
           transition: 'opacity 0.2s ease-in-out',
+          cursor: isDragging ? 'grabbing' : 'grab',
+          userSelect: 'none',
+          // Hide scrollbar while keeping scroll functionality
+          scrollbarWidth: 'none', // Firefox
+          msOverflowStyle: 'none', // Internet Explorer 10+
+          '&::-webkit-scrollbar': {
+            display: 'none', // Safari and Chrome
+          },
         }}
       >
-        <OrganizationalChart 
-          lineHeight="64px"
-          data={treeData} 
-          nodeItem={(props) => (
-            <GroupNode 
-              {...props}
-              path={props.path}
-              onAddChild={handleAddChild}
-              onAddSibling={handleAddSibling}
-              onEdit={handleEditPerson}
-              onDelete={handleDeletePerson}
-              disabled={isPending}
-            />
-          )} 
-        />
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            minWidth: 'fit-content',
+            width: '100%',
+          }}
+        >
+          <OrganizationalChart 
+            lineHeight="64px"
+            data={treeData} 
+            nodeItem={(props) => (
+              <GroupNode 
+                {...props}
+                path={props.path}
+                onAddChild={handleAddChild}
+                onAddSibling={handleAddSibling}
+                onEdit={handleEditPerson}
+                onDelete={handleDeletePerson}
+                disabled={isPending}
+              />
+            )} 
+          />
+        </Box>
       </Box>
 
       <AddNodeDialog

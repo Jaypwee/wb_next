@@ -176,7 +176,7 @@ export function GroupNode({
             (theme) => ({
               pt: 5,
               pb: 3,
-              minWidth: 200,
+              width: 200,
               borderRadius: 1.5,
               ...(isLabel && { py: 2 }),
               ...(isLabel && isTerritorialGroup && styles(theme, 'success')),
@@ -258,7 +258,15 @@ export function GroupNode({
             <Typography
               component="div"
               variant="caption"
-              sx={{ mt: 0.5, color: 'text.secondary' }}
+              sx={{ 
+                mt: 0.5, 
+                color: 'text.secondary',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                textAlign: 'center',
+                lineHeight: 1.3,
+                px: 1
+              }}
             >
               {displayRole()}
             </Typography>

@@ -7,7 +7,21 @@ const axiosInstance = axios.create();
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong!')
+  (error) => {
+    // Preserve the original error structure while adding a helpful message
+    const enhancedError = error;
+    
+    // Add a user-friendly message to the error object
+    if (!error.message && error.response?.data) {
+      enhancedError.message = typeof error.response.data === 'string' 
+        ? error.response.data 
+        : error.response.data.message || error.response.data.error || 'Something went wrong!';
+    } else if (!error.message) {
+      enhancedError.message = 'Something went wrong!';
+    }
+    
+    return Promise.reject(enhancedError);
+  }
 );
 
 export default axiosInstance;
