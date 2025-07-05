@@ -29,7 +29,7 @@ async function getLeadershipHandler(request) {
         let uids = [];
         
         // Check if current node needs an avatar URL
-        if (node.role && !node.avatarUrl && node.uid) {
+        if (node.uid) {
           uids.push(node.uid);
         }
         
@@ -48,7 +48,7 @@ async function getLeadershipHandler(request) {
         const updatedNode = { ...node };
         
         // Update current node if it needs an avatar URL
-        if (node.role && !node.avatarUrl && node.uid && avatarMap[node.uid]) {
+        if (node.uid && avatarMap[node.uid]) {
           updatedNode.avatarUrl = avatarMap[node.uid];
         }
         

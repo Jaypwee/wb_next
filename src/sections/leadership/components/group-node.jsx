@@ -160,10 +160,10 @@ export function GroupNode({
             src={avatarUrl ?? ''}
             sx={[
               (theme) => ({
-                mt: -3.5,
+                mt: -4.2,
                 zIndex: 9,
-                width: 56,
-                height: 56,
+                width: 68,
+                height: 68,
                 position: 'absolute',
                 border: `solid 4px ${theme.vars.palette.background.paper}`,
               }),
@@ -208,7 +208,7 @@ export function GroupNode({
             </IconButton>
           )}
 
-          {depth !== 1 && !isRootGroup && (
+          {depth !== 2 && !isRootGroup && (
             <Box
               sx={{
                 top: 0,
