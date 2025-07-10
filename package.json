@@ -1,8 +1,8 @@
 {
-  "name": "@minimal-kit/starter-next-js",
-  "author": "Minimals",
-  "version": "7.0.0",
-  "description": "Next Starter & JavaScript",
+  "name": "wb_next",
+  "author": "Jayowee",
+  "version": "0.0.1",
+  "description": "War Beasts NextJS App",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3033 --turbopack",
