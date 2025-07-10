@@ -12,7 +12,7 @@ I might migrate to Typescript later on, but I'm prioritizing feature development
 
 ### Backend
 
-Firebase for Authorization and NoSQL DB. DB mostly stores massive collections of seasonal game data for multiple kingdoms.
+Firebase for Authorization, File storage and NoSQL DB. DB mostly stores massive collections of seasonal game data for multiple kingdoms.
 
 Redis is used to cache metrics - Invalidation occurs during new data upload
 
