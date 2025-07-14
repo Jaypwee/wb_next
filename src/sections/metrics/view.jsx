@@ -1,12 +1,14 @@
 'use client'
 
-import { useMemo, useState, useEffect, useCallback, useTransition } from 'react';
+import { useRef, useMemo, useState, useEffect, useCallback, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
+
+import { useRouter, usePathname, useSearchParams } from 'src/routes/hooks';
 
 import { useTranslate } from 'src/locales';
 import { useUserContext } from 'src/context/user';
@@ -36,6 +38,10 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
   const [formattedChartDataByType, setFormattedChartDataByType] = useState({});
   const [formattedGridDataByType, setFormattedGridDataByType] = useState({});
   const [currentType, setCurrentType] = useState(initialType);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const hasProcessedInitialParams = useRef(false);
   const {
     selectedSeason,
     startDate,
@@ -51,69 +57,127 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
   // Use user context
   const { users, loadUsers } = useUserContext();
 
+  // Helper function to format chart and grid data for all types
+  const formatDataForAllTypes = useCallback((data, startDateParam, endDateParam) => {
+    const formattedChartByType = {};
+    const formattedGridByType = {};
+    
+    TAB_OPTIONS.forEach(({ value: type }) => {
+      formattedChartByType[type] = formatChartData({
+        data,
+        startDate: startDateParam,
+        endDate: endDateParam,
+        type
+      });
+      
+      formattedGridByType[type] = formatDataGridData({
+        data,
+        type
+      });
+    });
+
+    return { formattedChartByType, formattedGridByType };
+  }, []);
+
+  // Helper function to fetch and process metrics data
+  const fetchAndProcessMetrics = useCallback(async (seasonName, startDateParam, endDateParam) => {
+    const chartData = await makeAuthenticatedRequest(async () => fetchMetricsData({
+      seasonName,
+      startDate: startDateParam,
+      endDate: endDateParam,
+    }));
+
+    setSelectedMetrics(chartData);
+
+    const { formattedChartByType, formattedGridByType } = formatDataForAllTypes(
+      chartData.data,
+      startDateParam,
+      endDateParam
+    );
+
+    setFormattedChartDataByType(formattedChartByType);
+    setFormattedGridDataByType(formattedGridByType);
+  }, [formatDataForAllTypes, setSelectedMetrics]);
+
   // Load users on component mount
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
 
+  // Initialize from query params and auto-fetch if all params exist (only once)
   useEffect(() => {
-    if (selectedMetrics && startDate && endDate) {
-      // Format chart data for all types
-      const formattedChartByType = {};
-      const formattedGridByType = {};
-      
-      TAB_OPTIONS.forEach(({ value: type }) => {
-        formattedChartByType[type] = formatChartData({
-          data: selectedMetrics.data,
-          startDate,
-          endDate,
-          type
-        });
-        
-        formattedGridByType[type] = formatDataGridData({
-          data: selectedMetrics.data,
-          type
-        });
-      });
+    if (hasProcessedInitialParams.current) return;
+
+    const seasonName = searchParams.get('seasonName');
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
+
+    let hasUpdatedContext = false;
+
+    // Update context with query params if they exist
+    if (seasonName) {
+      setSelectedSeason(seasonName);
+      hasUpdatedContext = true;
+    }
+    if (startDateParam) {
+      setStartDate(startDateParam);
+      hasUpdatedContext = true;
+    }
+    if (endDateParam) {
+      setEndDate(endDateParam);
+      hasUpdatedContext = true;
+    }
+
+    // Auto-fetch metrics if all required params exist
+    if (seasonName && startDateParam) {
+      const fetchMetricsFromParams = async () => {
+        try {
+          setError(null);
+          
+          startTransition(async () => {
+            await fetchAndProcessMetrics(seasonName, startDateParam, endDateParam);
+          });
+        } catch (error) {
+          console.error('Error fetching metrics from params:', error);
+          setError(error.message);
+        }
+      };
+
+      fetchMetricsFromParams();
+    }
+    hasProcessedInitialParams.current = true;
+  }, [searchParams]); // Only depend on searchParams
+
+  // Format data when selectedMetrics changes (but not from query params)
+  useEffect(() => {
+    if (selectedMetrics && startDate && endDate && hasProcessedInitialParams.current) {
+      const { formattedChartByType, formattedGridByType } = formatDataForAllTypes(
+        selectedMetrics.data,
+        startDate,
+        endDate
+      );
       
       setFormattedChartDataByType(formattedChartByType);
       setFormattedGridDataByType(formattedGridByType);
     }
-  }, [selectedMetrics, startDate, endDate]);
+  }, [selectedMetrics, startDate, endDate, formatDataForAllTypes]);
 
   const handleApply = async () => {
     try {
       setError(null);
 
       startTransition(async () => {
-        const chartData = await makeAuthenticatedRequest(async () => fetchMetricsData({
-          seasonName: selectedSeason,
-          startDate,
-          endDate,
-        }));
-
-        setSelectedMetrics(chartData);
-
-        // Format chart data for all types
-        const formattedChartByType = {};
-        const formattedGridByType = {};
+        await fetchAndProcessMetrics(selectedSeason, startDate, endDate);
         
-        TAB_OPTIONS.forEach(({ value: type }) => {
-          formattedChartByType[type] = formatChartData({
-            data: chartData.data,
-            startDate,
-            endDate,
-            type
-          });
-          
-          formattedGridByType[type] = formatDataGridData({
-            data: chartData.data,
-            type
-          });
-        });
-
-        setFormattedChartDataByType(formattedChartByType);
-        setFormattedGridDataByType(formattedGridByType);
+        // Update URL query parameters
+        const params = new URLSearchParams();
+        params.set('seasonName', selectedSeason);
+        params.set('startDate', startDate);
+        if (endDate) {
+          params.set('endDate', endDate);
+        }
+        
+        router.push(`${pathname}?${params.toString()}`);
       });
     } catch (error) {
       console.error('Error fetching metrics:', error);
