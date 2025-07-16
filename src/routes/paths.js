@@ -45,6 +45,8 @@ export const paths = {
     },
     kvk: {
       root: `${ROOTS.DASHBOARD}/kvk`,
+      overview: `${ROOTS.DASHBOARD}/kvk/overview`,
+      detailed: `${ROOTS.DASHBOARD}/kvk/detailed`,
     },
   },
 };

@@ -21,6 +21,19 @@ async function getHandler(request) {
     // Get the season document reference
     const seasonDocRef = adminDb.collection('sheets').doc(seasonName);
 
+    // Get the season document to read the allies field
+    const seasonDoc = await seasonDocRef.get();
+    if (!seasonDoc.exists) {
+      return new Response(JSON.stringify({ error: 'Season document not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const seasonData = seasonDoc.data();
+    const alliedServers = seasonData.allies || []; // Default to empty array if allies field doesn't exist
+    const enemyServers = seasonData.enemies || []; // Default to empty array if enemies field doesn't exist
+
     // Helper function to get data from a date subcollection
     const getDateData = async (date) => {
       const dateCollectionRef = seasonDocRef.collection(date);
@@ -33,13 +46,10 @@ async function getHandler(request) {
       const dateData = {};
       dateSnapshot.forEach(doc => {
         const data = doc.data();
-        // Only include documents where homeServer equals 249
-        if (data.homeServer === 249) {
-          dateData[doc.id] = data;
-        }
+        // Include all documents regardless of homeServer
+        dateData[doc.id] = data;
       });
       
-      // Return null if no documents match the homeServer filter
       return dateData;
     };
 
@@ -52,11 +62,26 @@ async function getHandler(request) {
       });
     }
 
-    // If no endDate provided, return just the startDate data
+    // If no endDate provided, return just the startDate data separated by allies/enemies
     if (!endDate) {
+      const allies = {};
+      const enemies = {};
+
+      Object.keys(startDateData).forEach(userId => {
+        const userData = startDateData[userId];
+        if (alliedServers.includes(userData.homeServer)) {
+          allies[userId] = userData;
+        } else if (enemyServers.includes(userData.homeServer)) {
+          enemies[userId] = userData;
+        }
+      });
+
       return new Response(JSON.stringify({
         id: seasonName,
-        data: startDateData
+        data: {
+          allies,
+          enemies
+        }
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -73,12 +98,13 @@ async function getHandler(request) {
     }
 
     // Calculate differences for each user
-    const differences = {};
+    const alliesDifferences = {};
+    const enemiesDifferences = {};
     const attributesToCompare = ['merits', 'unitsKilled', 'unitsDead', 'manaSpent', 't5KillCount'];
 
     for (const userId in endDateData) {
       if (startDateData[userId]) {
-        differences[userId] = {
+        const userDifferences = {
           name: endDateData[userId].name,
           currentPower: endDateData[userId].currentPower,
           highestPower: endDateData[userId].highestPower,
@@ -88,14 +114,24 @@ async function getHandler(request) {
         for (const attr of attributesToCompare) {
           const startValue = Number(String(startDateData[userId][attr]).replace(/,/g, ''));
           const endValue = Number(String(endDateData[userId][attr]).replace(/,/g, ''));
-          differences[userId][attr] = endValue - startValue;
+          userDifferences[attr] = endValue - startValue;
+        }
+
+        // Separate into allies and enemies based on homeServer
+        if (alliedServers.includes(endDateData[userId].homeServer)) {
+          alliesDifferences[userId] = userDifferences;
+        } else {
+          enemiesDifferences[userId] = userDifferences;
         }
       }
     }
 
     return new Response(JSON.stringify({
       id: seasonName,
-      data: differences,
+      data: {
+        allies: alliesDifferences,
+        enemies: enemiesDifferences
+      },
       startDate,
       endDate
     }), {
@@ -115,10 +151,10 @@ async function getHandler(request) {
 // Apply authentication and caching
 export const GET = withAuth(
   withCache(getHandler, {
-    // Custom cache key generator for metrics
+    // Custom cache key generator for KvK metrics
     keyGenerator: (request) => {
       const { searchParams } = new URL(request.url);
-      return generateCacheKey('metrics-individual', {
+      return generateCacheKey('metrics-kvk', {
         seasonName: searchParams.get('season_name'),
         startDate: searchParams.get('start_date'),
         endDate: searchParams.get('end_date') || 'single'
@@ -134,4 +170,3 @@ export const GET = withAuth(
     }
   })
 );
-

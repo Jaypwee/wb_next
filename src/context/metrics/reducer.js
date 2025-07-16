@@ -5,6 +5,7 @@ export const ActionTypes = {
   SET_START_DATE: 'SET_START_DATE',
   SET_END_DATE: 'SET_END_DATE',
   SET_SELECTED_METRICS: 'SET_SELECTED_METRICS',
+  SET_SELECTED_KVK_METRICS: 'SET_SELECTED_KVK_METRICS',
   SET_SEASON_DATES: 'SET_SEASON_DATES',
   SET_SEASON_INFO: 'SET_SEASON_INFO',
   SET_SEASON_DATES_CACHE: 'SET_SEASON_DATES_CACHE',
@@ -42,6 +43,12 @@ export function reducer(state, action) {
       return {
         ...state,
         selectedMetrics: action.payload,
+      };
+
+    case ActionTypes.SET_SELECTED_KVK_METRICS:
+      return {
+        ...state,
+        selectedKvkMetrics: action.payload,
       };
 
     case ActionTypes.SET_SEASON_DATES:

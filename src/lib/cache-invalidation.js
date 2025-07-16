@@ -70,17 +70,17 @@ export async function invalidateByPattern(pattern) {
  * @param {string} seasonName - Season name
  * @returns {Promise<void>}
  */
-export async function invalidateAllSeasonIndividualMetrics(seasonName) {
+export async function invalidateAllSeasonIndividualMetrics(seasonName, type = 'individual') {
   try {
     const cacheStatus = cache.getStatus();
     let pattern;
     
     if (cacheStatus.type === 'redis') {
       // Redis glob pattern - matches any key containing this season
-      pattern = `*metrics-individual*seasonName:${seasonName}*`;
+      pattern = `*metrics-${type}*seasonName:${seasonName}*`;
     } else {
       // Memory cache simple string matching
-      pattern = `metrics-individual:seasonName:${seasonName}`;
+      pattern = `metrics-${type}:seasonName:${seasonName}`;
     }
     
     const count = await invalidateByPattern(pattern);

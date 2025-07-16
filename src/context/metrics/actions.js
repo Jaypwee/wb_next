@@ -22,6 +22,11 @@ export const setSelectedMetrics = (metrics) => ({
   payload: metrics,
 });
 
+export const setSelectedKvkMetrics = (kvkMetrics) => ({
+  type: ActionTypes.SET_SELECTED_KVK_METRICS,
+  payload: kvkMetrics,
+});
+
 export const setSeasonDates = (dates) => ({
   type: ActionTypes.SET_SEASON_DATES,
   payload: dates,

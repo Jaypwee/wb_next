@@ -85,7 +85,14 @@ export const navData = [
         path: paths.dashboard.kvk.root,
         icon: ICONS.kvk,
         children: [
-          
+          {
+            title: 'nav.dashboard.kvk.overview',
+            path: paths.dashboard.kvk.overview,
+          },
+          {
+            title: 'nav.dashboard.kvk.detailed',
+            path: paths.dashboard.kvk.detailed,
+          }
         ],
         tooltip: 'nav.dashboard.tooltips.kvk'
       },

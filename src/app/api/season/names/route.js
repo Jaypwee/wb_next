@@ -58,8 +58,8 @@ export async function GET() {
 
 async function createSeasonHandler(request) {
   try {
-    // Parse the request body
-    const { season_name } = await request.json();
+    // Parse the request body - allies, enemies are optional
+    const { season_name, allies, enemies } = await request.json();
 
     // Validate season_name
     if (!season_name || typeof season_name !== 'string' || season_name.trim() === '') {
@@ -85,6 +85,8 @@ async function createSeasonHandler(request) {
     await sheetsRef.doc(season_name.trim()).set({
       createdAt: new Date().toISOString(),
       lastUpdatedAt: new Date().toISOString(),
+      allies: allies || [],
+      enemies: enemies || []
     });
 
     return new Response(JSON.stringify({ 

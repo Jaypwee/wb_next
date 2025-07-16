@@ -14,6 +14,7 @@ import {
   setSelectedSeason,
   setSelectedMetrics,
   setSeasonDatesCache,
+  setSelectedKvkMetrics,
 } from './actions';
 
 // ----------------------------------------------------------------------
@@ -23,6 +24,7 @@ const initialState = {
   startDate: '',
   endDate: '',
   selectedMetrics: null,
+  selectedKvkMetrics: null,
   overview: null,
   seasonInfo: null,
   seasonDatesCache: {},
@@ -48,6 +50,7 @@ export function MetricsProvider({ children }) {
     setStartDate: (date) => dispatch(setStartDate(date)),
     setEndDate: (date) => dispatch(setEndDate(date)),
     setSelectedMetrics: (metrics) => dispatch(setSelectedMetrics(metrics)),
+    setSelectedKvkMetrics: (kvkMetrics) => dispatch(setSelectedKvkMetrics(kvkMetrics)),
     setOverview: (overview) => dispatch(setOverview(overview)),
     setSeasonDates: (dates) => dispatch(setSeasonDates(dates)),
     setSeasonInfo: (info) => dispatch(setSeasonInfo(info)),

@@ -3,21 +3,18 @@ import { useMutation } from '@tanstack/react-query';
 
 import axios from 'src/lib/axios';
 
-const uploadFile = async ({ type, file, files, seasonName, title, date }) => {
+const uploadFile = async ({ type, files, seasonName, title, date }) => {
   const formData = new FormData();
   
   // Add metadata to formData
   formData.append('seasonName', seasonName);
   formData.append('title', title === 'inProgress' ? date?.toISOString().split('T')[0] : title);
+  formData.append('type', type === 'single' ? 'individual' : 'kvk');
   
-  // Add file(s) to formData
-  if (type === 'single') {
-    formData.append('file', file);
-  } else {
-    files.forEach((f) => {
-      formData.append('files', f);
-    });
-  }
+  // Add files to formData
+  files.forEach((file) => {
+    formData.append('files', file);
+  });
 
   try {
     const response = await axios.post('/api/season/upload', formData, {
@@ -27,7 +24,7 @@ const uploadFile = async ({ type, file, files, seasonName, title, date }) => {
     });
     return response.data;
   } catch (error) {
-    const errorMessage = error.response?.data?.error || `Failed to upload ${type === 'single' ? 'file' : 'files'}`;
+    const errorMessage = error.response?.data?.error || `Failed to upload ${files.length === 1 ? 'file' : 'files'}`;
     throw new Error(errorMessage);
   }
 };
@@ -87,7 +84,7 @@ export const useReportUpload = () => {
     mutationFn: uploadFile,
     onSuccess: (_, variables) => {
       // Reset form immediately after successful upload
-      if (variables.type === 'single') {
+      if (variables.files.length === 1) {
         setIndividualReportSeasonName('');
         setIndividualReportTitle('');
         setIndividualReportDate(null);
@@ -101,22 +98,18 @@ export const useReportUpload = () => {
     },
   });
 
-  const formatDate = (date) => {
-    if (!date) return null;
-    return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-  };
-
   const handleUpload = async (type, file, files) => {
     const seasonName = type === 'single' ? individualReportSeasonName : kvkReportSeasonName;
     const title = type === 'single' ? individualReportTitle : kvkReportTitle;
     const date = type === 'single' ? individualReportDate : kvkReportDate;
 
-    if ((type === 'single' && !file) || (type === 'multiple' && !files.length)) return;
+    // Normalize to always use an array of files
+    const filesToUpload = type === 'single' ? [file] : files;
+    
+    if (!filesToUpload.length || (type === 'single' && !file)) return;
 
     uploadMutation.mutate({
-      type,
-      file,
-      files,
+      files: filesToUpload,
       seasonName,
       title,
       date,

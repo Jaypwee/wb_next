@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 import { adminDb, adminStorage } from 'src/lib/firebase-admin';
-import { createLoggedFirestore } from 'src/lib/firestore-logger';
 import { withAuth, withAuthAndRole } from 'src/lib/auth-middleware';
 
 async function createUserHandler(request) {
@@ -18,8 +17,7 @@ async function createUserHandler(request) {
       );
     }
     
-    // Create logged Firestore instance with user context
-    const loggedDb = createLoggedFirestore(request.user);
+
     
     const results = [];
     const errors = [];
@@ -49,8 +47,8 @@ async function createUserHandler(request) {
         // Remove uids from userData to avoid storing it in each user document
         delete userData.uids;
 
-        // Use logged Firestore operation
-        await loggedDb.collection('users').doc(uid).set(userData);
+        // Use Firestore operation
+        await adminDb.collection('users').doc(uid).set(userData);
 
         results.push({
           uid,
@@ -115,8 +113,7 @@ async function deleteUserHandler(request) {
     // Get authenticated user (role is now fetched from DB, so it's trusted)
     const authenticatedUser = request.user;
     
-    // Create logged Firestore instance with user context
-    const loggedDb = createLoggedFirestore(authenticatedUser);
+
     
     const results = [];
     const errors = [];
@@ -162,8 +159,8 @@ async function deleteUserHandler(request) {
           continue;
         }
 
-        // Delete the document using logged operation
-        await loggedDb.collection('users').doc(userDocRef.id).delete();
+        // Delete the document
+        await adminDb.collection('users').doc(userDocRef.id).delete();
 
         const isAdminDelete = authenticatedUser.uid !== uid;
         console.log(`User ${uid} deleted by ${authenticatedUser.email} (${authenticatedUser.uid})${isAdminDelete ? ' [ADMIN DELETE]' : ' [SELF DELETE]'}`);
@@ -279,8 +276,7 @@ async function updateUserHandler(request) {
       );
     }
     
-    // Create logged Firestore instance with user context
-    const loggedDb = createLoggedFirestore(authenticatedUser);
+
     
     // Find the user document first to get the actual document structure
     let userDocRef = null;
@@ -415,8 +411,8 @@ async function updateUserHandler(request) {
     // Add updatedAt timestamp
     updateData.updatedAt = new Date().toISOString();
 
-    // Update the document using logged operation
-    await loggedDb.collection('users').doc(userDocRef.id).update(updateData);
+    // Update the document
+    await adminDb.collection('users').doc(userDocRef.id).update(updateData);
 
     const isAdminUpdate = authenticatedUser.uid !== actualUid;
     console.log(`User ${uid} updated by ${authenticatedUser.email} (${authenticatedUser.uid})${isAdminUpdate ? ' [ADMIN UPDATE]' : ' [SELF UPDATE]'}`);

@@ -54,7 +54,7 @@ const UsersDataGrid = React.memo(({
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addLabelDialogOpen, setAddLabelDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
+  console.log('rendered')
   // Memoize rows conversion to prevent recreation on every render
   const rows = useMemo(() => {
     if (!users) return [];

@@ -14,23 +14,41 @@ export async function GET(request) {
       });
     }
 
-    // Get the document directly by ID
-    const sheetDoc = await adminDb.collection('sheets').doc(seasonName).get();
+    // Get the subcollections of the season document
+    const seasonDocRef = adminDb.collection('sheets').doc(seasonName);
+    const subcollections = await seasonDocRef.listCollections();
 
-    if (!sheetDoc.exists) {
-      return new Response(JSON.stringify({ error: 'No sheet found with the provided season name' }), {
+    if (subcollections.length === 0) {
+      return new Response(JSON.stringify({ error: 'No subcollections found for the provided season name' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const sheetData = sheetDoc.data();
+    // Extract subcollection names (dates)
+    const allDates = subcollections.map(collection => collection.id);
 
-    // Filter keys that match the date format (YYYY-MM-DD)
+    // Separate special dates from regular dates
+    const preSeasonDates = allDates.filter(date => date.toLowerCase().includes('preseason')); 
+    const startDates = allDates.filter(date => date.toLowerCase().includes('start'));
+    const finalDates = allDates.filter(date => date.toLowerCase().includes('final'));
+    const regularDates = allDates.filter(date => 
+      !date.toLowerCase().includes('start') && !date.toLowerCase().includes('final')
+    );
+
+    // Sort regular dates (assuming they follow date format)
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const dates = Object.keys(sheetData.individual)
-      .filter(key => dateRegex.test(key))
-      .sort(); // Sort dates in ascending order
+    regularDates.sort((a, b) => {
+      // If both are date format, sort chronologically
+      if (dateRegex.test(a) && dateRegex.test(b)) {
+        return a.localeCompare(b);
+      }
+      // Otherwise sort alphabetically
+      return a.localeCompare(b);
+    });
+
+    // Combine in the desired order: [start, ... dates ..., final]
+    const dates = [...preSeasonDates, ...startDates, ...regularDates, ...finalDates];
 
     return new Response(JSON.stringify(dates), {
       status: 200,

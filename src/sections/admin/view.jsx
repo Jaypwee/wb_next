@@ -38,14 +38,55 @@ const seasonInfoPromise = fetchSeasonInfo();
 
 // ----------------------------------------------------------------------
 
-const SeasonNameInput = ({ value, onChange, onSeasonCreated }) => {
+const SeasonNameInput = ({ onSeasonCreated }) => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [seasonName, setSeasonName] = useState(''); // Move state to local component
+  const [allies, setAllies] = useState('249');
+  const [enemies, setEnemies] = useState('');
+
+  const parseNumberList = (input) => {
+    if (!input.trim()) return [];
+    
+    // Split by comma and filter out empty strings, then convert to numbers
+    return input.split(',')
+      .map(num => num.trim())
+      .filter(num => num !== '')
+      .map(num => parseInt(num, 10))
+      .filter(num => !isNaN(num));
+  };
+
+  const validateNumberList = (input, fieldName) => {
+    if (!input.trim()) return null; // Empty is valid
+    
+    const numbers = parseNumberList(input);
+    const originalCount = input.split(',').filter(item => item.trim() !== '').length;
+    
+    if (numbers.length !== originalCount) {
+      return `${fieldName}에는 숫자만 입력할 수 있습니다 (쉼표로 구분)`;
+    }
+    
+    return null;
+  };
 
   const handleCreateSeason = () => {
-    if (!value || value.trim() === '') {
+    if (!seasonName || seasonName.trim() === '') {
       setError('시즌 이름을 입력해주세요');
+      return;
+    }
+
+    // Validate allies and enemies
+    const alliesError = validateNumberList(allies, '아군');
+    const enemiesError = validateNumberList(enemies, '적군');
+    
+    if (alliesError) {
+      setError(alliesError);
+      return;
+    }
+    
+    if (enemiesError) {
+      setError(enemiesError);
       return;
     }
 
@@ -54,14 +95,20 @@ const SeasonNameInput = ({ value, onChange, onSeasonCreated }) => {
 
     startTransition(async () => {
       try {
+        const requestData = {
+          season_name: seasonName.trim(),
+          allies: parseNumberList(allies),
+          enemies: parseNumberList(enemies)
+        };
+
         await makeAuthenticatedRequest(async () => 
-          axios.post('/api/season/names', {
-            season_name: value.trim()
-          })
+          axios.post('/api/season/names', requestData)
         );
 
         setSuccess('시즌이 성공적으로 생성되었습니다!');
-        onChange(''); // Clear the input
+        setSeasonName(''); // Clear the input
+        setAllies('249'); // Reset allies to default
+        setEnemies(''); // Clear enemies
         
         // Notify parent component if callback provided
         if (onSeasonCreated) {
@@ -86,6 +133,11 @@ const SeasonNameInput = ({ value, onChange, onSeasonCreated }) => {
     });
   };
 
+  const clearErrors = () => {
+    setError('');
+    setSuccess('');
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -95,30 +147,64 @@ const SeasonNameInput = ({ value, onChange, onSeasonCreated }) => {
         <Button
           variant="contained"
           onClick={handleCreateSeason}
-          disabled={!value || isPending}
+          disabled={!seasonName || isPending}
           startIcon={isPending ? <CircularProgress size={20} /> : null}
         >
           {isPending ? '생성중...' : '적용하기'}
         </Button>
       </Box>
-      <TextField
-        fullWidth
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setError(''); // Clear error when typing
-          setSuccess(''); // Clear success when typing
-        }}
-        placeholder="추가할 시즌 이름을 입력해주세요 (영어)"
-        error={!!error}
-        helperText={error || success}
-        disabled={isPending}
-        sx={{
-         '& .MuiFormHelperText-root': {
-            color: success ? 'success.main' : undefined,
-          },
-        }}
-      />
+      
+      <Stack spacing={2}>
+        <Stack direction="row" spacing={2}>
+          <TextField
+            fullWidth
+            value={seasonName}
+            onChange={(e) => {
+              setSeasonName(e.target.value);
+              clearErrors();
+            }}
+            placeholder="추가할 시즌 이름을 입력해주세요 (영어)"
+            label="시즌 이름"
+            disabled={isPending}
+          />
+          
+          <TextField
+            fullWidth
+            value={allies}
+            onChange={(e) => {
+              setAllies(e.target.value);
+              clearErrors();
+            }}
+            placeholder="아군 서버를를 입력해주세요 (예: 1, 2, 3)"
+            label="아군 입력력"
+            helperText="쉼표로 구분하여 숫자를 입력하세요"
+            disabled={isPending}
+          />
+          
+          <TextField
+            fullWidth
+            value={enemies}
+            onChange={(e) => {
+              setEnemies(e.target.value);
+              clearErrors();
+            }}
+            placeholder="적군 번호를 입력해주세요 (예: 4, 5, 6)"
+            label="적팀 입력"
+            helperText="쉼표로 구분하여 숫자를 입력하세요"
+            disabled={isPending}
+          />
+        </Stack>
+        
+        {(error || success) && (
+          <Typography 
+            variant="body2" 
+            color={success ? 'success.main' : 'error.main'}
+            sx={{ mt: 1 }}
+          >
+            {error || success}
+          </Typography>
+        )}
+      </Stack>
     </Box>
   );
 };
@@ -154,6 +240,7 @@ const ReportControls = ({
       onChange={(e) => onTitleChange(e.target.value)}
       row
     >
+      <FormControlLabel value="preseason" control={<Radio />} label="프리시즌" />
       <FormControlLabel value="start" control={<Radio />} label="시작" />
       <FormControlLabel value="final" control={<Radio />} label="결산" />
       <FormControlLabel value="inProgress" control={<Radio />} label="시즌 중" />
@@ -179,7 +266,6 @@ const ReportControls = ({
 
 export function AdminView() {
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [newSeasonName, setNewSeasonName] = useState('');
   const { t } = useTranslate();
   
   // User context integration
@@ -240,8 +326,6 @@ export function AdminView() {
 
         <Stack spacing={3}>
           <SeasonNameInput 
-            value={newSeasonName} 
-            onChange={setNewSeasonName}
             onSeasonCreated={handleSeasonCreated}
           />
 

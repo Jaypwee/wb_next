@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 
 import { adminDb } from 'src/lib/firebase-admin';
 import { withAuthAndRole } from 'src/lib/auth-middleware';
-import { createLoggedFirestore } from 'src/lib/firestore-logger';
 
 async function getScheduleHandler(request) {
   try {
@@ -67,9 +66,6 @@ async function updateScheduleHandler(request) {
     //   }
     // }
 
-    // Create logged Firestore instance with user context
-    const loggedDb = createLoggedFirestore(request.user);
-    
     // Update the schedule document in the home collection
     const scheduleDocRef = adminDb.collection('home').doc('schedule');
     
@@ -78,14 +74,14 @@ async function updateScheduleHandler(request) {
     
     if (!scheduleDoc.exists) {
       // Create the document if it doesn't exist
-      await loggedDb.collection('home').doc('schedule').set({
+      await adminDb.collection('home').doc('schedule').set({
         events,
         updatedAt: new Date().toISOString(),
         updatedBy: request.user.uid
       });
     } else {
       // Update the existing document
-      await loggedDb.collection('home').doc('schedule').update({
+      await adminDb.collection('home').doc('schedule').update({
         events,
         updatedAt: new Date().toISOString(),
         updatedBy: request.user.uid
