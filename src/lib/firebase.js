@@ -11,6 +11,7 @@ const isFirebase = CONFIG.auth.method === 'firebase';
 
 // Debug Firebase configuration
 if (isFirebase) {
+  console.log('CONFIG.firebase', CONFIG.firebase);
   // Verify all required fields are present
   const requiredFields = ['apiKey', 'authDomain', 'projectId', 'appId'];
   const missingFields = requiredFields.filter(field => !CONFIG.firebase[field]);

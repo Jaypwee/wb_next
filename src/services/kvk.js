@@ -38,7 +38,7 @@ export async function fetchKvkData({ seasonName, startDate, endDate }) {
 
   try {
     // Fetch data from API
-    const response = await axios.get(`/api/metrics/kvk?${params.toString()}`);
+    const response = await axios.get(`/api/metrics/kvk${endDate ? '/season' : ''}?${params.toString()}`);
     return response.data;
   } catch (error) {
     throw new Error('Failed to fetch KvK data');

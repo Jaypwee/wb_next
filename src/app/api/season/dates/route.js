@@ -33,7 +33,7 @@ export async function GET(request) {
     const startDates = allDates.filter(date => date.toLowerCase().includes('start'));
     const finalDates = allDates.filter(date => date.toLowerCase().includes('final'));
     const regularDates = allDates.filter(date => 
-      !date.toLowerCase().includes('start') && !date.toLowerCase().includes('final')
+      !date.toLowerCase().includes('start') && !date.toLowerCase().includes('final') && !date.toLowerCase().includes('preseason')
     );
 
     // Sort regular dates (assuming they follow date format)

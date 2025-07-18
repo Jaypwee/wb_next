@@ -20,9 +20,6 @@ async function postHandler(request) {
     const title = formData.get('title');
     const type = formData.get('type');
 
-    // Get authenticated user for logging context
-    const authenticatedUser = request.user;
-
     if (!files || files.length === 0) {
       return NextResponse.json(
         { error: 'No files provided' },

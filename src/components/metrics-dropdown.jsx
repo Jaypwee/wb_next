@@ -114,7 +114,7 @@ export function MetricsDropdown({
             onChange={onStartDateChange}
           />
           
-          {startDate && selectedSeason !== 'S_OFF' && (
+          {startDate && startDate !== 'preseason' && selectedSeason !== 'S_OFF' && (
             <CustomDropdown 
               options={getAvailableEndDates()}
               initialValue={endDate || t('metrics.dropdown.selectEndDate')}
