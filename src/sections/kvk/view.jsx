@@ -12,6 +12,7 @@ import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 
 import { useSettingsContext } from 'src/components/settings';
 import { MetricsDropdown } from 'src/components/metrics-dropdown';
+import { SingleDateKvkView } from './components/singleDateKvkView';
 
 // ----------------------------------------------------------------------
 
@@ -101,24 +102,32 @@ export function KvkView() {
               {...metricsDropdownProps}
             />
 
-            <Box
-              sx={{
-                p: 3,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
-              }}
-            >
-              <Box sx={{ textAlign: 'center' }}>
-                <h2>KvK Data Loaded</h2>
-                <p>Season: {selectedKvkMetrics.id}</p>
-                <p>Start Date: {selectedKvkMetrics.startDate}</p>
-                <p>End Date: {selectedKvkMetrics.endDate}</p>
-                <p>Allies: {Object.keys(selectedKvkMetrics.data?.allies || {}).length}</p>
-                <p>Enemies: {Object.keys(selectedKvkMetrics.data?.enemies || {}).length}</p>
-              </Box>
-            </Box>
+            {/* 
+              For start, end date showings (allied left enemies right)
+              1. Top 100, 150, 200, 300 merit counts per kingdom
+              2. Top 100, 150, 200, 300 units dead per kingdom
+              3. Top 100, 150, 200, 300 mana spent per kingdom
+              4. Total mana spet per kingdom
+              5. Total merits per kingdom
+              6. Total units dead per kingdom
+              7. Power lost per kingdom / power lost per kingdom (bar chart)
+            */}
+
+            {/* 
+              For just preseason or start as start dates:
+              1. Total Power, Kills, Deads, Total mana spent
+              2. Below 100M, 100-150M, 150-200M, 200-300M, 300M+
+              3. Previous season merits (only preseason)
+            */}
+            { !endDate && (
+              <SingleDateKvkView chartData={selectedKvkMetrics} />
+            )}
+
+            {
+              endDate && (
+                <MultiDateKvkView chartData={selectedKvkMetrics} />
+              )
+            }
           </>
         )}
       </Stack>

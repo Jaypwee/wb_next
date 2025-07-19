@@ -15,7 +15,7 @@ export function useChart(updatedOptions) {
 
 // ----------------------------------------------------------------------
 
-const baseChartOptions = (theme) => {
+export const baseChartOptions = (theme) => {
   const LABEL_TOTAL = {
     show: true,
     label: 'Total',

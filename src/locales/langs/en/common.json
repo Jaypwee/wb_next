@@ -266,8 +266,57 @@
       "heals": "Heals",
       "Bastion": "Bastion"
     }
-
+  },
+  
+  "kvk": {
+    "noData": "No chart data available",
     
+    "sections": {
+      "serverTotals": "Server Totals",
+      "powerDistribution": "Power Distribution by Server"
+    },
     
+    "charts": {
+      "meritsByServer": "Merits by Server",
+      "unitsKilledByServer": "Units Killed by Server", 
+      "unitsDeadByServer": "Units Dead by Server",
+      "manaSpentByServer": "Mana Spent by Server",
+      "powerLossByServer": "Power Loss by Server",
+      "powerLossSubheader": "Total power lost per server (sorted)",
+      "meritApByServer": "Merit AP by Server",
+      "meritApSubheader": "Merit efficiency per power point (%)"
+    },
+    
+    "power": {
+      "below100M": "Below 100M Power",
+      "range100to150M": "100-150M Power",
+      "range150to200M": "150-200M Power", 
+      "range200to250M": "200-250M Power",
+      "above250M": "Above 250M Power",
+      "generic": "{{power}}M Power"
+    },
+    
+    "top300": {
+      "allies": {
+        "merits": "Allies - Top 300 Merits by Server",
+        "manaSpent": "Allies - Top 300 Mana Spent by Server",
+        "unitsDead": "Allies - Top 300 Units Dead by Server"
+      },
+      "enemies": {
+        "merits": "Enemies - Top 300 Merits by Server", 
+        "manaSpent": "Enemies - Top 300 Mana Spent by Server",
+        "unitsDead": "Enemies - Top 300 Units Dead by Server"
+      },
+      "subtitle": {
+        "merits": "Server distribution of top merit earners",
+        "manaSpent": "Server distribution of top mana spenders",
+        "unitsDead": "Server distribution of top unit killers"
+      }
+    },
+    
+    "series": {
+      "powerLoss": "Power Loss",
+      "meritAp": "Merit AP"
+    }
   }
 } 

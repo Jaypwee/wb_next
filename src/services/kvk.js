@@ -82,3 +82,30 @@ export function formatAreaChartData({ data, type }) {
     }],
   };
 }
+
+/**
+ * Formats top300 data for pie chart by counting servers
+ * @param {Array} top300Data - Array of objects with userId and server
+ * @returns {Object} Formatted pie chart data with categories and series
+ */
+export function formatTop300ForPieChart(top300Data) {
+  if (!top300Data || !Array.isArray(top300Data)) {
+    return { categories: [], series: [] };
+  }
+
+  // Count occurrences of each server
+  const serverCounts = top300Data.reduce((acc, item) => {
+    const server = item.server || 'Unknown';
+    acc[server] = (acc[server] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Convert to categories and series arrays
+  const categories = Object.keys(serverCounts);
+  const series = Object.values(serverCounts);
+
+  return {
+    categories,
+    series,
+  };
+}

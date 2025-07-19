@@ -35,7 +35,8 @@ async function getHandler(request) {
     const seasonData = seasonDoc.data();
     const alliedServers = seasonData.allies || []; // Default to empty array if allies field doesn't exist
     const enemyServers = seasonData.enemies || []; // Default to empty array if enemies field doesn't exist
-
+    const validServers = [...alliedServers, ...enemyServers];
+    
     // Helper function to get data from a date subcollection
     const getDateData = async (date) => {
       const dateCollectionRef = seasonDocRef.collection(date);
@@ -66,30 +67,6 @@ async function getHandler(request) {
       );
     }
 
-    // If no endDate provided, return just the startDate data separated by allies/enemies
-    if (!endDate) {
-      const allies = {};
-      const enemies = {};
-
-      Object.keys(startDateData).forEach(userId => {
-        const userData = startDateData[userId];
-        if (alliedServers.includes(userData.homeServer)) {
-          allies[userId] = userData;
-        } else if (enemyServers.includes(userData.homeServer)) {
-          enemies[userId] = userData;
-        }
-      });
-
-      return NextResponse.json({
-        id: seasonName,
-        data: {
-          allies,
-          enemies
-        },
-        startDate
-      });
-    }
-
     // Get the end date data
     const endDateData = await getDateData(endDate);
     if (!endDateData) {
@@ -104,8 +81,20 @@ async function getHandler(request) {
     const enemiesDifferences = {};
     const attributesToCompare = ['merits', 'unitsKilled', 'unitsDead', 'manaSpent', 't5KillCount'];
 
+    const totalMetrics = {};
+
+    validServers.forEach(server => {
+      totalMetrics[server] = {
+        powerLoss: 0,
+        manaSpent: 0,
+        merits: 0,
+        unitsDead: 0,
+        highestPower: 0,
+      };
+    });
+
     for (const userId in endDateData) {
-      if (startDateData[userId]) {
+      if (startDateData[userId] && validServers.includes(endDateData[userId].homeServer)) {
         const userDifferences = {
           name: endDateData[userId].name,
           currentPower: endDateData[userId].currentPower,
@@ -125,18 +114,96 @@ async function getHandler(request) {
         } else {
           enemiesDifferences[userId] = userDifferences;
         }
+
+        totalMetrics[endDateData[userId].homeServer].highestPower += endDateData[userId].highestPower;
+        totalMetrics[endDateData[userId].homeServer].powerLoss += endDateData[userId].currentPower - endDateData[userId].highestPower;
+        totalMetrics[endDateData[userId].homeServer].manaSpent += endDateData[userId].manaSpent - startDateData[userId].manaSpent;
+        totalMetrics[endDateData[userId].homeServer].merits += endDateData[userId].merits - startDateData[userId].merits;
+        totalMetrics[endDateData[userId].homeServer].unitsDead += endDateData[userId].unitsKilled - startDateData[userId].unitsKilled;
       }
     }
 
-    return NextResponse.json({
-      id: seasonName,
-      data: {
-        allies: alliesDifferences,
-        enemies: enemiesDifferences
-      },
-      startDate,
-      endDate
-    });
+    // Combine allies and enemies data for leaderboards
+    const allUserData = { ...alliesDifferences, ...enemiesDifferences };
+    
+    // Create top 300 leaderboards for each metric
+    const getTop300 = (metric, dataset) => {
+      return Object.entries(dataset)
+        .sort(([, a], [, b]) => b[metric] - a[metric])
+        .slice(0, 300)
+        .map(([userId]) => ({ userId, server: allUserData[userId].homeServer }));
+    };
+
+    const alliesTop300 = {
+      merits: getTop300('merits', alliesDifferences),
+      manaSpent: getTop300('manaSpent', alliesDifferences),
+      unitsDead: getTop300('unitsDead', alliesDifferences)
+    };
+
+    const enemiesTop300 = {
+      merits: getTop300('merits', enemiesDifferences),
+      manaSpent: getTop300('manaSpent', enemiesDifferences),
+      unitsDead: getTop300('unitsDead', enemiesDifferences)
+    };
+
+      const totalTop300 = {
+       merits: getTop300('merits', allUserData),
+       manaSpent: getTop300('manaSpent', allUserData),
+       unitsDead: getTop300('unitsDead', allUserData)
+     };
+
+     // Transform totalMetrics into chart data structures
+     const serverNames = Object.keys(totalMetrics);
+     
+     // Pie chart data for manaSpent, merits, and unitsDead
+     const pieChartData = {
+       manaSpent: {
+         categories: serverNames,
+         series: serverNames.map(server => totalMetrics[server].manaSpent)
+       },
+       merits: {
+         categories: serverNames,
+         series: serverNames.map(server => totalMetrics[server].merits)
+       },
+       unitsDead: {
+         categories: serverNames,
+         series: serverNames.map(server => totalMetrics[server].unitsDead)
+       }
+     };
+
+     // Bar chart data for powerLoss (sorted in reverse order by powerLoss value)
+     const powerLossEntries = serverNames.map(server => ({
+       server,
+       powerLoss: totalMetrics[server].powerLoss
+     })).sort((a, b) => b.powerLoss - a.powerLoss); // Sort in reverse order (highest first)
+     
+     const barChartData = {
+       powerLoss: {
+         categories: powerLossEntries.map(entry => entry.server),
+         series: powerLossEntries.map(entry => entry.powerLoss)
+       },
+       meritAp: {
+        categories: serverNames,
+        series: serverNames.map(server => (totalMetrics[server].merits / totalMetrics[server].highestPower) * 100)
+       }
+     };
+
+      return NextResponse.json({
+        id: seasonName,
+        data: {
+          alliesTop300,
+          enemiesTop300,
+          totalTop300,
+          allies: alliesDifferences,
+          enemies: enemiesDifferences,
+          chartData: {
+            pieCharts: pieChartData,
+            barCharts: barChartData
+          }
+        },
+        startDate,
+        endDate
+      });
 
   } catch (error) {
     console.error('Error in KVK season API:', error);

@@ -52,7 +52,7 @@ async function getHandler(request) {
           const data = doc.data();
           
           // Only include users from valid servers (allies + enemies)
-          if (data.homeServer && data.highestPower > 15000000 && validServers.includes(data.homeServer)) {
+          if (data.homeServer && data.highestPower > 50000000 && validServers.includes(data.homeServer)) {
             dateData[doc.id] = data;
             
             // Calculate power distribution by server

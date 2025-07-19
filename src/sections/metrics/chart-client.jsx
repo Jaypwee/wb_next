@@ -5,8 +5,9 @@ import { useMemo } from 'react';
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
 import { Chart, useChart } from 'src/components/chart';
+import { fShortenNumber } from 'src/utils/format-number';
 
-export function ChartClient({ type, series, categories, sx }) {
+export function ChartClient({ type, series, categories, yAxisWidth = 120, sx }) {
   const theme = useTheme();
   
   const chartColors = useMemo(() => [
@@ -22,6 +23,7 @@ export function ChartClient({ type, series, categories, sx }) {
       range: 8,
       labels: {
         fontSize: 16,
+        formatter: (value) => fShortenNumber(value),
       }
     },
     yaxis: {
@@ -29,17 +31,17 @@ export function ChartClient({ type, series, categories, sx }) {
         style: {
           fontSize: 13,
         },
-        minWidth: 120,
+        minWidth: yAxisWidth,
       }
     },
     dataLabels: {
       enabled: true,
       textAnchor: 'start',
-      formatter: (value) => value.toLocaleString(),
+      formatter: (value) => fShortenNumber(value),
     },
     tooltip: {
       y: { 
-        formatter: (value) => value.toLocaleString(),
+        formatter: (value) => fShortenNumber(value),
         title: { formatter: () => '' }
       },
     },
