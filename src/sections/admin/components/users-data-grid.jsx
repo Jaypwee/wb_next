@@ -1,14 +1,21 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
+import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 import AddIcon from '@mui/icons-material/Add';
 import LabelIcon from '@mui/icons-material/Label';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LabelOffIcon from '@mui/icons-material/LabelOff';
 import CircularProgress from '@mui/material/CircularProgress';
 import {
   DataGrid,
@@ -48,12 +55,15 @@ const UsersDataGrid = React.memo(({
   selectedUsers, 
   onSelectionChange,
   onUsersAdded,
-  onUsersDeleted
+  onUsersDeleted,
+  onLabelsReset
 }) => {
   const [filterButtonEl, setFilterButtonEl] = useState(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addLabelDialogOpen, setAddLabelDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [resetLabelsDialogOpen, setResetLabelsDialogOpen] = useState(false);
+  const [userToResetLabels, setUserToResetLabels] = useState(null);
   console.log('rendered')
   // Memoize rows conversion to prevent recreation on every render
   const rows = useMemo(() => {
@@ -158,7 +168,29 @@ const UsersDataGrid = React.memo(({
         </Box>
       ),
     },
-  ], []);
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      align: 'center',
+      headerAlign: 'center',
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Tooltip title="Reset Labels">
+          <IconButton
+            size="small"
+            onClick={() => handleResetLabelsClick(params.row)}
+            disabled={!params.row.labels || params.row.labels.length === 0}
+            color="warning"
+          >
+            <LabelOffIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
+  ], [handleResetLabelsClick]);
 
   // Memoize toolbar props to prevent unnecessary re-renders
   const toolbarProps = useMemo(() => ({
@@ -224,6 +256,19 @@ const UsersDataGrid = React.memo(({
       return;
     }
     setDeleteDialogOpen(true);
+  };
+
+  const handleResetLabelsClick = useCallback((user) => {
+    setUserToResetLabels(user);
+    setResetLabelsDialogOpen(true);
+  }, []);
+
+  const handleResetLabels = (userId) => {
+    toast.info(`Reset labels for user: ${userId}`);
+    if (onLabelsReset) {
+      onLabelsReset(userId);
+    }
+    setUserToResetLabels(null);
   };
 
   if (error) {
@@ -349,6 +394,46 @@ const UsersDataGrid = React.memo(({
         selectedUsers={selectedUsers}
         onConfirm={handleDeleteUsers}
       />
+
+      {/* Reset Labels Confirmation Dialog */}
+      <Dialog
+        open={resetLabelsDialogOpen}
+        onClose={() => setResetLabelsDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Reset User Labels
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Are you sure you want to reset all labels for user{' '}
+            <strong>{userToResetLabels?.nickname}</strong> (UID: {userToResetLabels?.uid})?
+          </Typography>
+          {userToResetLabels?.labels && userToResetLabels.labels.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Current labels: {userToResetLabels.labels.join(', ')}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetLabelsDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleResetLabels(userToResetLabels?.uid);
+              setResetLabelsDialogOpen(false);
+            }}
+            variant="contained"
+            color="warning"
+          >
+            Reset Labels
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 });
