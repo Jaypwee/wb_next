@@ -183,7 +183,7 @@ function TroopIcon({ troopType, t }) {
   );
 }
 
-export function MetricsDataGrid({ selectedMetrics, users, type = 'MERITS', gridData = [] }) {
+export function MetricsDataGrid({ users, type = 'MERITS', gridData = [] }) {
   const { t } = useTranslate();
   const [filterButtonEl, setFilterButtonEl] = useState(null);
 

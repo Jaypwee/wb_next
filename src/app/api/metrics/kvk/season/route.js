@@ -99,6 +99,7 @@ async function getHandler(request) {
           name: endDateData[userId].name,
           currentPower: endDateData[userId].currentPower,
           highestPower: endDateData[userId].highestPower,
+          homeServer: endDateData[userId].homeServer,
         };
 
         // Calculate differences for each attribute
@@ -117,9 +118,9 @@ async function getHandler(request) {
 
         totalMetrics[endDateData[userId].homeServer].highestPower += endDateData[userId].highestPower;
         totalMetrics[endDateData[userId].homeServer].powerLoss += endDateData[userId].currentPower - endDateData[userId].highestPower;
-        totalMetrics[endDateData[userId].homeServer].manaSpent += endDateData[userId].manaSpent - startDateData[userId].manaSpent;
-        totalMetrics[endDateData[userId].homeServer].merits += endDateData[userId].merits - startDateData[userId].merits;
-        totalMetrics[endDateData[userId].homeServer].unitsDead += endDateData[userId].unitsKilled - startDateData[userId].unitsKilled;
+        totalMetrics[endDateData[userId].homeServer].manaSpent += (endDateData[userId].manaSpent || 0) - (startDateData[userId].manaSpent || 0);
+        totalMetrics[endDateData[userId].homeServer].merits += (endDateData[userId].merits || 0) - (startDateData[userId].merits || 0);
+        totalMetrics[endDateData[userId].homeServer].unitsDead += (endDateData[userId].unitsDead || 0) - (startDateData[userId].unitsDead || 0);
       }
     }
 
@@ -127,12 +128,18 @@ async function getHandler(request) {
     const allUserData = { ...alliesDifferences, ...enemiesDifferences };
     
     // Create top 300 leaderboards for each metric
-    const getTop300 = (metric, dataset) => {
-      return Object.entries(dataset)
-        .sort(([, a], [, b]) => b[metric] - a[metric])
+    const getTop300 = (metric, dataset) => Object.entries(dataset)
+        .filter(([, d]) => {
+          const value = d[metric];
+          return value !== null && value !== undefined && !isNaN(value) && value !== 0 && isFinite(value);
+        })
+        .sort(([, a], [, b]) => {
+          const aValue = Number(a[metric]) || 0;
+          const bValue = Number(b[metric]) || 0;
+          return bValue - aValue; // Descending order
+        })
         .slice(0, 300)
-        .map(([userId]) => ({ userId, server: allUserData[userId].homeServer }));
-    };
+        .map(([userId, d]) => ({ userId, server: d.homeServer, [metric]: d[metric] }));
 
     const alliesTop300 = {
       merits: getTop300('merits', alliesDifferences),

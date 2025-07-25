@@ -10,7 +10,7 @@ import { ChartClient } from './chart-client';
 
 export function MetricsBarChart({ title, subheader, series, categories, yAxisWidth }) {
   return (
-    <Card sx={{ height: '100%', width: '100%' }}>
+    <Card sx={{ height: '100%' }}>
       <CardHeader 
         title={title} 
         subheader={subheader}

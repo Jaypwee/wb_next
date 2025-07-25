@@ -229,7 +229,12 @@
       "selectStartDate": "집계 시작일",
       "selectEndDate": "집계 종료일",
       "loading": "로딩중...",
-      "apply": "적용"
+      "apply": "적용",
+      "label": {
+        "preseason": "프리시즌",
+        "start": "시즌 시작",
+        "final": "시즌 결산"
+      }
     }
   },
   "nav": {
@@ -273,6 +278,18 @@
   
   "kvk": {
     "noData": "차트 데이터가 없습니다",
+
+    "overview": {
+      "title": "KvK 개요 - 시즌 진행 현황",
+      "charts": {
+        "merits": "전공",
+        "meritsSubheader": "시간별 서버 전공 획득량",
+        "unitsDead": "사망수",
+        "unitsDeadSubheader": "시간별 서버 부대 사망수",
+        "manaSpent": "마나 소모량",
+        "manaSpentSubheader": "시간별 서버 마나 소모량"
+      }
+    },
     
     "sections": {
       "serverTotals": "서버별 합계",
@@ -280,14 +297,14 @@
     },
     
     "charts": {
-      "meritsByServer": "서버별 업적",
-      "unitsKilledByServer": "서버별 유닛 킬", 
-      "unitsDeadByServer": "서버별 유닛 데스",
-      "manaSpentByServer": "서버별 마나 소모",
-      "powerLossByServer": "서버별 파워 손실",
-      "powerLossSubheader": "서버별 총 파워 손실 (정렬됨)",
-      "meritApByServer": "서버별 업적 AP",
-      "meritApSubheader": "파워 대비 업적 효율 (%)"
+      "meritsByServer": "서버별 전공 획득량",
+      "unitsKilledByServer": "서버별 유닛 처치 수", 
+      "unitsDeadByServer": "서버별 유닛 사망 수",
+      "manaSpentByServer": "서버별 마나 소모량",
+      "powerLossByServer": "서버별 연맹 전투력 손실량",
+      "powerLossSubheader": "연맹 전투력 손실 현황",
+      "meritApByServer": "연맹 전투력 대비 전공",
+      "meritApSubheader": "연맹 전투력 대비 전공 효율 (%)"
     },
     
     "power": {
@@ -298,28 +315,34 @@
       "above250M": "2억5천 투력 이상",
       "generic": "{{power}}M 투력"
     },
+
+    "total": {
+      "merits": "서버별 총 전공",
+      "manaSpent": "서버별 총 마나 소모량",
+      "unitsDead": "서버별 총 사망수"
+    },
     
     "top300": {
       "allies": {
-        "merits": "아군 - 상위 300 전공 (서버별)",
-        "manaSpent": "아군 - 상위 300 마나 소모량 (서버별)",
-        "unitsDead": "아군 - 상위 300 사망수 (서버별)"
+        "merits": "아군 - 상위 {{count}} 전공",
+        "manaSpent": "아군 - 상위 {{count}} 마나 소모량",
+        "unitsDead": "아군 - 상위 {{count}} 사망수"
       },
       "enemies": {
-        "merits": "적군 - 상위 300 전공 (서버별)", 
-        "manaSpent": "적군 - 상위 300 마나 소모량 (서버별)",
-        "unitsDead": "적군 - 상위 300 사망수 (서버별)"
+        "merits": "적군 - 상위 {{count}} 전공", 
+        "manaSpent": "적군 - 상위 {{count}} 마나 소모량",
+        "unitsDead": "적군 - 상위 {{count}} 사망수"
       },
       "subtitle": {
-        "merits": "상위 전공 유저의 서버 분포",
-        "manaSpent": "상위 마나 소모량 서버 분포",
-        "unitsDead": "상위 사망수 서버 분포"
+        "merits": "상위 전공 유저 서버 분포도",
+        "manaSpent": "상위 마나 소모량 서버 분포도",
+        "unitsDead": "상위 사망수 서버 분포도도"
       }
     },
     
     "series": {
-      "powerLoss": "파워 손실",
-      "meritAp": "업적 AP"
+      "powerLoss": "연맹 전투력 손실 현황",
+      "meritAp": "연맹 투력 대비 전공공"
     }
   }
 }

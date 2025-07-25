@@ -24,7 +24,7 @@ export function MetricsDropdown({
   onApply,
   isPending = false
 }) {
-  const { t } = useTranslate();
+  const { t, currentLang } = useTranslate();
   const {
     seasonInfo,
     seasonDatesCache,

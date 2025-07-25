@@ -2,6 +2,72 @@ import { NextResponse } from 'next/server';
 
 import { adminDb } from 'src/lib/firebase-admin';
 import { withAuth } from 'src/lib/auth-middleware';
+import { withCache, generateCacheKey } from 'src/lib/cache';
+
+// Function to transform computed results into ApexCharts format
+function transformToChartData(computedResults) {
+  // Get all dates (categories) and sort them
+  const categories = Object.keys(computedResults).sort();
+  
+  // Get all unique server names across all dates
+  const allServers = new Set();
+  categories.forEach(date => {
+    Object.keys(computedResults[date] || {}).forEach(server => {
+      allServers.add(server);
+    });
+  });
+  
+  const servers = Array.from(allServers).sort();
+  
+  // Initialize chart data structure
+  const chartData = {
+    merits: {
+      categories,
+      series: []
+    },
+    unitsDead: {
+      categories,
+      series: []
+    },
+    manaSpent: {
+      categories,
+      series: []
+    }
+  };
+  
+  // Create series for each server and each metric
+  servers.forEach(server => {
+    const meritsData = [];
+    const unitsDeadData = [];
+    const manaSpentData = [];
+    
+    categories.forEach(date => {
+      const dateData = computedResults[date] || {};
+      const serverData = dateData[server] || {};
+      
+      meritsData.push(serverData.merits || 0);
+      unitsDeadData.push(serverData.unitsDead || 0);
+      manaSpentData.push(serverData.manaSpent || 0);
+    });
+    
+    chartData.merits.series.push({
+      name: server,
+      data: meritsData
+    });
+    
+    chartData.unitsDead.series.push({
+      name: server,
+      data: unitsDeadData
+    });
+    
+    chartData.manaSpent.series.push({
+      name: server,
+      data: manaSpentData
+    });
+  });
+  
+  return chartData;
+}
 
 async function getHandler(request) {
   try {
@@ -39,10 +105,10 @@ async function getHandler(request) {
     );
 
     // Check if there are any data subcollections
-    if (dataSubcollections.length === 0) {
+    if (dataSubcollections.length < 2) {
       return NextResponse.json(
-        { error: 'No data to show - no subcollections found besides preseason and start' },
-        { status: 400 }
+        { data: null },
+        { status: 200 }
       );
     }
 
@@ -61,7 +127,6 @@ async function getHandler(request) {
 
     // Initialize the computed results object
     const computedResults = {};
-
     // Process each data subcollection
     for (const subcollectionName of dataSubcollections) {
       const totalRef = seasonDocRef.collection(subcollectionName).doc('total');
@@ -87,7 +152,10 @@ async function getHandler(request) {
       }
     }
 
-    return NextResponse.json({ data: computedResults }, { status: 200 });
+    // Transform computed results into chart data format
+    const chartData = transformToChartData(computedResults);
+
+    return NextResponse.json({ data: chartData }, { status: 200 });
 
   } catch (error) {
     console.error('Error in KVK overview API:', error);
@@ -98,4 +166,22 @@ async function getHandler(request) {
   }
 }
 
-export const GET = withAuth(getHandler);
+// Apply authentication and caching
+export const GET = withAuth(
+  withCache(getHandler, {
+    // Custom cache key generator for KvK overview metrics
+    keyGenerator: (request) => {
+      const { searchParams } = new URL(request.url);
+      return generateCacheKey('metrics-kvk-overview', {
+        seasonName: searchParams.get('season_name')
+      });
+    },
+    // Skip cache for requests with invalid parameters
+    skipCache: (request) => {
+      const { searchParams } = new URL(request.url);
+      const seasonName = searchParams.get('season_name');
+      
+      return !seasonName;
+    }
+  })
+);

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useTransition } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -6,15 +6,15 @@ import Stack from '@mui/material/Stack';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import AddIcon from '@mui/icons-material/Add';
+import IconButton from '@mui/material/IconButton';
 import LabelIcon from '@mui/icons-material/Label';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
+import DialogTitle from '@mui/material/DialogTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 import LabelOffIcon from '@mui/icons-material/LabelOff';
 import CircularProgress from '@mui/material/CircularProgress';
 import {
@@ -26,6 +26,8 @@ import {
   GridToolbarColumnsButton,
   GridToolbarDensitySelector,
 } from '@mui/x-data-grid';
+
+import { updateUserLabels } from 'src/services/user';
 
 import { toast } from 'src/components/snackbar';
 import { BadgeCell } from 'src/components/badge-cell';
@@ -54,9 +56,7 @@ const UsersDataGrid = React.memo(({
   error, 
   selectedUsers, 
   onSelectionChange,
-  onUsersAdded,
-  onUsersDeleted,
-  onLabelsReset
+  onUsersUpdated
 }) => {
   const [filterButtonEl, setFilterButtonEl] = useState(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -64,7 +64,15 @@ const UsersDataGrid = React.memo(({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [resetLabelsDialogOpen, setResetLabelsDialogOpen] = useState(false);
   const [userToResetLabels, setUserToResetLabels] = useState(null);
-  console.log('rendered')
+  const [isResettingLabels, startResettingLabels] = useTransition();
+    
+
+  const handleResetLabelsClick = useCallback((user) => {
+    setUserToResetLabels(user);
+    setResetLabelsDialogOpen(true);
+  }, []);
+
+
   // Memoize rows conversion to prevent recreation on every render
   const rows = useMemo(() => {
     if (!users) return [];
@@ -223,15 +231,15 @@ const UsersDataGrid = React.memo(({
   // Handle dialog actions
   const handleAddUsers = (userIds) => {
     toast.info(`Added users: ${userIds.join(', ')}`);
-    if (onUsersAdded) {
-      onUsersAdded(userIds);
+    if (onUsersUpdated) {
+      onUsersUpdated();
     }
   };
 
   const handleDeleteUsers = (userIds) => {
     toast.info(`Deleted users: ${userIds.join(', ')}`);
-    if (onUsersDeleted) {
-      onUsersDeleted(userIds);
+    if (onUsersUpdated) {
+      onUsersUpdated();
     }
   };
 
@@ -258,17 +266,13 @@ const UsersDataGrid = React.memo(({
     setDeleteDialogOpen(true);
   };
 
-  const handleResetLabelsClick = useCallback((user) => {
-    setUserToResetLabels(user);
-    setResetLabelsDialogOpen(true);
-  }, []);
-
   const handleResetLabels = (userId) => {
     toast.info(`Reset labels for user: ${userId}`);
-    if (onLabelsReset) {
-      onLabelsReset(userId);
+    startResettingLabels(() => updateUserLabels(userId, []));
+    if (onUsersUpdated) {
+      onUsersUpdated();
     }
-    setUserToResetLabels(null);
+    setUserToResetLabels(null)
   };
 
   if (error) {
@@ -427,6 +431,7 @@ const UsersDataGrid = React.memo(({
               handleResetLabels(userToResetLabels?.uid);
               setResetLabelsDialogOpen(false);
             }}
+            loading={isResettingLabels}
             variant="contained"
             color="warning"
           >

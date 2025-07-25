@@ -1,4 +1,3 @@
-import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
 import { fShortenNumber } from 'src/utils/format-number';
 
@@ -7,7 +6,6 @@ import { Chart, useChart, ChartLegends } from 'src/components/chart';
 // ----------------------------------------------------------------------
 
 export function ChartPie({ chart, showLegend = true }) {
-  const theme = useTheme();
 
   const chartOptions = useChart({
     chart: { sparkline: { enabled: true } },
@@ -19,13 +17,17 @@ export function ChartPie({ chart, showLegend = true }) {
       formatter: (val, opts) => {
         const value = chart.series[opts.seriesIndex];
         const formattedValue = fShortenNumber(value);
-        console.log(chart, chart[opts.seriesIndex])
         return formattedValue;
       },
       style: {
         fontSize: '12px',
         fontWeight: 'bold',
         colors: ['#fff'],
+      },
+    },
+    tooltip: {
+      y: { 
+        formatter: (value, opts) => fShortenNumber(value)
       },
     },
     plotOptions: { pie: { donut: { labels: { show: false } } } },
@@ -37,7 +39,7 @@ export function ChartPie({ chart, showLegend = true }) {
         <ChartLegends
           labels={chartOptions?.labels}
           colors={chartOptions?.colors}
-          sx={{ p: 3, justifyContent: 'center' }}
+          sx={{ p: 1, justifyContent: 'center' }}
         />
       )}
 
@@ -46,10 +48,10 @@ export function ChartPie({ chart, showLegend = true }) {
         series={chart.series}
         options={chartOptions}
         sx={{
-          my: 3,
+          my: 1,
           mx: 'auto',
-          width: 240,
-          height: 240,
+          width: 300,
+          height: 300,
         }}
       />
     </>

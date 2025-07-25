@@ -6,6 +6,8 @@ import { useTheme } from '@mui/material/styles';
 
 import { usePathname } from 'src/routes/hooks';
 
+import { useTranslate } from 'src/locales';
+
 import { NavItem } from './nav-item';
 import { navSectionClasses } from '../styles';
 import { NavUl, NavLi, NavDropdown, NavDropdownPaper } from '../components';
@@ -22,7 +24,7 @@ export function NavList({
   enabledRootRedirect,
 }) {
   const theme = useTheme();
-
+  const { t } = useTranslate();
   const pathname = usePathname();
 
   const isActive = isActiveLink(pathname, data.path, !!data.children);
@@ -54,7 +56,7 @@ export function NavList({
       path={data.path}
       icon={data.icon}
       info={data.info}
-      title={data.title}
+      title={t(data.title)}
       caption={data.caption}
       // state
       active={isActive}

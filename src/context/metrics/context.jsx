@@ -47,7 +47,14 @@ export function MetricsProvider({ children }) {
 
   const actions = {
     setSelectedSeason: (season) => dispatch(setSelectedSeason(season)),
-    setStartDate: (date) => dispatch(setStartDate(date)),
+    setStartDate: (date) =>{
+      console.log('setStartDate', date, state.endDate);
+      if (date === state.endDate) {
+        dispatch(setEndDate(''));
+        console.log('check')
+      }
+      dispatch(setStartDate(date));
+    },
     setEndDate: (date) => dispatch(setEndDate(date)),
     setSelectedMetrics: (metrics) => dispatch(setSelectedMetrics(metrics)),
     setSelectedKvkMetrics: (kvkMetrics) => dispatch(setSelectedKvkMetrics(kvkMetrics)),

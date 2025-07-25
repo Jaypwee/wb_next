@@ -75,7 +75,6 @@ async function postHandler(request) {
 
     // Create subcollection with title and add the parsed data using batch commits
    
-    
     // Split data into batches (Firestore limit is 500 operations per batch)
     const entries = Object.entries(allParsedData);
     const batchSize = 500;
@@ -107,7 +106,8 @@ async function postHandler(request) {
 
     // Invalidate cache for this season after successful upload
     try {
-      await invalidateAllSeasonIndividualMetrics(seasonName);
+      await invalidateAllSeasonIndividualMetrics(seasonName, DATA_TYPE.INDIVIDUAL);
+      await invalidateAllSeasonIndividualMetrics(seasonName, DATA_TYPE.KVK);
       console.log('Cache invalidated successfully for season:', seasonName);
     } catch (cacheError) {
       // Log cache error but don't fail the upload

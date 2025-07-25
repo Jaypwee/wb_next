@@ -6,9 +6,10 @@ import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
 import { useTranslate } from 'src/locales';
 
+import { ChartLegends, baseChartOptions } from 'src/components/chart';
+
 import { ChartPie } from 'src/sections/chart-view/components/chart-pie';
 import { MetricsBarChart } from 'src/sections/metrics/metrics-bar-chart';
-import { ChartLegends, baseChartOptions } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
@@ -85,10 +86,8 @@ export function SingleDateKvkView({ chartData }) {
     }
   };
 
-  console.log(powerChartData)
-
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ py: 3, px: 0 }}>
       {/* Totals Bar Charts - 2 per row */}
       {totalsChartData && (
         <Box sx={{ mb: 4 }}>

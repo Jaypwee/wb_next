@@ -13,8 +13,8 @@ import { useRouter, usePathname, useSearchParams } from 'src/routes/hooks';
 import { useTranslate } from 'src/locales';
 import { useUserContext } from 'src/context/user';
 import { useMetricsContext } from 'src/context/metrics';
+import { fetchMetricsData } from 'src/services/metrics';
 import { makeAuthenticatedRequest } from 'src/lib/token-utils';
-import { formatChartData, fetchMetricsData, formatDataGridData } from 'src/services/metrics';
 
 import { useSettingsContext } from 'src/components/settings';
 import { MetricsDropdown } from 'src/components/metrics-dropdown';
@@ -57,47 +57,21 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
   // Use user context
   const { users, loadUsers } = useUserContext();
 
-  // Helper function to format chart and grid data for all types
-  const formatDataForAllTypes = useCallback((data, startDateParam, endDateParam) => {
-    const formattedChartByType = {};
-    const formattedGridByType = {};
-    
-    TAB_OPTIONS.forEach(({ value: type }) => {
-      formattedChartByType[type] = formatChartData({
-        data,
-        startDate: startDateParam,
-        endDate: endDateParam,
-        type
-      });
-      
-      formattedGridByType[type] = formatDataGridData({
-        data,
-        type
-      });
-    });
-
-    return { formattedChartByType, formattedGridByType };
-  }, []);
-
   // Helper function to fetch and process metrics data
   const fetchAndProcessMetrics = useCallback(async (seasonName, startDateParam, endDateParam) => {
-    const chartData = await makeAuthenticatedRequest(async () => fetchMetricsData({
+    const response = await makeAuthenticatedRequest(async () => fetchMetricsData({
       seasonName,
       startDate: startDateParam,
       endDate: endDateParam,
     }));
 
-    setSelectedMetrics(chartData);
+    // Set the full response including formatted data
+    setSelectedMetrics(response);
 
-    const { formattedChartByType, formattedGridByType } = formatDataForAllTypes(
-      chartData.data,
-      startDateParam,
-      endDateParam
-    );
-
-    setFormattedChartDataByType(formattedChartByType);
-    setFormattedGridDataByType(formattedGridByType);
-  }, [formatDataForAllTypes, setSelectedMetrics]);
+    // Use the pre-formatted data from the API response
+    setFormattedChartDataByType(response.formattedChartData || {});
+    setFormattedGridDataByType(response.formattedGridData || {});
+  }, [setSelectedMetrics]);
 
   // Load users on component mount
   useEffect(() => {
@@ -148,20 +122,6 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
     hasProcessedInitialParams.current = true;
   }, [searchParams]); // Only depend on searchParams
 
-  // Format data when selectedMetrics changes (but not from query params)
-  useEffect(() => {
-    if (selectedMetrics && startDate && endDate && hasProcessedInitialParams.current) {
-      const { formattedChartByType, formattedGridByType } = formatDataForAllTypes(
-        selectedMetrics.data,
-        startDate,
-        endDate
-      );
-      
-      setFormattedChartDataByType(formattedChartByType);
-      setFormattedGridDataByType(formattedGridByType);
-    }
-  }, [selectedMetrics, startDate, endDate, formatDataForAllTypes]);
-
   const handleApply = async () => {
     try {
       setError(null);
@@ -199,6 +159,7 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
     formattedGridDataByType[currentType] || [],
     [formattedGridDataByType, currentType]
   );
+  console.log(selectedMetrics);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>
@@ -282,18 +243,25 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
                 minHeight: '45vh',
               }}
             >
-              <Box sx={{ flex: 1 }}>
-                <MetricsBarChart {...currentFormattedChartData} />
-              </Box>
+              {
+                currentFormattedChartData && (
+                  <Box sx={{ flex: 1 }}>
+                    <MetricsBarChart {...currentFormattedChartData} />
+                  </Box>
+                )
+              }
 
-              <Box sx={{ flex: 1, minHeight: '45vh' }}>
-                <MetricsDataGrid 
-                  selectedMetrics={selectedMetrics}
-                  type={currentType}
-                  users={users}
-                  gridData={currentFormattedGridData}
-                />
-              </Box>
+              {
+                currentFormattedGridData && (
+                  <Box sx={{ flex: 1, minHeight: '45vh' }}>
+                    <MetricsDataGrid 
+                      type={currentType}
+                      users={users}
+                      gridData={currentFormattedGridData}
+                    />
+                  </Box>
+                )
+              }
             </Box>
           </>
         )}

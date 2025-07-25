@@ -69,6 +69,11 @@ export function fShortenNumber(inputValue, options) {
   const number = processInput(inputValue);
   if (number === null) return '';
 
+  // Custom Korean formatting
+  if (locale.code?.startsWith('ko')) {
+    return formatKoreanNumber(number, options);
+  }
+
   const fm = new Intl.NumberFormat(locale.code, {
     notation: 'compact',
     maximumFractionDigits: 2,
@@ -76,6 +81,46 @@ export function fShortenNumber(inputValue, options) {
   }).format(number);
 
   return fm.replace(/[A-Z]/g, (match) => match.toLowerCase());
+}
+
+// Custom Korean number formatting function
+function formatKoreanNumber(number, options = {}) {
+  const absNumber = Math.abs(number);
+  const isNegative = number < 0;
+  
+  let result = '';
+  let unit = '';
+  let displayNumber = absNumber;
+
+  if (absNumber >= 1000000000000) { // 1조 (1 trillion)
+    displayNumber = absNumber / 1000000000000;
+    unit = '조';
+  } else if (absNumber >= 100000000) { // 1억 (100 million)
+    displayNumber = absNumber / 100000000;
+    unit = '억';
+  } else if (absNumber >= 10000) { // 1만 (10 thousand)
+    // Convert to 억 if it would be cleaner (>= 5000만 becomes >= 0.5억)
+    if (absNumber >= 10000000) { // 50 million or more
+      displayNumber = absNumber / 100000000;
+      unit = '억';
+    } else {
+      displayNumber = absNumber / 10000;
+      unit = '만';
+    }
+  } else if (absNumber >= 1000) { // 1천 (1 thousand)
+    displayNumber = absNumber / 1000;
+    unit = '천';
+  } else {
+    return number.toString();
+  }
+
+  // Format the display number
+  const maxFractionDigits = options.maximumFractionDigits || 2;
+  const formatted = parseFloat(displayNumber.toFixed(maxFractionDigits));
+  
+  result = `${formatted}${unit}`;
+  
+  return isNegative ? `-${result}` : result;
 }
 
 // ----------------------------------------------------------------------

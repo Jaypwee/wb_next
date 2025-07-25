@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
-
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Button from '@mui/material/Button';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
 import { useTranslate } from 'src/locales';
@@ -14,11 +15,52 @@ import { formatTop300ForPieChart } from 'src/services/kvk';
 import { ChartPie } from 'src/sections/chart-view/components/chart-pie';
 import { MetricsBarChart } from 'src/sections/metrics/metrics-bar-chart';
 
+
+const PieChartCard = ({ title, chart, colors, subtitle, showLegend = true }) => (
+  <Card sx={{ height: '100%' }}>
+    <CardHeader 
+      title={title}
+      subheader={subtitle}
+    />
+    <Box sx={{ p: 2 }}>
+      <ChartPie 
+        chart={{
+          categories: chart.categories,
+          series: chart.series,
+          colors,
+        }}
+        showLegend={showLegend}
+      />
+    </Box>
+  </Card>
+);
+
 // ----------------------------------------------------------------------
 
 export function MultiDateKvkView({ data, startDate, endDate }) {
   const theme = useTheme();
   const { t } = useTranslate();
+  const [activeTopCount, setActiveTopCount] = useState(300);
+
+  const alliesTop300Charts = useMemo(() => {
+    if (!data?.data?.alliesTop300) return { merits: null, manaSpent: null, unitsDead: null };
+    
+    return {
+      merits: formatTop300ForPieChart(data.data.alliesTop300.merits, activeTopCount),
+      manaSpent: formatTop300ForPieChart(data.data.alliesTop300.manaSpent, activeTopCount),
+      unitsDead: formatTop300ForPieChart(data.data.alliesTop300.unitsDead, activeTopCount),
+    };
+  }, [data?.data?.alliesTop300, activeTopCount]);
+
+  const enemiesTop300Charts = useMemo(() => {
+    if (!data?.data?.enemiesTop300) return { merits: null, manaSpent: null, unitsDead: null };
+    console.log(data.data.enemiesTop300.merits)
+    return {
+      merits: formatTop300ForPieChart(data.data.enemiesTop300.merits, activeTopCount),
+      manaSpent: formatTop300ForPieChart(data.data.enemiesTop300.manaSpent, activeTopCount),
+      unitsDead: formatTop300ForPieChart(data.data.enemiesTop300.unitsDead, activeTopCount),
+    };
+  }, [data?.data?.enemiesTop300, activeTopCount]);
 
   if (!data || !data.data) {
     return (
@@ -30,24 +72,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
     );
   }
 
-  const { 
-    alliesTop300, 
-    enemiesTop300, 
-    chartData 
-  } = data.data;
-
-  // Format top300 data for pie charts
-  const alliesTop300Charts = useMemo(() => ({
-    merits: formatTop300ForPieChart(alliesTop300.merits),
-    manaSpent: formatTop300ForPieChart(alliesTop300.manaSpent),
-    unitsDead: formatTop300ForPieChart(alliesTop300.unitsDead),
-  }), [Object.keys(alliesTop300).length, startDate, endDate]);
-
-  const enemiesTop300Charts = useMemo(() => ({
-    merits: formatTop300ForPieChart(enemiesTop300.merits),
-    manaSpent: formatTop300ForPieChart(enemiesTop300.manaSpent),
-    unitsDead: formatTop300ForPieChart(enemiesTop300.unitsDead),
-  }), [Object.keys(enemiesTop300).length, startDate, endDate]);
+  const { chartData } = data.data;
 
   // Chart colors for allies and enemies
   const alliesColors = [
@@ -66,34 +91,71 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
     hexAlpha(theme.palette.grey[800], 0.8),
   ];
 
-  const PieChartCard = ({ title, chart, colors, subtitle }) => (
-    <Card sx={{ height: '100%' }}>
-      <CardHeader 
-        title={title}
-        subheader={subtitle}
-      />
-      <Box sx={{ p: 2 }}>
-        <ChartPie 
-          chart={{
-            categories: chart.categories,
-            series: chart.series,
-            colors,
-          }}
-          showLegend
-        />
-      </Box>
-    </Card>
-  );
 
   return (
     <Box 
       sx={{ 
-        p: 3,
+        py: 3,
+        px: 0,
         display: 'flex',
         flexDirection: 'column',
         gap: 3,
       }}
     >
+
+        {/* Row 0: Total Merits */}
+        <Box 
+          sx={{ 
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 3,
+          }}
+        >
+          <Box sx={{  flex: 1 }}>
+            <PieChartCard
+              title={t('kvk.total.merits')}
+              chart={chartData.pieCharts.merits}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <PieChartCard
+              title={t('kvk.total.manaSpent')}
+              chart={chartData.pieCharts.manaSpent}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <PieChartCard
+              title={t('kvk.total.unitsDead')}
+              chart={chartData.pieCharts.unitsDead}
+            />
+          </Box>
+        </Box>
+
+        {/* Top Count Selection Buttons */}
+        <Box 
+          sx={{ 
+            display: 'flex',
+            justifyContent: 'center',
+            margin: { xs: '16px 8px', md: '24px 16px' },
+          }}
+        >
+          <ButtonGroup variant="outlined" size="medium">
+            {[100, 200, 300].map((count) => (
+              <Button
+                key={count}
+                variant={activeTopCount === count ? 'contained' : 'outlined'}
+                onClick={() => setActiveTopCount(count)}
+                sx={{
+                  minWidth: { xs: '60px', md: '80px' },
+                  fontSize: { xs: '0.875rem', md: '1rem' },
+                }}
+              >
+                {count}
+              </Button>
+            ))}
+          </ButtonGroup>
+        </Box>
+
               {/* Row 1: Merits */}
         <Box 
           sx={{ 
@@ -102,9 +164,9 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
             gap: 3,
           }}
         >
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{  flex: 1 }}>
             <PieChartCard
-              title={t('kvk.top300.allies.merits')}
+              title={t('kvk.top300.allies.merits', { count: activeTopCount })}
               subtitle={t('kvk.top300.subtitle.merits')}
               chart={alliesTop300Charts.merits}
               colors={alliesColors}
@@ -112,7 +174,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
           </Box>
           <Box sx={{ flex: 1 }}>
             <PieChartCard
-              title={t('kvk.top300.enemies.merits')}
+              title={t('kvk.top300.enemies.merits', { count: activeTopCount })}
               subtitle={t('kvk.top300.subtitle.merits')}
               chart={enemiesTop300Charts.merits}
               colors={enemiesColors}
@@ -130,7 +192,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
         >
           <Box sx={{ flex: 1 }}>
             <PieChartCard
-              title={t('kvk.top300.allies.manaSpent')}
+              title={t('kvk.top300.allies.manaSpent', { count: activeTopCount })}
               subtitle={t('kvk.top300.subtitle.manaSpent')}
               chart={alliesTop300Charts.manaSpent}
               colors={alliesColors}
@@ -138,7 +200,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
           </Box>
           <Box sx={{ flex: 1 }}>
             <PieChartCard
-              title={t('kvk.top300.enemies.manaSpent')}
+              title={t('kvk.top300.enemies.manaSpent', { count: activeTopCount })}
               subtitle={t('kvk.top300.subtitle.manaSpent')}
               chart={enemiesTop300Charts.manaSpent}
               colors={enemiesColors}
@@ -156,7 +218,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
         >
           <Box sx={{ flex: 1 }}>
             <PieChartCard
-              title={t('kvk.top300.allies.unitsDead')}
+              title={t('kvk.top300.allies.unitsDead', { count: activeTopCount })}
               subtitle={t('kvk.top300.subtitle.unitsDead')}
               chart={alliesTop300Charts.unitsDead}
               colors={alliesColors}
@@ -164,7 +226,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
           </Box>
           <Box sx={{ flex: 1 }}>
             <PieChartCard
-              title={t('kvk.top300.enemies.unitsDead')}
+              title={t('kvk.top300.enemies.unitsDead', { count: activeTopCount })}
               subtitle={t('kvk.top300.subtitle.unitsDead')}
               chart={enemiesTop300Charts.unitsDead}
               colors={enemiesColors}
@@ -189,7 +251,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
                 data: chartData.barCharts.powerLoss.series,
               }]}
               categories={chartData.barCharts.powerLoss.categories}
-              yAxisWidth={150}
+              yAxisWidth={30}
             />
           </Box>
           <Box sx={{ flex: 1 }}>
@@ -201,7 +263,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
                 data: chartData.barCharts.meritAp.series,
               }]}
               categories={chartData.barCharts.meritAp.categories}
-              yAxisWidth={120}
+              yAxisWidth={30}
             />
           </Box>
         </Box>
@@ -209,7 +271,7 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
   );
 }
 
-MultipleDateKvkView.propTypes = {
+MultiDateKvkView.propTypes = {
   data: PropTypes.shape({
     data: PropTypes.shape({
       alliesTop300: PropTypes.shape({

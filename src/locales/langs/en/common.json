@@ -194,6 +194,7 @@
     "dataGrid": {
       "rank": "Rank",
       "name": "Name", 
+      "merits": "Merits",
       "highestPower": "Highest Power",
       "currentPower": "Current Power",
       "leaderboardTitle": "Leaderboard",
@@ -227,7 +228,12 @@
       "selectStartDate": "Select start date",
       "selectEndDate": "Select end date",
       "loading": "Loading...",
-      "apply": "Apply"
+      "apply": "Apply",
+      "label": {
+        "preseason": "Preseason",
+        "start": "Season Start",
+        "final": "Season End"
+      }
     }
   },
   
@@ -249,7 +255,9 @@
         "Bastion": "Bastion"
       },
       "kvk":{
-        "title": "KvK"
+        "title": "KvK",
+        "overview": "Overview",
+        "detailed": "Detailed Records"
       },
       "misc":{
         "title": "Misc",
@@ -270,6 +278,18 @@
   
   "kvk": {
     "noData": "No chart data available",
+
+    "overview": {
+      "title": "KvK Overview - Season Progress",
+      "charts": {
+        "merits": "Merits",
+        "meritsSubheader": "Merits gained by each server over time",
+        "unitsDead": "Units Dead", 
+        "unitsDeadSubheader": "Units lost by each server over time",
+        "manaSpent": "Mana Spent",
+        "manaSpentSubheader": "Mana consumed by each server over time"
+      }
+    },
     
     "sections": {
       "serverTotals": "Server Totals",
@@ -277,13 +297,13 @@
     },
     
     "charts": {
-      "meritsByServer": "Merits by Server",
-      "unitsKilledByServer": "Units Killed by Server", 
-      "unitsDeadByServer": "Units Dead by Server",
-      "manaSpentByServer": "Mana Spent by Server",
-      "powerLossByServer": "Power Loss by Server",
+      "meritsByServer": "Merits by Kingdom",
+      "unitsKilledByServer": "Units Killed by Kingdom", 
+      "unitsDeadByServer": "Units Dead by Kingdom",
+      "manaSpentByServer": "Mana Spent by Kingdom",
+      "powerLossByServer": "Power Loss by Kingdom",
       "powerLossSubheader": "Total power lost per server (sorted)",
-      "meritApByServer": "Merit AP by Server",
+      "meritApByServer": "Merit AP by Kingdom",
       "meritApSubheader": "Merit efficiency per power point (%)"
     },
     
@@ -295,22 +315,28 @@
       "above250M": "Above 250M Power",
       "generic": "{{power}}M Power"
     },
-    
+
+    "total": {
+      "merits": "Total Merits per Kingdom",
+      "manaSpent": "Total Mana Spent per Kingdom",
+      "unitsDead": "Total Units Dead per Kingdom"
+    },
+
     "top300": {
       "allies": {
-        "merits": "Allies - Top 300 Merits by Server",
-        "manaSpent": "Allies - Top 300 Mana Spent by Server",
-        "unitsDead": "Allies - Top 300 Units Dead by Server"
+        "merits": "Allies - Top 300 Merits by Kingdom",
+        "manaSpent": "Allies - Top 300 Mana Spent by Kingdom",
+        "unitsDead": "Allies - Top 300 Units Dead by Kingdom"
       },
       "enemies": {
-        "merits": "Enemies - Top 300 Merits by Server", 
-        "manaSpent": "Enemies - Top 300 Mana Spent by Server",
-        "unitsDead": "Enemies - Top 300 Units Dead by Server"
+        "merits": "Enemies - Top 300 Merits by Kingdom", 
+        "manaSpent": "Enemies - Top 300 Mana Spent by Kingdom",
+        "unitsDead": "Enemies - Top 300 Units Dead by Kingdom"
       },
       "subtitle": {
-        "merits": "Server distribution of top merit earners",
-        "manaSpent": "Server distribution of top mana spenders",
-        "unitsDead": "Server distribution of top unit killers"
+        "merits": "Kingdom distribution of top merit earners",
+        "manaSpent": "Kingdom distribution of top mana spenders",
+        "unitsDead": "Kingdom distribution of top unit killers"
       }
     },
     

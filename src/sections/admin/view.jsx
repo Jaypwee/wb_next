@@ -310,6 +310,10 @@ export function AdminView() {
     setSelectedUsers(newSelection);
   };
 
+  const handleUsersUpdated = () => {
+    loadUsers();
+  };
+
   // Handle season creation success
   const handleSeasonCreated = async () => {
     // For now, we'll just show a message about refreshing
@@ -420,6 +424,7 @@ export function AdminView() {
               error={usersError}
               selectedUsers={selectedUsers}
               onSelectionChange={handleSelectionChange}
+              onUsersUpdated={handleUsersUpdated}
             />
           </Box>
 

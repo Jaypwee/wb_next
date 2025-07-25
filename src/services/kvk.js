@@ -86,15 +86,21 @@ export function formatAreaChartData({ data, type }) {
 /**
  * Formats top300 data for pie chart by counting servers
  * @param {Array} top300Data - Array of objects with userId and server
+ * @param {number} count - Optional count to limit the number of entries (default: all entries)
  * @returns {Object} Formatted pie chart data with categories and series
  */
-export function formatTop300ForPieChart(top300Data) {
+export function formatTop300ForPieChart(top300Data, count) {
   if (!top300Data || !Array.isArray(top300Data)) {
     return { categories: [], series: [] };
   }
 
+  console.log(top300Data);
+
+  // Slice the data to the specified count if provided
+  const slicedData = count ? top300Data.slice(0, count) : top300Data;
+
   // Count occurrences of each server
-  const serverCounts = top300Data.reduce((acc, item) => {
+  const serverCounts = slicedData.reduce((acc, item) => {
     const server = item.server || 'Unknown';
     acc[server] = (acc[server] || 0) + 1;
     return acc;
@@ -108,4 +114,26 @@ export function formatTop300ForPieChart(top300Data) {
     categories,
     series,
   };
+}
+
+/**
+ * Fetches KvK overview data from the API
+ * @param {Object} params - The parameters for the API call
+ * @param {string} params.seasonName - The season name
+ * @returns {Promise<Object>} The KvK overview data with chart data for merits, unitsDead, and manaSpent
+ */
+export async function fetchKvkOverviewData({ seasonName }) {
+  // Build query parameters
+  const params = new URLSearchParams({
+    season_name: seasonName,
+  });
+
+  try {
+    // Fetch data from API
+    const response = await axios.get(`/api/metrics/kvk/overview?${params.toString()}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch KvK overview data:', error);
+    throw error;
+  }
 }

@@ -34,10 +34,10 @@ const REQUIRED_COLUMNS_FORMAT_2 = {
 const REQUIRED_COLUMNS_FORMAT_3 = {
   0: 'lord_id',
   1: 'name',
-  5: 'power',
+  6: 'power',
   12: 'highest_power',
   11: 'merits',
-  6: 'units_killed',
+  7: 'units_killed',
   10: 'home_server',
   17: 'units_dead',
   18: 'units_healed',
@@ -74,6 +74,7 @@ function extractRowData(row, format, title) {
   if (format === 'format1') {
     return {
       name: row[1],
+      homeServer: Number(row[2]),
       currentPower: Number(row[5]),
       highestPower: Number(row[6]),
       merits: title === 'start' ? 0 : Number(row[7]),
@@ -101,10 +102,10 @@ function extractRowData(row, format, title) {
   } else if (format === 'format3') {
     return {
       name: row[1],
-      currentPower: Number(row[5]),
+      currentPower: Number(row[6]),
       highestPower: Number(row[12]),
       merits: title === 'start' ? 0 : Number(row[11]),
-      unitsKilled: Number(row[6]),
+      unitsKilled: Number(row[7]),
       unitsDead: Number(row[17]),
       unitsHealed: Number(row[18]),
       t5KillCount: Number(row[36]),
@@ -215,10 +216,10 @@ export async function processFileUpload(file, adminDb, title, validServers) {
 
       if (lordId) {
         // Extract row data for each users
-        const rowData = extractRowData(row, formatDetection.format);
+        const rowData = extractRowData(row, formatDetection.format, title);
         if (rowData && validServers.includes(rowData.homeServer)) {
           // Initialize server entry if it doesn't exist
-          if (title !== 'preseason' && rowData.highestPower > 15000000) {
+          if (title !== 'preseason' && rowData.highestPower > 50000000) {
             if (!totalData[rowData.homeServer]) {
               totalData[rowData.homeServer] = { merits: 0, manaSpent: 0, unitsDead: 0 };
             }
@@ -263,7 +264,7 @@ export async function processFileUpload(file, adminDb, title, validServers) {
                 userUpdates.set(lordId, { ref: userDoc.ref, updates });
               }
             }
-          } else if (rowData.homeServer !== HOME_SERVER && rowData.highestPower > 15000000) {
+          } else if (rowData.homeServer !== HOME_SERVER && rowData.highestPower > 50000000) {
             parsedData[lordId] = rowData;
           }
         }

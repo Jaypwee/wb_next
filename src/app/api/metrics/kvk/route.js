@@ -199,7 +199,6 @@ export const GET = withAuth(
     },
     // Skip cache for requests with invalid parameters
     skipCache: (request) => {
-      return true
       const { searchParams } = new URL(request.url);
       const seasonName = searchParams.get('season_name');
       const startDate = searchParams.get('start_date');
