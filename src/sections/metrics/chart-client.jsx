@@ -4,8 +4,9 @@ import { useMemo } from 'react';
 
 import { useTheme, alpha as hexAlpha } from '@mui/material/styles';
 
-import { Chart, useChart } from 'src/components/chart';
 import { fShortenNumber } from 'src/utils/format-number';
+
+import { Chart, useChart } from 'src/components/chart';
 
 export function ChartClient({ type, series, categories, yAxisWidth = 120, sx }) {
   const theme = useTheme();
