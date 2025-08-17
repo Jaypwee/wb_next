@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Menu from '@mui/material/Menu';
 import Button from '@mui/material/Button';
@@ -14,6 +14,18 @@ export function CustomDropdown({
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedValue, setSelectedValue] = useState(initialValue);
+
+  // Keep internal state in sync when the provided initialValue changes (e.g., reset)
+  useEffect(() => {
+    setSelectedValue(initialValue);
+  }, [initialValue]);
+
+  // If options change and current selection is no longer valid, fallback to initialValue
+  useEffect(() => {
+    if (options && options.length > 0 && !options.includes(selectedValue)) {
+      setSelectedValue(initialValue);
+    }
+  }, [options, initialValue, selectedValue]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -183,7 +183,7 @@ function TroopIcon({ troopType, t }) {
   );
 }
 
-export function MetricsDataGrid({ users, type = 'MERITS', gridData = [] }) {
+function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
   const { t } = useTranslate();
   const [filterButtonEl, setFilterButtonEl] = useState(null);
 
@@ -405,4 +405,5 @@ export function MetricsDataGrid({ users, type = 'MERITS', gridData = [] }) {
       />
     </Card>
   );
-} 
+}
+export const MetricsDataGrid = memo(MetricsDataGridComponent); 

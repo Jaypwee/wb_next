@@ -5,6 +5,7 @@ export async function GET(request) {
     // Get the season_name from query parameters
     const { searchParams } = new URL(request.url);
     const seasonName = searchParams.get('season_name');
+    const metricType = searchParams.get('metric_type');
 
     // Validate required parameter
     if (!seasonName) {
@@ -26,7 +27,24 @@ export async function GET(request) {
     }
 
     // Extract subcollection names (dates)
-    const allDates = subcollections.map(collection => collection.id);
+    let allDates = [];
+    if (metricType && metricType.toLowerCase() === 'kvk') {
+      const filtered = await Promise.all(
+        subcollections.map(async (collection) => {
+          try {
+            const metadataSnap = await collection.doc('metadata').get();
+            const typeValue = metadataSnap.exists ? (metadataSnap.get('type') ?? (metadataSnap.data()?.type)) : null;
+            return typeof typeValue === 'string' && typeValue.toLowerCase() === 'kvk' ? collection.id : null;
+          } catch (err) {
+            console.error('Failed to read metadata for', collection.id, err);
+            return null;
+          }
+        })
+      );
+      allDates = filtered.filter(Boolean);
+    } else {
+      allDates = subcollections.map((collection) => collection.id);
+    }
 
     // Separate special dates from regular dates
     const preSeasonDates = allDates.filter(date => date.toLowerCase().includes('preseason')); 

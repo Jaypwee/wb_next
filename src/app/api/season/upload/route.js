@@ -86,6 +86,12 @@ async function postHandler(request) {
     totalDataBatch.set(totalDocRef, allTotalData);
     batches.push(totalDataBatch);
 
+    const metaDataDocRef = titleCollectionRef.doc('metadata');
+    const metaDataBatch = adminDb.batch();
+    metaDataBatch.set(metaDataDocRef, {
+      type
+    });
+    batches.push(metaDataBatch);
     
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = adminDb.batch();

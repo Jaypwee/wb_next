@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 import Box from '@mui/material/Box';
@@ -8,7 +9,7 @@ import { ChartClient } from './chart-client';
 
 // ----------------------------------------------------------------------
 
-export function MetricsBarChart({ title, subheader, series, categories, yAxisWidth }) {
+function MetricsBarChartComponent({ title, subheader, series, categories, yAxisWidth }) {
   return (
     <Card sx={{ height: '100%' }}>
       <CardHeader 
@@ -43,7 +44,7 @@ export function MetricsBarChart({ title, subheader, series, categories, yAxisWid
   );
 }
 
-MetricsBarChart.propTypes = {
+MetricsBarChartComponent.propTypes = {
   title: PropTypes.string,
   subheader: PropTypes.string,
   series: PropTypes.arrayOf(
@@ -54,3 +55,5 @@ MetricsBarChart.propTypes = {
   ),
   categories: PropTypes.arrayOf(PropTypes.string),
 };
+
+export const MetricsBarChart = memo(MetricsBarChartComponent);

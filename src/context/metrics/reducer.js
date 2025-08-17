@@ -30,7 +30,6 @@ export function reducer(state, action) {
       return {
         ...state,
         startDate: action.payload,
-        endDate: '', // Reset end date when start date changes
       };
 
     case ActionTypes.SET_END_DATE:
@@ -68,7 +67,10 @@ export function reducer(state, action) {
         ...state,
         seasonDatesCache: {
           ...state.seasonDatesCache,
-          [action.payload.seasonName]: action.payload.dates,
+          [action.payload.metricType]: {
+            ...(state.seasonDatesCache[action.payload.metricType] || {}),
+            [action.payload.seasonName]: action.payload.dates,
+          },
         },
       };
 

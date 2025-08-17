@@ -18,9 +18,9 @@ export async function fetchSeasonInfo() {
  * @param {string} seasonName - The name of the season to fetch dates for
  * @returns {Promise<string[]>} Array of formatted strings like "Week x (YYYY-MM-DD)"
  */
-export async function fetchSeasonDates(seasonName) {
+export async function fetchSeasonDates(seasonName, metricType) {
   try {
-    const response = await axios.get(`/api/season/dates?season_name=${seasonName}`);
+    const response = await axios.get(`/api/season/dates?season_name=${seasonName}&metric_type=${metricType}`);
     return response.data;
   } catch (error) {
     throw new Error('Failed to fetch season dates');

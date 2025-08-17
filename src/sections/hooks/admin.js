@@ -113,6 +113,7 @@ export const useReportUpload = () => {
       seasonName,
       title,
       date,
+      type
     });
   };
 

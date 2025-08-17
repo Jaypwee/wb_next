@@ -18,6 +18,7 @@ export function MetricsDropdown({
   selectedSeason,
   startDate,
   endDate,
+  metricType,
   onSeasonChange,
   onStartDateChange,
   onEndDateChange,
@@ -56,28 +57,29 @@ export function MetricsDropdown({
     }
   }, [seasonInfo, selectedSeason, onSeasonChange, setSeasonInfo]);
 
-  // Fetch dates when season changes, but only if not already cached
+  // Fetch dates when season or metricType changes, but only if not already cached
   useEffect(() => {
     if (!selectedSeason) return;
 
-    // Check if dates are already cached for this season
-    if (seasonDatesCache[selectedSeason]) {
+    // Check if dates are already cached for this metric and season
+    const cachedForMetric = seasonDatesCache[metricType] || {};
+    if (cachedForMetric[selectedSeason]) {
       return; // Already cached, no need to fetch
     }
 
     startDatesTransition(async () => {
       try {
-        const dates = await makeAuthenticatedRequest(() => fetchSeasonDates(selectedSeason));
-        setSeasonDatesCache(selectedSeason, dates || []);
+        const dates = await makeAuthenticatedRequest(() => fetchSeasonDates(selectedSeason, metricType));
+        setSeasonDatesCache(metricType, selectedSeason, dates || []);
       } catch (error) {
         console.error('Error loading season dates:', error);
-        setSeasonDatesCache(selectedSeason, []);
+        setSeasonDatesCache(metricType, selectedSeason, []);
       }
     });
-  }, [selectedSeason, seasonDatesCache, setSeasonDatesCache]);
+  }, [selectedSeason, metricType, seasonDatesCache, setSeasonDatesCache]);
 
   // Get current season dates from cache
-  const currentSeasonDates = seasonDatesCache[selectedSeason] || [];
+  const currentSeasonDates = (seasonDatesCache[metricType]?.[selectedSeason]) || [];
 
   // Get available end dates based on selected start date
   const getAvailableEndDates = () => {

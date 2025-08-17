@@ -128,6 +128,7 @@ export function KvkView() {
     selectedSeason,
     startDate,
     endDate,
+    metricType: 'kvk',
     onSeasonChange: setSelectedSeason,
     onStartDateChange: setStartDate,
     onEndDateChange: setEndDate,

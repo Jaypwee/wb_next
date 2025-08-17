@@ -229,7 +229,7 @@ export async function processFileUpload(file, adminDb, title, validServers) {
             totalData[rowData.homeServer].unitsDead += rowData.unitsDead || 0;
           }
 
-          if (rowData.homeServer === HOME_SERVER && validUserIds.has(lordId)) {
+          if (rowData.homeServer === HOME_SERVER && (validUserIds.has(lordId) || rowData.highestPower > 50000000)) {
             parsedData[lordId] = rowData;
 
             const userDoc = userDocsMap.get(lordId);

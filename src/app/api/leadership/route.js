@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
-import { adminDB } from 'src/lib/firebase-admin';
+import { adminDb } from 'src/lib/firebase-admin';
 import { withAuthAndRole } from 'src/lib/auth-middleware';
 
 async function getLeadershipHandler(request) {
   try {
     // Get the leadership field from the 'home' collection's 'info' document
-    const docRef = adminDB.collection('home').doc('info');
+    const docRef = adminDb.collection('home').doc('info');
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -64,7 +64,7 @@ async function getLeadershipHandler(request) {
       if (uidsToFetch.length > 0) {
         try {
           // Fetch all users at once using querySnapshot
-          const usersSnapshot = await adminDB.collection('users')
+          const usersSnapshot = await adminDb.collection('users')
             .where('__name__', 'in', uidsToFetch)
             .get();
 
@@ -116,7 +116,7 @@ async function updateLeadershipHandler(request) {
     }
 
     // Update the leadership field in the 'home' collection's 'info' document
-    const docRef = adminDB.collection('home').doc('info');
+    const docRef = adminDb.collection('home').doc('info');
     await docRef.update({
       leadership
     });
