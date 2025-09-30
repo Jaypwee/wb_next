@@ -50,7 +50,7 @@ export function KvkOverview() {
     return null;
   }
 
-  const { merits, unitsDead, manaSpent } = overviewData;
+  const { merits } = overviewData;
 
   return (
     <Box sx={{ py: 3, px: 0 }}>

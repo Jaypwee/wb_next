@@ -20,7 +20,7 @@ export function Chart({ type, series, options, slotProps, className, sx, ...othe
 
   // Calculate height based on data length
   const dataLength = series?.[0]?.data?.length || 0;
-  const chartHeight = dataLength ? `${dataLength * 40}px` : '100%';
+  const chartHeight = type !== 'area' && dataLength ? `${dataLength * 40}px` : '100%';
 
   return (
     <ChartRoot

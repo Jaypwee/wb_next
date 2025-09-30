@@ -5,52 +5,113 @@ import { useRef, useMemo, useState, useEffect, useCallback, useTransition } from
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 
 import { useRouter, usePathname, useSearchParams } from 'src/routes/hooks';
 
+import axios from 'src/lib/axios';
 import { useTranslate } from 'src/locales';
 import { useUserContext } from 'src/context/user';
 import { useMetricsContext } from 'src/context/metrics';
-import { fetchMetricsData } from 'src/services/metrics';
 import { makeAuthenticatedRequest } from 'src/lib/token-utils';
 
 import { useSettingsContext } from 'src/components/settings';
 import { MetricsDropdown } from 'src/components/metrics-dropdown';
 
-import { MetricsBarChart } from './metrics-bar-chart';
-import { MetricsDataGrid } from './metrics-data-grid';
+import { MetricsBarChart } from 'src/sections/metrics/metrics-bar-chart';
+import { MetricsDataGrid } from 'src/sections/metrics/metrics-data-grid';
+
 // ----------------------------------------------------------------------
 
 const TAB_OPTIONS = [
-  { value: 'MERITS', label: 'metrics.series.merits' },
-  { value: 'UNITS_KILLED', label: 'metrics.series.unitsKilled' },
-  { value: 'UNITS_DEAD', label: 'metrics.series.unitsDead' },
-  { value: 'MANA_SPENT', label: 'metrics.series.manaSpent' },
-  // { value: 'T5_KILL_COUNT', label: 'metrics.series.t5KillCount' },
+  { value: 'MERITS', label: 'metrics.series.merits', key: 'merits' },
+  { value: 'UNITS_KILLED', label: 'metrics.series.unitsKilled', key: 'unitsKilled' },
+  { value: 'UNITS_DEAD', label: 'metrics.series.unitsDead', key: 'unitsDead' },
+  { value: 'MANA_SPENT', label: 'metrics.series.manaSpent', key: 'manaSpent' },
+  { value: 'T5_KILL_COUNT', label: 'metrics.series.t5KillCount', key: 't5KillCount' },
 ];
 
-export function MetricsView({ type: initialType = 'MERITS' }) {
+// Helper function to format data for charts and grids
+function formatKvkData(differences, selectedServers) {
+  const formattedByType = {};
+  
+  TAB_OPTIONS.forEach(({ value, key }) => {
+    // Filter users by selected servers
+    const filteredUsers = Object.entries(differences)
+      .filter(([_, userData]) => selectedServers.includes(userData.homeServer));
+    
+    // Sort by the metric value using the camelCase key
+    const sortedUsers = filteredUsers
+      .sort((a, b) => b[1][key] - a[1][key])
+      .slice(0, 20); // Top 20
+    
+    // Format for chart
+    const categories = sortedUsers.map(([_, userData]) => userData.name);
+    const data = sortedUsers.map(([_, userData]) => userData[key]);
+    
+    formattedByType[value] = {
+      chart: {
+        title: `Top 20 by ${key}`,
+        series: [{ name: key, data }],
+        categories,
+        yAxisWidth: 100,
+      },
+      grid: sortedUsers.map(([userId, userData], index) => ({
+        id: userId,
+        rank: index + 1,
+        name: userData.name,
+        value: userData[key],
+        highestPower: userData.highestPower,
+        currentPower: userData.currentPower,
+        homeServer: userData.homeServer,
+      })),
+    };
+  });
+  
+  return formattedByType;
+}
+
+// Fetch function for KVK season data
+async function fetchKvkSeasonData({ seasonName, startDate, endDate }) {
+  const params = new URLSearchParams({
+    season_name: seasonName,
+    start_date: startDate,
+  });
+  
+  if (endDate) {
+    params.append('end_date', endDate);
+  }
+  
+  try {
+    const response = await axios.get(`/api/metrics/kvk/season/detailed?${params.toString()}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.message || 'Failed to fetch KVK season data');
+  }
+}
+
+export function KvkDetailedView({ type: initialType = 'MERITS' }) {
   const settings = useSettingsContext();
   const { t } = useTranslate();
   const [isPending, startTransition] = useTransition();
-  const [formattedChartDataByType, setFormattedChartDataByType] = useState({});
-  const [formattedGridDataByType, setFormattedGridDataByType] = useState({});
+  const [formattedData, setFormattedData] = useState({});
   const [currentType, setCurrentType] = useState(initialType);
+  const [rawKvkData, setRawKvkData] = useState(null);
+  const [selectedServers, setSelectedServers] = useState([]);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const hasProcessedInitialParams = useRef(false);
+  
   const {
     selectedSeason,
     startDate,
     endDate,
-    selectedMetrics,
     setSelectedSeason,
     setStartDate,
     setEndDate,
-    setSelectedMetrics,
     setError,
   } = useMetricsContext();
 
@@ -59,19 +120,22 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
 
   // Helper function to fetch and process metrics data
   const fetchAndProcessMetrics = useCallback(async (seasonName, startDateParam, endDateParam) => {
-    const response = await makeAuthenticatedRequest(async () => fetchMetricsData({
+    const response = await makeAuthenticatedRequest(async () => fetchKvkSeasonData({
       seasonName,
       startDate: startDateParam,
       endDate: endDateParam,
     }));
 
-    // Set the full response including formatted data
-    setSelectedMetrics(response);
-
-    // Use the pre-formatted data from the API response
-    setFormattedChartDataByType(response.formattedChartData || {});
-    setFormattedGridDataByType(response.formattedGridData || {});
-  }, [setSelectedMetrics]);
+    // Store raw data
+    setRawKvkData(response.data);
+    
+    // Initialize all servers as selected
+    setSelectedServers(response.data.validServers);
+    
+    // Format data with all servers initially selected
+    const formatted = formatKvkData(response.data.differences, response.data.validServers);
+    setFormattedData(formatted);
+  }, []);
 
   // Load users on component mount
   useEffect(() => {
@@ -86,20 +150,15 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
-    let hasUpdatedContext = false;
-
     // Update context with query params if they exist
     if (seasonName) {
       setSelectedSeason(seasonName);
-      hasUpdatedContext = true;
     }
     if (startDateParam) {
       setStartDate(startDateParam);
-      hasUpdatedContext = true;
     }
     if (endDateParam) {
       setEndDate(endDateParam);
-      hasUpdatedContext = true;
     }
 
     // Auto-fetch metrics if all required params exist
@@ -112,7 +171,7 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
             await fetchAndProcessMetrics(seasonName, startDateParam, endDateParam);
           });
         } catch (error) {
-          console.error('Error fetching metrics from params:', error);
+          console.error('Error fetching KVK metrics from params:', error);
           setError(error.message);
         }
       };
@@ -120,7 +179,8 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
       fetchMetricsFromParams();
     }
     hasProcessedInitialParams.current = true;
-  }, [searchParams]); // Only depend on searchParams
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]); // Only depend on searchParams on initial load
 
   const handleApply = async () => {
     try {
@@ -140,7 +200,7 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
         router.push(`${pathname}?${params.toString()}`);
       });
     } catch (error) {
-      console.error('Error fetching metrics:', error);
+      console.error('Error fetching KVK metrics:', error);
       setError(error.message);
     }
   };
@@ -149,21 +209,39 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
     setCurrentType(newValue);
   }, []);
 
+  // Handle server filter toggle
+  const handleServerToggle = useCallback((server) => {
+    setSelectedServers((prev) => {
+      const newSelected = prev.includes(server)
+        ? prev.filter(s => s !== server)
+        : [...prev, server];
+      
+      // Re-format data with new server selection
+      if (rawKvkData) {
+        const formatted = formatKvkData(rawKvkData.differences, newSelected);
+        setFormattedData(formatted);
+      }
+      
+      return newSelected;
+    });
+  }, [rawKvkData]);
+  
   // Memoize current formatted data to prevent unnecessary re-renders
   const currentFormattedChartData = useMemo(() => 
-    formattedChartDataByType[currentType] || null,
-    [formattedChartDataByType, currentType]
+    formattedData[currentType]?.chart || null,
+    [formattedData, currentType]
   );
   
   const currentFormattedGridData = useMemo(() => 
-    formattedGridDataByType[currentType] || [],
-    [formattedGridDataByType, currentType]
+    formattedData[currentType]?.grid || [],
+    [formattedData, currentType]
   );
+
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Stack spacing={3}>
-        {!selectedMetrics ? (
+        {!rawKvkData ? (
           <Box
             sx={{
               display: 'flex',
@@ -213,6 +291,33 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
               isPending={isPending}
             />
 
+            {/* Server Filter Chips */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 2,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {rawKvkData.validServers.map((server) => (
+                <Chip
+                  key={server}
+                  label={server}
+                  onClick={() => handleServerToggle(server)}
+                  color={selectedServers.includes(server) ? 'primary' : 'default'}
+                  variant={selectedServers.includes(server) ? 'filled' : 'outlined'}
+                  sx={{ 
+                    cursor: 'pointer',
+                    fontWeight: selectedServers.includes(server) ? 'bold' : 'normal',
+                    width: '150px',
+                    height: '36px',
+                  }}
+                />
+              ))}
+            </Box>
+
             <Box
               sx={{
                 borderBottom: 1,
@@ -223,7 +328,7 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
               <Tabs
                 value={currentType}
                 onChange={handleTabChange}
-                aria-label="metrics type tabs"
+                aria-label="KVK metrics type tabs"
                 variant="scrollable"
                 scrollButtons="auto"
               >
@@ -270,4 +375,4 @@ export function MetricsView({ type: initialType = 'MERITS' }) {
       </Stack>
     </Container>
   );
-} 
+}

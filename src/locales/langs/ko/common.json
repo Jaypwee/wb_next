@@ -283,7 +283,7 @@
       "title": "KvK 개요 - 시즌 진행 현황",
       "charts": {
         "merits": "전공",
-        "meritsSubheader": "시간별 서버 전공 획득량",
+        "meritsSubheader": "날짜별 서버 전공 획득량",
         "unitsDead": "사망수",
         "unitsDeadSubheader": "시간별 서버 부대 사망수",
         "manaSpent": "마나 소모량",

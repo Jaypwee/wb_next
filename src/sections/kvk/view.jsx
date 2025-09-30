@@ -50,8 +50,10 @@ export function KvkView() {
       endDate: endDateParam,
     }));
 
+    console.log(kvkData);
+
     setSelectedKvkMetrics(kvkData);
-  }, [setSelectedKvkMetrics]);
+  }, [setSelectedKvkMetrics]); 
 
   // Initialize from query params and auto-fetch if all params exist (only once)
   useEffect(() => {

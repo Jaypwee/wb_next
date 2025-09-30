@@ -1,0 +1,1 @@
+export { KvkDetailedView } from './view';

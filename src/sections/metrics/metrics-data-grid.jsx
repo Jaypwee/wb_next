@@ -296,10 +296,14 @@ function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
       field: 'value', 
       headerName: metricName, 
       width: 150,
-      valueGetter: (params) => 
+      valueGetter: (params) => {
+        // If already a number, return it directly
+        if (typeof params === 'number') {
+          return params;
+        }
         // Parse the formatted string to get the numeric value for sorting
-         parseInt(params?.replace(/,/g, ''), 10) || 0
-      ,
+        return parseInt(params?.replace(/,/g, ''), 10) || 0;
+      },
       renderCell: (params) => (
         <Box sx={{ fontWeight: 'bold', color: 'success.main' }}>
           {params.value.toLocaleString()}
@@ -310,10 +314,14 @@ function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
       field: 'highestPower', 
       headerName: t('metrics.dataGrid.highestPower'), 
       width: 150,
-      valueGetter: (params) => 
+      valueGetter: (params) => {
+        // If already a number, return it directly
+        if (typeof params === 'number') {
+          return params;
+        }
         // Parse the formatted string to get the numeric value for sorting
-         parseInt(params?.replace(/,/g, ''), 10) || 0
-      ,
+        return parseInt(params?.replace(/,/g, ''), 10) || 0;
+      },
       renderCell: (params) => (
         <Box sx={{ color: 'text.secondary' }}>
           {params.value.toLocaleString()}
@@ -324,20 +332,28 @@ function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
       field: 'currentPower', 
       headerName: t('metrics.dataGrid.currentPower'), 
       width: 260,
-      valueGetter: (params) => 
+      valueGetter: (params) => {
+        // If already a number, return it directly
+        if (typeof params === 'number') {
+          return params;
+        }
         // Parse the formatted string to get the numeric value for sorting
-         parseInt(params?.replace(/,/g, ''), 10) || 0
-      ,
+        return parseInt(params?.replace(/,/g, ''), 10) || 0;
+      },
       renderCell: (params) => {
         // Calculate the difference between highest and current power
-        const highestPower = parseInt(params.row.highestPower?.toString().replace(/,/g, '') || '0', 10) || 0;
-        const currentPower = parseInt(params.value?.toString().replace(/,/g, '') || '0', 10) || 0;
+        const highestPower = typeof params.row.highestPower === 'number' 
+          ? params.row.highestPower 
+          : parseInt(params.row.highestPower?.toString().replace(/,/g, '') || '0', 10) || 0;
+        const currentPower = typeof params.value === 'number'
+          ? params.value
+          : parseInt(params.value?.toString().replace(/,/g, '') || '0', 10) || 0;
         const difference = currentPower - highestPower;
         
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ color: 'text.secondary' }}>
-              {params.value.toLocaleString()}
+              {currentPower.toLocaleString()}
             </Box>
             {difference !== 0 && (
               <Box 

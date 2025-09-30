@@ -6,8 +6,11 @@ import { withCache, generateCacheKey } from 'src/lib/cache';
 
 // Function to transform computed results into ApexCharts format
 function transformToChartData(computedResults) {
-  // Get all dates (categories) and sort them
-  const categories = Object.keys(computedResults).sort();
+  // Get all dates (categories) and sort them, with 'start' always first
+  const allCategories = Object.keys(computedResults);
+  const categories = allCategories.includes('start')
+    ? ['start', ...allCategories.filter(c => c !== 'start').sort()]
+    : allCategories.sort();
   
   // Get all unique server names across all dates
   const allServers = new Set();
@@ -127,6 +130,20 @@ async function getHandler(request) {
 
     // Initialize the computed results object
     const computedResults = {};
+    
+    // Compute results for the 'start' subcollection (baseline with zero differences)
+    const startResult = {};
+    for (const key in startTotalData) {
+      if (startTotalData[key]) {
+        startResult[key] = {
+          manaSpent: 0,
+          unitsDead: 0,
+          merits: 0
+        };
+      }
+    }
+    computedResults['start'] = startResult;
+    
     // Process each data subcollection
     for (const subcollectionName of dataSubcollections) {
       const totalRef = seasonDocRef.collection(subcollectionName).doc('total');

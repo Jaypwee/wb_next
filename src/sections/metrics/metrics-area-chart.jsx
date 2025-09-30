@@ -2,7 +2,6 @@
 
 import PropTypes from 'prop-types';
 
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 
@@ -10,7 +9,7 @@ import { Chart, useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-export function MetricsAreaChart({ title, subheader, series, categories }) {
+export function MetricsAreaChart({ title, subheader, series, categories, height = 400 }) {
   const chartOptions = useChart({
     xaxis: {
       categories,
@@ -56,20 +55,16 @@ export function MetricsAreaChart({ title, subheader, series, categories }) {
         subheader={subheader}
       />
 
-      <Box sx={{ 
-        height: '400px',
-        p: 3,
-      }}>
         <Chart
           type="area"
           series={series}
           options={chartOptions}
           sx={{ 
             width: '100%',
-            height: '100%',
+            height: 320,
           }}
         />
-      </Box>
+      {/* </Box> */}
     </Card>
   );
 }
@@ -84,4 +79,5 @@ MetricsAreaChart.propTypes = {
     })
   ),
   categories: PropTypes.arrayOf(PropTypes.string),
+  height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 }; 

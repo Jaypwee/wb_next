@@ -91,6 +91,8 @@ export function MultiDateKvkView({ data, startDate, endDate }) {
     hexAlpha(theme.palette.grey[800], 0.8),
   ];
 
+  console.log(chartData)
+
 
   return (
     <Box 
