@@ -26,7 +26,7 @@ import { EmptyContent } from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
 
-function CustomToolbar({ setFilterButtonEl }) {
+function CustomToolbar({ setFilterButtonEl, exportFields }) {
   return (
     <GridToolbarContainer>
       <GridToolbarQuickFilter />
@@ -39,6 +39,7 @@ function CustomToolbar({ setFilterButtonEl }) {
           delimiter: ',',
           utf8WithBom: true,
           includeHeaders: true, 
+          fields: exportFields,
         }}
         printOptions={{ disableToolbarButton: true }}
       />
@@ -184,8 +185,12 @@ function TroopIcon({ troopType, t }) {
 }
 
 function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
+  console.log(gridData, users);
   const { t } = useTranslate();
   const [filterButtonEl, setFilterButtonEl] = useState(null);
+  
+  // Column visibility state - hide id column from UI
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState({ id: false });
 
   // Get metric name for display
   const metricName = t(METRIC_SERIES[type]?.name) || 'Metrics';
@@ -215,8 +220,26 @@ function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
     toolbarExportPrint: t('metrics.dataGrid.toolbar.exportPrint'),
   }), [t]);
 
+  // Define which fields to export (include uid even if hidden)
+  const exportFields = useMemo(() => [
+    'id',
+    'rank',
+    'name',
+    'value',
+    'highestPower',
+    'currentPower',
+  ], []);
+
   // Define columns
   const columns = useMemo(() => [
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 0,
+      hideable: false,
+      disableColumnMenu: true,
+      disableExport: false,
+    },
     { 
       field: 'nationality', 
       headerName: '', 
@@ -394,7 +417,11 @@ function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
         rows={gridData}
         columns={columns}
         disableRowSelectionOnClick
-        initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
+        initialState={{
+          pagination: { paginationModel: { pageSize: 10 } },
+        }}
         pageSizeOptions={[5, 10, 20, 50, { value: -1, label: 'All' }]}
         localeText={localeText}
         slots={{
@@ -403,7 +430,7 @@ function MetricsDataGridComponent({ users, type = 'MERITS', gridData = [] }) {
           noResultsOverlay: () => <EmptyContent title={t('metrics.dataGrid.noResultsFound')} />,
         }}
         slotProps={{
-          toolbar: { setFilterButtonEl },
+          toolbar: { setFilterButtonEl, exportFields },
           panel: { anchorEl: filterButtonEl },
         }}
         sx={{
