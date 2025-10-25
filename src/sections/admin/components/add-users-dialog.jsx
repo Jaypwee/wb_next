@@ -170,6 +170,10 @@ const AddUsersDialog = ({ open, onClose, onSubmit }) => {
                   }
                 }}
                 onKeyDown={(e) => {
+                  // Allow copy/paste shortcuts (Ctrl+C, Ctrl+V, Cmd+C, Cmd+V, Ctrl+A, Cmd+A)
+                  if (e.ctrlKey || e.metaKey) {
+                    return;
+                  }
                   // Only allow numbers, backspace, delete, arrow keys, tab
                   if (!/[0-9]/.test(e.key) && 
                       !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
