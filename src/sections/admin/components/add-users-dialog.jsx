@@ -40,6 +40,55 @@ const AddUsersDialog = ({ open, onClose, onSubmit }) => {
     );
   };
 
+  const handlePaste = (event, currentId) => {
+    const clipboardText = event.clipboardData?.getData('text') || '';
+    const tokens = clipboardText
+      .split(/\s+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    // Only handle when multiple IDs are pasted; allow normal paste otherwise
+    if (tokens.length <= 1) {
+      return;
+    }
+
+    event.preventDefault();
+
+    setInputs((prevInputs) => {
+      const updatedInputs = [...prevInputs];
+      const currentIndex = updatedInputs.findIndex((i) => i.id === currentId);
+      if (currentIndex === -1) {
+        return prevInputs;
+      }
+
+      const items = tokens.map((token) => {
+        const validation = userIdSchema.safeParse(token);
+        if (validation.success) {
+          return { id: Date.now() + Math.random(), value: token, disabled: true, error: '' };
+        }
+        return { id: Date.now() + Math.random(), value: token, disabled: false, error: validation.error.issues[0].message };
+      });
+
+      const [firstItem, ...restItems] = items;
+
+      // Replace current input with first item, preserving the id for stable keys
+      updatedInputs[currentIndex] = { ...firstItem, id: updatedInputs[currentIndex].id };
+
+      // Insert the rest right after the current position
+      if (restItems.length > 0) {
+        updatedInputs.splice(currentIndex + 1, 0, ...restItems);
+      }
+
+      // Ensure there's at least one empty enabled input for further entry
+      const hasEmptyEnabled = updatedInputs.some((inp) => !inp.disabled && inp.value.trim() === '');
+      if (!hasEmptyEnabled) {
+        updatedInputs.push({ id: Date.now() + Math.random(), value: '', disabled: false, error: '' });
+      }
+
+      return updatedInputs;
+    });
+  };
+
   const handleAddInput = (currentId) => {
     // Validate current input before adding new one
     const currentInput = inputs.find(input => input.id === currentId);
@@ -159,6 +208,7 @@ const AddUsersDialog = ({ open, onClose, onSubmit }) => {
                 label="User ID"
                 value={input.value}
                 onChange={(e) => handleInputChange(input.id, e.target.value)}
+                onPaste={(e) => handlePaste(e, input.id)}
                 disabled={input.disabled || isPending}
                 error={!!input.error}
                 helperText={input.error}

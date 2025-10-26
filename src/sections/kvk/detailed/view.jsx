@@ -42,14 +42,14 @@ function formatKvkData(differences, selectedServers) {
     const filteredUsers = Object.entries(differences)
       .filter(([_, userData]) => selectedServers.includes(userData.homeServer));
     
-    // Sort by the metric value using the camelCase key
-    const sortedUsers = filteredUsers
-      .sort((a, b) => b[1][key] - a[1][key])
-      .slice(0, 20); // Top 20
+    // Sort all by the metric value using the camelCase key
+    const sortedUsersAll = filteredUsers
+      .sort((a, b) => b[1][key] - a[1][key]);
+    const sortedUsersTop20 = sortedUsersAll.slice(0, 20); // Top 20 for chart
     
     // Format for chart
-    const categories = sortedUsers.map(([_, userData]) => userData.name);
-    const data = sortedUsers.map(([_, userData]) => userData[key]);
+    const categories = sortedUsersTop20.map(([_, userData]) => userData.name);
+    const data = sortedUsersTop20.map(([_, userData]) => userData[key]);
     
     formattedByType[value] = {
       chart: {
@@ -58,7 +58,7 @@ function formatKvkData(differences, selectedServers) {
         categories,
         yAxisWidth: 100,
       },
-      grid: sortedUsers.map(([userId, userData], index) => ({
+      grid: sortedUsersAll.map(([userId, userData], index) => ({
         id: userId,
         rank: index + 1,
         name: userData.name,
@@ -100,6 +100,7 @@ export function KvkDetailedView({ type: initialType = 'MERITS' }) {
   const [currentType, setCurrentType] = useState(initialType);
   const [rawKvkData, setRawKvkData] = useState(null);
   const [selectedServers, setSelectedServers] = useState([]);
+  const [availableServers, setAvailableServers] = useState([]);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -129,11 +130,17 @@ export function KvkDetailedView({ type: initialType = 'MERITS' }) {
     // Store raw data
     setRawKvkData(response.data);
     
-    // Initialize all servers as selected
-    setSelectedServers(response.data.validServers);
+    // Compute servers actually present in data and initialize selection
+    const serversInData = Array.from(new Set(
+      Object.values(response.data.differences || {})
+        .map((userData) => userData.homeServer)
+        .filter(Boolean)
+    ));
+    setAvailableServers(serversInData);
+    setSelectedServers(serversInData);
     
     // Format data with all servers initially selected
-    const formatted = formatKvkData(response.data.differences, response.data.validServers);
+    const formatted = formatKvkData(response.data.differences, serversInData);
     setFormattedData(formatted);
   }, []);
 
@@ -291,32 +298,34 @@ export function KvkDetailedView({ type: initialType = 'MERITS' }) {
               isPending={isPending}
             />
 
-            {/* Server Filter Chips */}
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 2,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {rawKvkData.validServers.map((server) => (
-                <Chip
-                  key={server}
-                  label={server}
-                  onClick={() => handleServerToggle(server)}
-                  color={selectedServers.includes(server) ? 'primary' : 'default'}
-                  variant={selectedServers.includes(server) ? 'filled' : 'outlined'}
-                  sx={{ 
-                    cursor: 'pointer',
-                    fontWeight: selectedServers.includes(server) ? 'bold' : 'normal',
-                    width: '150px',
-                    height: '36px',
-                  }}
-                />
-              ))}
-            </Box>
+            {/* Server Filter Chips (only show when servers exist in data) */}
+            {availableServers.length > 0 && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {availableServers.map((server) => (
+                  <Chip
+                    key={server}
+                    label={server}
+                    onClick={() => handleServerToggle(server)}
+                    color={selectedServers.includes(server) ? 'primary' : 'default'}
+                    variant={selectedServers.includes(server) ? 'filled' : 'outlined'}
+                    sx={{ 
+                      cursor: 'pointer',
+                      fontWeight: selectedServers.includes(server) ? 'bold' : 'normal',
+                      width: '150px',
+                      height: '36px',
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
 
             <Box
               sx={{
