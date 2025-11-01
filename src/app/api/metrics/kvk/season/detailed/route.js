@@ -39,6 +39,10 @@ async function getHandler(request) {
     
     // Helper function to get data from a date subcollection
     const getDateData = async (date) => {
+      if (!date) {
+        return null;
+      }
+      console.log('getDateData', date);
       const dateCollectionRef = seasonDocRef.collection(date);
       const dateSnapshot = await dateCollectionRef.get();
       
@@ -67,37 +71,60 @@ async function getHandler(request) {
       );
     }
 
-    // Get the end date data
-    const endDateData = await getDateData(endDate);
-    if (!endDateData) {
-      return NextResponse.json(
-        { error: `No data found for date: ${endDate}` },
-        { status: 404 }
-      );
+    // Optionally get the end date data (when provided)
+    let endDateData = null;
+    if (endDate) {
+      endDateData = await getDateData(endDate);
+      if (!endDateData) {
+        return NextResponse.json(
+          { error: `No data found for date: ${endDate}` },
+          { status: 404 }
+        );
+      }
     }
 
-    // Calculate differences for each user
-
+    // Build response data
     const differences = {};
     const attributesToCompare = ['merits', 'unitsKilled', 'unitsDead', 'manaSpent', 't5KillCount'];
 
-    for (const userId in endDateData) {
-      if (startDateData[userId] && validServers.includes(endDateData[userId].homeServer)) {
-        const userDifferences = {
-          name: endDateData[userId].name,
-          currentPower: endDateData[userId].currentPower,
-          highestPower: endDateData[userId].highestPower,
-          homeServer: endDateData[userId].homeServer,
-        };
+    if (endDateData) {
+      // Calculate differences for each user when end date is provided
+      for (const userId in endDateData) {
+        if (startDateData[userId] && validServers.includes(endDateData[userId].homeServer)) {
+          const userDifferences = {
+            name: endDateData[userId].name,
+            currentPower: endDateData[userId].currentPower,
+            highestPower: endDateData[userId].highestPower,
+            homeServer: endDateData[userId].homeServer,
+          };
 
-        // Calculate differences for each attribute
-        for (const attr of attributesToCompare) {
-          const startValue = Number(String(startDateData[userId][attr]).replace(/,/g, ''));
-          const endValue = Number(String(endDateData[userId][attr]).replace(/,/g, ''));
-          userDifferences[attr] = endValue - startValue;
+          for (const attr of attributesToCompare) {
+            const startValue = Number(String(startDateData[userId][attr]).replace(/,/g, ''));
+            const endValue = Number(String(endDateData[userId][attr]).replace(/,/g, ''));
+            userDifferences[attr] = endValue - startValue;
+          }
+
+          differences[userId] = userDifferences;
         }
+      }
+    } else {
+      // Single-date mode: return values from the start date directly
+      for (const userId in startDateData) {
+        if (validServers.includes(startDateData[userId].homeServer)) {
+          const userValues = {
+            name: startDateData[userId].name,
+            currentPower: startDateData[userId].currentPower,
+            highestPower: startDateData[userId].highestPower,
+            homeServer: startDateData[userId].homeServer,
+          };
 
-        differences[userId] = userDifferences
+          for (const attr of attributesToCompare) {
+            const value = Number(String(startDateData[userId][attr]).replace(/,/g, ''));
+            userValues[attr] = value;
+          }
+
+          differences[userId] = userValues;
+        }
       }
     }
 
