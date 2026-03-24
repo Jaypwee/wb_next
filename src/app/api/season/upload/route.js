@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { adminDb } from 'src/lib/firebase-admin';
 import { withAuthAndRole } from 'src/lib/auth-middleware';
+import { syncSignupEligibilityFromUpload } from 'src/lib/signup-eligibility';
 import { invalidateAllSeasonIndividualMetrics } from 'src/lib/cache-invalidation';
 
 import { processFileUpload } from '../../utils/file-processor';
@@ -49,6 +50,7 @@ async function postHandler(request) {
     // Process all files and accumulate results
     const allParsedData = {};
     const allTotalData = {};
+    const allSignupEligibleUsers = {};
     const allTargetSheets = [];
     let totalRecordCount = 0;
     // Get the season document reference
@@ -60,13 +62,28 @@ async function postHandler(request) {
     const seasonData = seasonDoc.data();
     const validServers = seasonData.allies.concat(seasonData.enemies);
 
+    console.log('Upload context:', {
+      seasonName,
+      title,
+      type,
+      files: files.map((file) => file.name),
+      validServers,
+    });
+
     for (const file of files) {
       // Process each file upload using utility function
-      const { parsedData, totalData, targetSheets, recordCount } = await processFileUpload(file, adminDb, title, validServers);
+      const {
+        parsedData,
+        totalData,
+        signupEligibleUsers,
+        targetSheets,
+        recordCount,
+      } = await processFileUpload(file, adminDb, title, validServers);
     
       // Accumulate results
       Object.assign(allParsedData, parsedData);
       Object.assign(allTotalData, totalData);
+      Object.assign(allSignupEligibleUsers, signupEligibleUsers);
       allTargetSheets.push(...targetSheets);
       totalRecordCount += recordCount;
     }
@@ -109,6 +126,21 @@ async function postHandler(request) {
     await Promise.all(batches.map(batch => batch.commit()));
     
     console.log(`Successfully uploaded ${entries.length} entries in ${batches.length} batch(es)`)
+    console.log('Upload parse summary:', {
+      recordCount: totalRecordCount,
+      parsedUsers: entries.length,
+      signupAllowlistCount: Object.keys(allSignupEligibleUsers).length,
+    });
+
+    const signupSyncResult = await syncSignupEligibilityFromUpload({
+      adminDb,
+      eligibleUsersById: allSignupEligibleUsers,
+      seasonName,
+      title,
+      type,
+    });
+
+    console.log('Signup allowlist synced from latest upload:', signupSyncResult);
 
     // Invalidate cache for this season after successful upload
     try {
@@ -124,6 +156,7 @@ async function postHandler(request) {
       seasonName,
       title,
       recordCount: totalRecordCount,
+      signupAllowlistCount: Object.keys(allSignupEligibleUsers).length,
     });
 
   } catch (error) {

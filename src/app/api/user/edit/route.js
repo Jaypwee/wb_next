@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { adminDb, adminStorage } from 'src/lib/firebase-admin';
 import { withAuth, withAuthAndRole } from 'src/lib/auth-middleware';
+import { buildManualSignupEligibility } from 'src/lib/signup-eligibility';
 
 async function createUserHandler(request) {
   try {
@@ -21,6 +22,7 @@ async function createUserHandler(request) {
     
     const results = [];
     const errors = [];
+    const createdAt = new Date().toISOString();
 
     // Process each UID
     for (const uid of uids) {
@@ -40,12 +42,13 @@ async function createUserHandler(request) {
         // Create the user document with uid as document ID and gameuid field
         const userData = {
           gameuid: uid,
-          createdAt: new Date().toISOString(),
+          createdAt,
           ...body // Include any additional fields from the request body (excluding uids)
         };
 
         // Remove uids from userData to avoid storing it in each user document
         delete userData.uids;
+        userData.signupEligibility = buildManualSignupEligibility(createdAt);
 
         // Use Firestore operation
         await adminDb.collection('users').doc(uid).set(userData);

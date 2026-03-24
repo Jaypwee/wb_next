@@ -1,21 +1,46 @@
 import * as XLSX from 'xlsx';
 
-const HOME_SERVER = 249;
+import {
+  isAutoSignupEligible,
+  SIGNUP_ALLOWLIST_HOME_SERVER,
+} from 'src/lib/signup-eligibility';
 
-// Helper functions (these would need to be imported from the main file or duplicated)
-const REQUIRED_COLUMNS_FORMAT_1 = {
-  0: 'Lord ID',
-  1: 'Name',
-  5: 'Current Power',
-  6: 'Power',
-  7: 'Merits',
-  8: 'Units Killed',
-  9: 'Units Dead',
-  10: 'Units Healed',
-  15: 'T5 Kill Count',
-  32: 'Mana Spent',
-  34: 'Gems Spent'
-};
+const HOME_SERVER = SIGNUP_ALLOWLIST_HOME_SERVER;
+
+const REQUIRED_COLUMNS_FORMAT_1_VARIANTS = [
+  {
+    variant: 'legacy',
+    columns: {
+      0: 'Lord ID',
+      1: 'Name',
+      5: 'Current Power',
+      6: 'Power',
+      7: 'Merits',
+      8: 'Units Killed',
+      9: 'Units Dead',
+      10: 'Units Healed',
+      15: 'T5 Kill Count',
+      32: 'Mana Spent',
+      34: 'Gems Spent'
+    }
+  },
+  {
+    variant: 'with-mp-column',
+    columns: {
+      0: 'Lord ID',
+      1: 'Name',
+      5: 'Current Power',
+      6: 'Power',
+      7: 'Merits',
+      9: 'Units Killed',
+      10: 'Units Dead',
+      11: 'Units Healed',
+      16: 'T5 Kill Count',
+      33: 'Mana Spent',
+      35: 'Gems Spent'
+    }
+  }
+];
 
 const REQUIRED_COLUMNS_FORMAT_2 = {
   0: 'lord_id',
@@ -46,44 +71,92 @@ const REQUIRED_COLUMNS_FORMAT_3 = {
 };
 
 
+function getMatchedColumns(headers, columns) {
+  return Object.entries(columns).filter(([index, columnName]) => headers[parseInt(index, 10)] === columnName);
+}
+
+function getMissingColumns(headers, columns) {
+  return Object.entries(columns)
+    .filter(([index, columnName]) => headers[parseInt(index, 10)] !== columnName)
+    .map(([index, columnName]) => `${index}:${columnName}`);
+}
+
+function getColumnIndex(columns, columnName) {
+  return Number(
+    Object.entries(columns).find(([, headerName]) => headerName === columnName)?.[0]
+  );
+}
+
 // Function to detect which format the sheet uses
-function detectSheetFormat(headers) {
-  // Check Format 1
-  const format1Matches = Object.entries(REQUIRED_COLUMNS_FORMAT_1).filter(([index, columnName]) => headers[parseInt(index)] === columnName);
-  
-  // Check Format 2
-  const format2Matches = Object.entries(REQUIRED_COLUMNS_FORMAT_2).filter(([index, columnName]) => headers[parseInt(index)] === columnName);
-  
-  // Check Format 3
-  const format3Matches = Object.entries(REQUIRED_COLUMNS_FORMAT_3).filter(([index, columnName]) => headers[parseInt(index)] === columnName);
-  
-  // Return the format with more matches, or null if neither has enough matches
-  if (format1Matches.length >= Object.keys(REQUIRED_COLUMNS_FORMAT_1).length - 1) {
-    return { format: 'format1', columns: REQUIRED_COLUMNS_FORMAT_1 };
-  } else if (format2Matches.length >= Object.keys(REQUIRED_COLUMNS_FORMAT_2).length - 1) {
-    return { format: 'format2', columns: REQUIRED_COLUMNS_FORMAT_2 };
-  } else if (format3Matches.length >= Object.keys(REQUIRED_COLUMNS_FORMAT_3).length - 1) {
-    return { format: 'format3', columns: REQUIRED_COLUMNS_FORMAT_3 };
+function detectSheetFormat(headers, sheetName) {
+  const candidates = [
+    ...REQUIRED_COLUMNS_FORMAT_1_VARIANTS.map(({ variant, columns }) => ({
+      format: 'format1',
+      variant,
+      columns,
+      matches: getMatchedColumns(headers, columns),
+    })),
+    {
+      format: 'format2',
+      variant: 'default',
+      columns: REQUIRED_COLUMNS_FORMAT_2,
+      matches: getMatchedColumns(headers, REQUIRED_COLUMNS_FORMAT_2),
+    },
+    {
+      format: 'format3',
+      variant: 'default',
+      columns: REQUIRED_COLUMNS_FORMAT_3,
+      matches: getMatchedColumns(headers, REQUIRED_COLUMNS_FORMAT_3),
+    },
+  ];
+
+  const matchedFormat = candidates
+    .sort((left, right) => right.matches.length - left.matches.length)
+    .find(({ columns, matches }) => matches.length >= Object.keys(columns).length - 1);
+
+  if (matchedFormat) {
+    console.log(
+      `Sheet ${sheetName} uses ${matchedFormat.format}/${matchedFormat.variant} (${matchedFormat.matches.length}/${Object.keys(matchedFormat.columns).length} header matches)`
+    );
+    return matchedFormat;
   }
-  
+
+  const bestCandidate = candidates[0];
+  const missingColumns = bestCandidate ? getMissingColumns(headers, bestCandidate.columns) : [];
+
+  console.log(
+    `Skipping sheet ${sheetName} - no valid format detected. Best match: ${bestCandidate?.format}/${bestCandidate?.variant} (${bestCandidate?.matches.length ?? 0}/${bestCandidate ? Object.keys(bestCandidate.columns).length : 0}). Missing: ${missingColumns.join(', ')}`
+  );
   return null;
 }
 
 // Function to extract data based on format
-function extractRowData(row, format, title) {
+function extractRowData(row, formatDetection, title) {
+  const { format, columns } = formatDetection;
+
   if (format === 'format1') {
+    const currentPowerIndex = getColumnIndex(columns, 'Current Power');
+    const highestPowerIndex = getColumnIndex(columns, 'Power');
+    const meritsIndex = getColumnIndex(columns, 'Merits');
+    const unitsKilledIndex = getColumnIndex(columns, 'Units Killed');
+    const unitsDeadIndex = getColumnIndex(columns, 'Units Dead');
+    const unitsHealedIndex = getColumnIndex(columns, 'Units Healed');
+    const t5KillCountIndex = getColumnIndex(columns, 'T5 Kill Count');
+    const manaSpentIndex = getColumnIndex(columns, 'Mana Spent');
+    const gemsSpentIndex = getColumnIndex(columns, 'Gems Spent');
+
     return {
       name: row[1],
       homeServer: Number(row[2]),
-      currentPower: Number(row[5]),
-      highestPower: Number(row[6]),
-      merits: title === 'start' ? 0 : Number(row[7]),
-      unitsKilled: Number(row[8]),
-      unitsDead: Number(row[9]),
-      unitsHealed: Number(row[10]),
-      t5KillCount: Number(row[15]),
-      manaSpent: Number(row[32]),
-      gemsSpent: Number(row[34])
+      currentPower: Number(row[currentPowerIndex]),
+      highestPower: Number(row[highestPowerIndex]),
+      merits: title === 'start' ? 0 : Number(row[meritsIndex]),
+      unitsKilled: Number(row[unitsKilledIndex]),
+      unitsDead: Number(row[unitsDeadIndex]),
+      unitsHealed: Number(row[unitsHealedIndex]),
+      t5KillCount: Number(row[t5KillCountIndex]),
+      manaSpent: Number(row[manaSpentIndex]),
+      gemsSpent: Number(row[gemsSpentIndex])
     };
   } else if (format === 'format2') {
     return {
@@ -111,7 +184,7 @@ function extractRowData(row, format, title) {
       t5KillCount: Number(row[36]),
       manaSpent: Number(row[34]),
       gemsSpent: 0, // Format 3 doesn't have gems spent column
-      homeServer: row[10] // Format 3 has home server
+      homeServer: Number(row[10]) // Format 3 has home server
     };
   }
   
@@ -151,7 +224,7 @@ export async function processFileUpload(file, adminDb, title, validServers) {
       // Try UTF-8 first, fallback to other encodings if needed
       try {
         csvText = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
-      } catch (error) {
+      } catch {
         // If UTF-8 fails, try with UTF-8 non-fatal mode
         console.log('UTF-8 strict decoding failed, trying non-fatal mode');
         csvText = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
@@ -190,6 +263,7 @@ export async function processFileUpload(file, adminDb, title, validServers) {
   const parsedData = {};
   const userUpdates = new Map(); // Track updates for user documents
   const totalData = {};
+  const signupEligibleUsers = {};
   
   // Process each target sheet
   for (const sheetName of targetSheets) {
@@ -200,14 +274,12 @@ export async function processFileUpload(file, adminDb, title, validServers) {
     const headers = data[0];
     console.log(`Headers for ${sheetName}:`, headers);
     
-    const formatDetection = detectSheetFormat(headers);
+    const formatDetection = detectSheetFormat(headers, sheetName);
     
     if (!formatDetection) {
-      console.log(`Skipping sheet ${sheetName} - no valid format detected`);
       continue;
     }
-    
-    console.log(`Sheet ${sheetName} uses ${formatDetection.format}`);
+    console.log(`Sheet ${sheetName} has ${Math.max(data.length - 1, 0)} data row(s)`);
 
     // Process rows for this sheet
     for (let i = 1; i < data.length; i++) {
@@ -216,8 +288,12 @@ export async function processFileUpload(file, adminDb, title, validServers) {
 
       if (lordId) {
         // Extract row data for each users
-        const rowData = extractRowData(row, formatDetection.format, title);
+        const rowData = extractRowData(row, formatDetection, title);
         if (rowData && validServers.includes(rowData.homeServer)) {
+          if (isAutoSignupEligible(rowData)) {
+            signupEligibleUsers[lordId] = rowData;
+          }
+
           // Initialize server entry if it doesn't exist
           if (title !== 'preseason' && rowData.highestPower > 50000000) {
             if (!totalData[rowData.homeServer]) {
@@ -274,6 +350,7 @@ export async function processFileUpload(file, adminDb, title, validServers) {
 
   console.log('Number of records parsed:', Object.keys(parsedData).length);
   console.log('Number of user documents to update:', userUpdates.size);
+  console.log('Number of signup-eligible users found:', Object.keys(signupEligibleUsers).length);
 
   // Batch update user documents
   if (userUpdates.size > 0) {
@@ -291,6 +368,7 @@ export async function processFileUpload(file, adminDb, title, validServers) {
   return {
     parsedData,
     totalData,
+    signupEligibleUsers,
     targetSheets,
     recordCount: Object.keys(parsedData).length
   };
